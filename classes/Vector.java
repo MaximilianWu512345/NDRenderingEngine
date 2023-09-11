@@ -21,4 +21,42 @@ public class Vector {
       }
       return (float)Math.sqrt((double)sum);
    }
+   public float[] getCoordinates() {
+      return coordinates;
+   }
+   
+   public float[] getCoords() {
+      return getCoordinates();
+   }
+   public Vector add(Vector v){
+      float[] nC = new float[coordinates.length]; 
+      for(int i = 0; i<nC.length;i++){
+         nC[i] = coordinates[i] + v.getCoords()[i];
+      }
+      return new Vector(nC);
+   }
+   public Vector subtract(Vector v){
+      float[] nC = new float[coordinates.length]; 
+      for(int i = 0; i<nC.length;i++){
+         nC[i] = coordinates[i] - v.getCoords()[i];
+      }
+      return new Vector(nC);
+   }
+   public Vector dot(Vector v){
+      float[] nC = new float[coordinates.length]; 
+      for(int i = 0; i<nC.length;i++){
+         nC[i] = coordinates[i] * v.getCoords()[i];
+      }
+      return new Vector(nC);
+   }
+   public Vector getOrthogonal(Vector[] v){
+      //Gram-Schmidt Orthogonalization? 
+      return null;
+   }
+   public Vector project(Vector v){
+      return null;
+   }
+   public float component(Vector v){
+      return 0;
+   }
 }

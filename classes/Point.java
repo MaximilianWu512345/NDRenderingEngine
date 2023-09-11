@@ -21,10 +21,7 @@ public class Point {
    public float[] getCoords() {
       return getCoordinates();
    }
-   
-   public float[] getCords() { // current compatibility for Max, fix later?
-      return getCoordinates();
-   }
+
    
    public static float getDistance(Point one, Point two) {
       float sum = 0;
