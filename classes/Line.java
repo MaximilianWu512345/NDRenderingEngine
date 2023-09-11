@@ -8,15 +8,18 @@ public class Line{
    public line(Point a, Point b){
       position = a;
       float[] temp = new float[];
+
       /*
       temp = a.getCords();
       
+
       for(int i = 0; i<temp.length; i++){
          temp[i] -= b.getCords()[i];
       }
       */
       direction = new Vector(temp);
    }
+
    public point getIntersect(Line){
       float[] p1 = new float[];
       float[] v1 = new float[];
@@ -37,4 +40,5 @@ public class Line{
    public getVector(){
       return direction;
    }
+
 }
