@@ -14,6 +14,18 @@ public class Point {
       return getDistance(this, point);
    }
    
+   public float[] getCoordinates() {
+      return coordinates;
+   }
+   
+   public float[] getCoords() {
+      return getCoordinates();
+   }
+   
+   public float[] getCords() { // current compatibility for Max, fix later?
+      return getCoordinates();
+   }
+   
    public static float getDistance(Point one, Point two) {
       float sum = 0;
       for (int i = 0; i < one.coordinates.length && i < two.coordinates.length; i++) {
