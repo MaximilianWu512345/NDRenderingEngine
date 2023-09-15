@@ -1,11 +1,14 @@
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.JLayeredPane;
+import javax.swing.JComponent;
 import java.util.Hashtable;
+import java.util.Collection;
 import java.awt.Color;
 import java.awt.Graphics;
 
 public class EnginePanel extends JPanel {
+
+   private static final int OFFSET = 1;
    
    public enum PanelType {
       BUTTON,
@@ -17,6 +20,7 @@ public class EnginePanel extends JPanel {
    public EnginePanel(int width, int height) {
       super(null);
       initialize(width, height);
+      setLayout(null);
       setSize(width, height);
       setVisible(true);
       addComponents(width, height);
@@ -27,22 +31,43 @@ public class EnginePanel extends JPanel {
    }
    
    private void addComponents(int width, int height) {
-      dictComponents.put(PanelType.RENDER, new RenderHelper(0, 0, width, height));
-      dictComponents.put(PanelType.BUTTON, new ButtonHelper(0, height * 9 / 10, width, height / 10));
+      dictComponents.put(PanelType.RENDER, new RenderHelper(OFFSET, 0, width, height));
+      dictComponents.put(PanelType.BUTTON, new ButtonHelper(OFFSET, height * 9 / 10, width, height / 10));
+      for (Component c : dictComponents.values()) {
+         JComponent[] array = c.getComponents();
+         if (array != null) {
+            for (JComponent x : array) {
+               add(x);
+            }
+         }
+      }
    }
    
    protected void paintComponent(Graphics g) {
-      for (Component component : dictComponents.values()) {
-         component.paintComponent(g);
+      super.paintComponent(g);
+      for (Component c : dictComponents.values()) {
+         g.setColor(Color.RED);
+         g.drawRect(c.getX(), c.getY(), c.getWidth(), c.getHeight());
       }
-      g.drawRect(0, 0, 100, 100);
    }
    
    protected class RenderHelper extends Component {
    
+      private Color[][] colors;
+   
       public RenderHelper(int x, int y, int w, int h) {
          super(x, y, w, h);
+         initialize();
       }
+      
+      private void initialize() {
+         colors = new Color[width][height];
+      }
+      
+      public Color[][] getColors() {
+         return colors;
+      }
+      
    }
    
    protected class ButtonHelper extends Component {
@@ -53,29 +78,29 @@ public class EnginePanel extends JPanel {
       }
       
       protected Hashtable<ButtonType, Button> dictButtons;
-      
-      protected int x, y;
-      
-      protected int width, height;
    
       public ButtonHelper(int x, int y, int w, int h) {
          super(x, y, w, h);
          initialize();
-         addButtons(width = w, height = h);
+         addButtons(width, height);
       }
       
       private void initialize() {
          dictButtons = new Hashtable<ButtonType, Button>();
       }
       
-      protected void paintComponent(Graphics g) {
-         g.setColor(Color.green);
-         g.fillRect(0, 0, width, height);
+      private void addButtons(int width, int height) {
+         dictButtons.put(ButtonType.LEFT, new Button(x, y, width / 2, height, Color.red, "-"));
+         dictButtons.put(ButtonType.RIGHT, new Button(x + width / 2, y, width / 2, height, Color.green, "+"));
+         
       }
       
-      private void addButtons(int width, int height) {
-         dictButtons.put(ButtonType.LEFT, (Button)add(new Button(width / 2 - width / 10, 0, width * 9 / 10, 0, Color.red, "-")));
-         dictButtons.put(ButtonType.RIGHT, (Button)add(new Button(width / 2, 0, width * 9 / 10, 0, Color.green, "+")));
+      public JComponent[] getComponents() {
+         return dictButtons.values().toArray(new JComponent[dictButtons.values().size()]);
+      }
+      
+      public Hashtable<ButtonType, Button> getDictionary() {
+         return dictButtons;
       }
    }
 }

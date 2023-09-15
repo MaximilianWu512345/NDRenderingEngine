@@ -14,7 +14,7 @@ public class Engine extends JFrame {
    public Engine(int width, int height) {
       super(TITLE);
       initialize(width, height);
-      setSize(width, height);
+      setSize(width * 407 / 400, height * 104 / 100);
       setDefaultCloseOperation(EXIT_ON_CLOSE);
       setVisible(true);
    }

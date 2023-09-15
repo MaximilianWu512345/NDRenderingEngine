@@ -58,7 +58,7 @@ public class Button extends JComponent {
       g.setColor(Color.black);
       g.drawRect(0, 0, width, height);
       if (text != null && text.length() > 0) {
-         g.drawString(text, width / 2 - text.length() * 3, height * 4 / 10);
+         g.drawString(text, width / 2, height / 2);
       }
    }
    
