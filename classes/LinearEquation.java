@@ -14,7 +14,7 @@ public class LinearEquation{
    public float[] Evaluate(int[] var, float[] value){
       float[] result = new float[2];
       int term = -1;
-      float sum = paramiters[paramiters.length];
+      float sum = paramiters[paramiters.length-1];
       for(int i = 0; i<numVar; i++){
          boolean hasVal = false;
          for(int j = 0; j<var.length; j++){
