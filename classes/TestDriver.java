@@ -20,5 +20,8 @@ public class TestDriver {
       f = new float[]{-2,3,2,6};
       v[2] = new Vector(f);
       System.out.println(Vector.getOrthogonal(v));
+      for(int i = 0; i<v.length; i++){
+         System.out.println((Vector.getOrthogonal(v)).dot(v[i]));
+      }
    }
 }

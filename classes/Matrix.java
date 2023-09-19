@@ -85,7 +85,7 @@ public class Matrix{
             d[j] = d[j].subtract(d[i].scale(r));
          }
       }
-      
+      //fix
       return new Matrix(d);
    }
    public String toString(){
@@ -96,7 +96,7 @@ public class Matrix{
          }
          result += "\n";
       }
-      return result;
+      return result + "\n";
    }
    
 }

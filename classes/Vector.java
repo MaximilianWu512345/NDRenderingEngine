@@ -5,7 +5,12 @@ public class Vector {
    public Vector(float[] coords) {
       coordinates = coords;
    }
-   
+   public Vector(int[] coords) {
+      coordinates = new float[coords.length];
+      for(int i = 0; i<coords.length; i++){
+         coordinates[i] = coords[i];
+      }
+   }
    public int length() {
       return coordinates.length;
    }
@@ -42,12 +47,12 @@ public class Vector {
       }
       return new Vector(nC);
    }
-   public Vector dot(Vector v){
-      float[] nC = new float[coordinates.length]; 
-      for(int i = 0; i<nC.length;i++){
-         nC[i] = coordinates[i] * v.getCoords()[i];
+   public float dot(Vector v){
+      float nC = 0; 
+      for(int i = 0; i<coordinates.length;i++){
+         nC += coordinates[i] * v.getCoords()[i];
       }
-      return new Vector(nC);
+      return nC;
    }
    public static Vector getOrthogonal(Vector[] v){
       //just gonna assume unkowns are 1 so things stay simple
@@ -61,8 +66,12 @@ public class Vector {
       //get Augmented Matrix
       Matrix m = new Matrix(vp);
       Matrix aug = m.AugmentedMatrix(zeroVector);
+      //System.out.println("aug");
+      //System.out.println(aug);
       //get rref
       Matrix rref = aug.getRREF();
+      //System.out.println("rref");
+      //System.out.println(rref);
       //evaluate
       Vector[] d = rref.toVectors();
       float[] result = new float[v[0].length()];
@@ -72,6 +81,13 @@ public class Vector {
       value[0] = 1; 
       for(int i = d.length-2; i>=0; i--){
          LinearEquation le = new LinearEquation(d[i].getCoords());
+         /*
+         System.out.println("Equation " + (i + 1));
+         System.out.println(new Vector(value));
+         System.out.println(new Vector(var));
+         System.out.println(le);
+         System.out.println(le.Evaluate(var, value)[0]);
+         */
          float[] leRes = le.Evaluate(var, value);
          //add new vector values
          result[(int)leRes[1]] = leRes[0];
@@ -82,12 +98,13 @@ public class Vector {
          temp1[temp1.length-1] = (int)leRes[1];
          var = temp1;
          float[] temp2 = new float[value.length+1];
-         for(int j = 0; i<value.length; j++){
+         for(int j = 0; j<value.length; j++){
             temp2[j] = value[j];
          }
          temp2[temp2.length-1] = leRes[0];
          value = temp2;
       }
+      result[result.length-1] = 1;
       return new Vector(result);
    }
    public Vector project(Vector v){

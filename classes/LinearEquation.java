@@ -20,7 +20,7 @@ public class LinearEquation{
          for(int j = 0; j<var.length; j++){
             if(i == var[j]){
                hasVal = true;
-               sum -= paramiters[i];
+               sum -= paramiters[i]*value[j];
             }
          }
          if(paramiters[i] != 0 && !hasVal){
@@ -31,5 +31,13 @@ public class LinearEquation{
       result[0] = sum;
       result[1] = term;
       return result;
+   }
+   public String toString(){
+      String s = "";
+      for(int i = 0; i<numVar; i++){
+         s += (paramiters[i] + "x" + i + " + ");
+      }
+      s += (paramiters[numVar] + " = 0");
+      return s;
    }
 }
