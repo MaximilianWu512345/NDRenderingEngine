@@ -1,24 +1,49 @@
+/**
+*repersents a vector of any dimention
+*/
 public class Vector {
-
+   /**
+   *value of vector
+   */
    private float[] coordinates;
-   
+   /**
+   *makes a vector out of a float[]
+   *@param coords has a length of atleast 1
+   */
    public Vector(float[] coords) {
       coordinates = coords;
    }
+   /**
+   *makes a vector out of a int[]
+   *@param coords has a length of atleast 1
+   */
    public Vector(int[] coords) {
       coordinates = new float[coords.length];
       for(int i = 0; i<coords.length; i++){
          coordinates[i] = coords[i];
       }
    }
+   /**
+   *returns the dimention of the vector
+   *@return dimention of the vector
+   */
    public int length() {
       return coordinates.length;
    }
-
+   /**
+   *gets distance between this and vector
+   *@param vector has the same dimention as this
+   *@return distance as a float
+   */
    public float getDistance(Vector vector) {
       return getDistance(this, vector);
    }
-   
+   /**
+   *gets distance between two vectors
+   *@param one has the same dimention as two
+   *@param two has the same dimention as one
+   *@return distance as a float
+   */
    public static float getDistance(Vector one, Vector two) {
       float sum = 0;
       for (int i = 0; i < one.coordinates.length && i < two.coordinates.length; i++) {
@@ -26,6 +51,9 @@ public class Vector {
       }
       return (float)Math.sqrt((double)sum);
    }
+   /**
+   *
+   */
    public float[] getCoordinates() {
       return coordinates;
    }
