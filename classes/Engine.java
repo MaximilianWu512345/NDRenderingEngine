@@ -33,11 +33,30 @@ public class Engine extends JFrame {
    private void initialize(int width, int height) {
       add(panel = new EnginePanel(width, height));
    }
+   
+   public void renderImage(Color[][] colors) {
+      panel.renderImage(colors);
+   }
+   
+   public void renderTriangle(Color c) {
+      panel.renderTriangle(c);
+   }
 
 /** Placeholder method to run TestDriver.
 * @param args default args for main method.
 */
    public static void main(String[] args) {
-      TestDriver.main(args);
+      Engine engine = new Engine(1000, 1000);
+      Color[][] array = new Color[500][500];
+      for (int i = 0; i < array.length; i++) {
+         for (int x = 0; x < array[i].length; x++) {
+            if (i % 2 == 0 && x % 2 == 0)
+               array[i][x] = Color.RED;
+            else if (i % 2 == 1 && x % 2 == 1)
+               array[i][x] = Color.BLUE;
+            
+         }
+      }
+      engine.renderImage(array);
    }
 }
