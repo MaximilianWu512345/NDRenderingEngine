@@ -1,24 +1,49 @@
+/**
+*repersents a vector of any dimention
+*/
 public class Vector {
-
+   /**
+   *value of vector
+   */
    private float[] coordinates;
-   
+   /**
+   *makes a vector out of a float[]
+   *@param coords has a length of atleast 1
+   */
    public Vector(float[] coords) {
       coordinates = coords;
    }
+   /**
+   *makes a vector out of a int[]
+   *@param coords has a length of atleast 1
+   */
    public Vector(int[] coords) {
       coordinates = new float[coords.length];
       for(int i = 0; i<coords.length; i++){
          coordinates[i] = coords[i];
       }
    }
+   /**
+   *returns the dimention of the vector
+   *@return dimention of the vector
+   */
    public int length() {
       return coordinates.length;
    }
-
+   /**
+   *gets distance between this and vector
+   *@param vector has the same dimention as this
+   *@return distance as a float
+   */
    public float getDistance(Vector vector) {
       return getDistance(this, vector);
    }
-   
+   /**
+   *gets distance between two vectors
+   *@param one has the same dimention as two
+   *@param two has the same dimention as one
+   *@return distance as a float
+   */
    public static float getDistance(Vector one, Vector two) {
       float sum = 0;
       for (int i = 0; i < one.coordinates.length && i < two.coordinates.length; i++) {
@@ -26,13 +51,25 @@ public class Vector {
       }
       return (float)Math.sqrt((double)sum);
    }
+   /**
+   *gets values of vector
+   *@return float[] of values of vector
+   */
    public float[] getCoordinates() {
       return coordinates;
    }
-   
+   /**
+   *gets values of vector (alternate spelling)
+   *@return float[] of values of vector
+   */
    public float[] getCoords() {
       return getCoordinates();
    }
+   /**
+   *adds this vector and v
+   *@param v has to have same length as this vector
+   *@return vector with added values
+   */
    public Vector add(Vector v){
       float[] nC = new float[coordinates.length]; 
       for(int i = 0; i<nC.length;i++){
@@ -40,6 +77,11 @@ public class Vector {
       }
       return new Vector(nC);
    }
+   /**
+   *subtracts v from this vector
+   *@param v has to have same length as this vector
+   *@return vector with subtracted values values
+   */
    public Vector subtract(Vector v){
       float[] nC = new float[coordinates.length]; 
       for(int i = 0; i<nC.length;i++){
@@ -47,6 +89,11 @@ public class Vector {
       }
       return new Vector(nC);
    }
+   /**
+   *dots v and this vector
+   *@param v has to have same length as this vector
+   *@return float as dot product of v and this vector
+   */
    public float dot(Vector v){
       float nC = 0; 
       for(int i = 0; i<coordinates.length;i++){
@@ -54,6 +101,11 @@ public class Vector {
       }
       return nC;
    }
+   /**
+   *dots v and this vector
+   *@param v must contain vectors of length of length of v -1 and all vectors must not be coplaner or paralell with eachother
+   *@return a orthogonal vector
+   */
    public static Vector getOrthogonal(Vector[] v){
       //just gonna assume unkowns are 1 so things stay simple
       Vector zeroVector = new Vector(new float[v[0].length()]);
@@ -107,12 +159,11 @@ public class Vector {
       result[result.length-1] = 1;
       return new Vector(result);
    }
-   public Vector project(Vector v){
-      return null;
-   }
-   public float component(Vector v){
-      return 0;
-   }
+   /**
+   *scales this vector by s
+   *@param s must be a float
+   *@return this vector scaled
+   */
    public Vector scale(float s){
       float[] nC = new float[coordinates.length]; 
       for(int i = 0; i<nC.length;i++){
