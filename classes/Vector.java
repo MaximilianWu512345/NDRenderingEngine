@@ -52,15 +52,24 @@ public class Vector {
       return (float)Math.sqrt((double)sum);
    }
    /**
-   *
+   *gets values of vector
+   *@return float[] of values of vector
    */
    public float[] getCoordinates() {
       return coordinates;
    }
-   
+   /**
+   *gets values of vector (alternate spelling)
+   *@return float[] of values of vector
+   */
    public float[] getCoords() {
       return getCoordinates();
    }
+   /**
+   *adds this vector and v
+   *@param v has to have same length as this vector
+   *@return vector with added values
+   */
    public Vector add(Vector v){
       float[] nC = new float[coordinates.length]; 
       for(int i = 0; i<nC.length;i++){
@@ -68,6 +77,11 @@ public class Vector {
       }
       return new Vector(nC);
    }
+   /**
+   *subtracts v from this vector
+   *@param v has to have same length as this vector
+   *@return vector with subtracted values values
+   */
    public Vector subtract(Vector v){
       float[] nC = new float[coordinates.length]; 
       for(int i = 0; i<nC.length;i++){
@@ -75,6 +89,11 @@ public class Vector {
       }
       return new Vector(nC);
    }
+   /**
+   *dots v and this vector
+   *@param v has to have same length as this vector
+   *@return float as dot product of v and this vector
+   */
    public float dot(Vector v){
       float nC = 0; 
       for(int i = 0; i<coordinates.length;i++){
@@ -82,6 +101,11 @@ public class Vector {
       }
       return nC;
    }
+   /**
+   *dots v and this vector
+   *@param v must contain vectors of length of length of v -1 and all vectors must not be coplaner or paralell with eachother
+   *@return a orthogonal vector
+   */
    public static Vector getOrthogonal(Vector[] v){
       //just gonna assume unkowns are 1 so things stay simple
       Vector zeroVector = new Vector(new float[v[0].length()]);
@@ -135,12 +159,11 @@ public class Vector {
       result[result.length-1] = 1;
       return new Vector(result);
    }
-   public Vector project(Vector v){
-      return null;
-   }
-   public float component(Vector v){
-      return 0;
-   }
+   /**
+   *scales this vector by s
+   *@param s must be a float
+   *@return this vector scaled
+   */
    public Vector scale(float s){
       float[] nC = new float[coordinates.length]; 
       for(int i = 0; i<nC.length;i++){
