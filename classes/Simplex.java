@@ -1,8 +1,11 @@
+import java.awt.Color;
 public class Simplex{
    private Point[] points;
    private Plane surface;
+   private Color color;
    public Simplex(Point[] vertex){
       setPoints(vertex);
+      color = Color.RED;
    }
    public void setPoints(Point[] vertex){
       points = vertex;
@@ -15,6 +18,9 @@ public class Simplex{
          temp[i] = new Vector(temp2);
       }
       surface = new Plane(vertex[0], Vector.getOrthogonal(temp));
+   }
+   public Point[] getPoints(){
+      return points;
    }
    public boolean isWithin(Point p){
       
