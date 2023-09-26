@@ -5,6 +5,8 @@ import java.util.Hashtable;
 import java.util.Collection;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Canvas;
+import java.awt.image.BufferedImage;
 
 /** JPanel holding all Components */
 public class EnginePanel extends JPanel {
@@ -59,14 +61,18 @@ public class EnginePanel extends JPanel {
       }
    }
    
-   public void renderImage(Color[][] colors) {
-      ((RenderHelper)dictComponents.get(PanelType.RENDER)).setColors(colors);
+   public void renderImage(Object object) {
+      if (object instanceof BufferedImage)
+         ((RenderHelper)dictComponents.get(PanelType.RENDER)).setImage((BufferedImage)object);
+      else if (object instanceof Color[][])
+         ((RenderHelper)dictComponents.get(PanelType.RENDER)).setColors((Color[][])object);
    }
    
    public void renderTriangle(Color c) {
 
    }
    
+
 /** Paints EnginePanel and paints each component in dictComponents.
 * @param g the Graphics instance to use to paint the components.
 */
@@ -82,18 +88,24 @@ public class EnginePanel extends JPanel {
 /** Container class to hold information about rendering. */
    protected class RenderHelper extends Component {
    
+      private BufferedImage renderedImage;
+      
+      private Canvas imageObserver;
+      
       /**  */
       private Color[][] colors;
       
       /**  */
       public RenderHelper(int x, int y, int w, int h) {
          super(x, y, w, h);
-         initialize();
+         initialize(w, h);
       }
       
       /**  */
-      private void initialize() {
+      private void initialize(int w, int h) {
          colors = new Color[width][height];
+         renderedImage = new BufferedImage(w, h, BufferedImage.TYPE_4BYTE_ABGR);
+         imageObserver = new Canvas();
       }
       
       public Color[][] getColors() {
@@ -102,17 +114,28 @@ public class EnginePanel extends JPanel {
       
       public void setColors(Color[][] c) {
          colors = c;
+         updateImage();
       }
       
-      protected void paintComponent(Graphics g) {
+      public void setImage(BufferedImage image) {
+         renderedImage = image;
+         updateImage();
+      }
+      
+      public void updateImage() {
+         if (colors == null)
+            return;
          for (int i = 0; i < colors.length; i++) {
             for (int x = 0; x < colors[i].length; x++) {
                if (colors[i][x] != null) {
-                  g.setColor(colors[i][x]);
-                  g.fillRect(i, x, 1, 1);
+                  renderedImage.setRGB(i, x, colors[i][x].getRGB());
                }
             }
          }
+      }
+      
+      protected void paintComponent(Graphics g) {
+         g.drawImage(renderedImage, x, y, imageObserver);
       }
    }
    

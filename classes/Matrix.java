@@ -88,6 +88,12 @@ public class Matrix{
       //fix
       return new Matrix(d);
    }
+   
+   public void rotateMatrix(int dimension) {
+   
+   }
+   
+   
    public String toString(){
       String result = "";
       for(int i = 0; i<data.length; i++){
