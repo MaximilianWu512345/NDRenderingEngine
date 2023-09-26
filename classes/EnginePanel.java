@@ -90,10 +90,11 @@ public class EnginePanel extends JPanel {
    
       private BufferedImage renderedImage;
       
+      /** Used for ImageObserver class, calls:
+      * imageUpdate(Image img, int infoflags, int x, int y, int width, int height), 
+      * This method is called when information about an image which was previously requested using an asynchronous interface becomes available.
+      */
       private Canvas imageObserver;
-      
-      /**  */
-      private Color[][] colors;
       
       /**  */
       public RenderHelper(int x, int y, int w, int h) {
@@ -103,35 +104,48 @@ public class EnginePanel extends JPanel {
       
       /**  */
       private void initialize(int w, int h) {
-         colors = new Color[width][height];
          renderedImage = new BufferedImage(w, h, BufferedImage.TYPE_4BYTE_ABGR);
          imageObserver = new Canvas();
       }
       
       public Color[][] getColors() {
+         Color[][] colors = new Color[renderedImage.getWidth()][renderedImage.getHeight()];
+         for (int i = 0; i < renderedImage.getWidth(); i++) {
+            for (int x = 0; x < renderedImage.getHeight(); x++) {
+               colors[i][x] = new Color(renderedImage.getRGB(i, x));
+            }
+         }
          return colors;
       }
       
-      public void setColors(Color[][] c) {
-         colors = c;
-         updateImage();
+      public BufferedImage getImage() {
+         return renderedImage;
       }
       
-      public void setImage(BufferedImage image) {
-         renderedImage = image;
-         updateImage();
+      public Canvas getCanvas() {
+         return imageObserver;
       }
       
-      public void updateImage() {
-         if (colors == null)
-            return;
-         for (int i = 0; i < colors.length; i++) {
-            for (int x = 0; x < colors[i].length; x++) {
+      public void setColors(Color[][] colors) {
+         for (int i = 0; i < colors.length && i < renderedImage.getWidth(); i++) {
+            for (int x = 0; x < colors[i].length && x < renderedImage.getHeight(); x++) {
                if (colors[i][x] != null) {
                   renderedImage.setRGB(i, x, colors[i][x].getRGB());
                }
             }
          }
+      }
+      
+      public void setImage(BufferedImage image) {
+         for (int i = 0; i < image.getWidth(); i++) {
+            for (int x = 0; x < image.getHeight(); x++) {
+               renderedImage.setRGB(i, x, image.getRGB(i, x));
+            }
+         }
+      }
+      
+      public void setCanvas(Canvas c) {
+         imageObserver = c;
       }
       
       protected void paintComponent(Graphics g) {

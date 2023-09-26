@@ -36,10 +36,12 @@ public class Engine extends JFrame {
       add(panel = new EnginePanel(width, height));
    }
    
+   // Convenience method to render, currently takes Color[][] and BufferedImage.
    public void renderImage(Object object) {
       panel.renderImage(object);
    }
    
+   // For future implementation.
    public void renderTriangle(Color c) {
       panel.renderTriangle(c);
    }
@@ -48,12 +50,23 @@ public class Engine extends JFrame {
 * @param args default args for main method.
 */
    public static void main(String[] args) {
+      // Create the engine, start the program.
       Engine engine = new Engine(1000, 1000);
+      // Ask for img files to open and display until user clicks cancel.
       try {
          JFileChooser fileChooser = new JFileChooser();
          File file = pickFile(fileChooser);
-         engine.renderImage(ImageIO.read(file));
-         engine.repaint();
+         if (file != null) {
+            engine.renderImage(ImageIO.read(file));
+            engine.repaint();
+            while (file != null) {
+               file = pickFile(fileChooser);
+               if (file != null) {
+                  engine.renderImage(ImageIO.read(file));
+                  engine.repaint();
+               }
+            }
+         }
       }
       catch (Exception e) {
          System.out.println(e);
@@ -62,7 +75,7 @@ public class Engine extends JFrame {
    
      public static File pickFile(JFileChooser fileChooser)
   {
-    File file = new File("Engine.java");
+    File file = new File("images/PlaceImagesHere.txt");
     JFrame frame = new JFrame();
     // get the return value from choosing a file
     fileChooser.setCurrentDirectory(file);
@@ -71,6 +84,8 @@ public class Engine extends JFrame {
     // if the return value says the user picked a file 
     if (returnVal == JFileChooser.APPROVE_OPTION)
       file = fileChooser.getSelectedFile();
+    else
+      file = null;
     return file;
   }
 }
