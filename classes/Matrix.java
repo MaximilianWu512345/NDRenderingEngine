@@ -121,10 +121,6 @@ public class Matrix{
       //fix
       return new Matrix(d);
    }
-   /**
-   * turns matrix into string
-   * @return String
-   */
    public String toString(){
       String result = "";
       for(int i = 0; i<data.length; i++){

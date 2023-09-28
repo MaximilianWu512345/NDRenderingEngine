@@ -1,9 +1,11 @@
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.JLayeredPane;
+import javax.swing.JFileChooser;
+import javax.imageio.ImageIO;
 import java.util.Hashtable;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.io.File;
 
 /** JFrame engine that creates a graphical application. */
 public class Engine extends JFrame {
@@ -33,11 +35,66 @@ public class Engine extends JFrame {
    private void initialize(int width, int height) {
       add(panel = new EnginePanel(width, height));
    }
+   
+   // Convenience method to render, currently takes Color[][], BufferedImage, Point, Vector, and Line.
+   public void renderImage(Object object) {
+      panel.renderImage(object);
+   }
+   
+   // For future implementation.
+   public void renderTriangle(Color c) {
+      panel.renderTriangle(c);
+   }
 
 /** Placeholder method to run TestDriver.
 * @param args default args for main method.
 */
    public static void main(String[] args) {
-      TestDriver.main(args);
+      // Create the engine, start the program.
+      Engine engine = new Engine(1000, 1000);
+      engine.renderImage(new Point(new float[] { 50, 50 } ));
+      engine.renderImage(new Point(new float[] { 100, 100 } ));
+      Line line = new Line(new Point(new float[] {200, 200}), new Point(new float[] {250, 250}));
+      engine.renderImage(line);
+      line = new Line(new Point(new float[] {200, 200}), new Point(new float[] {700, 500}));
+      engine.renderImage(line);
+      // Ask for img files to open and display until user clicks cancel.
+      boolean askForFiles = false;
+      if (askForFiles) {
+         try {
+            JFileChooser fileChooser = new JFileChooser();
+            File file = pickFile(fileChooser);
+            if (file != null) {
+               engine.renderImage(ImageIO.read(file));
+               engine.repaint();
+               while (file != null) {
+                  file = pickFile(fileChooser);
+                  if (file != null) {
+                     engine.renderImage(ImageIO.read(file));
+                     engine.repaint();
+                  }
+               }
+            }
+         }
+         catch (Exception e) {
+            System.out.println(e);
+         }
+      }
    }
+   
+     public static File pickFile(JFileChooser fileChooser)
+  {
+    File file = new File("images/PlaceImagesHere.txt");
+    JFrame frame = new JFrame();
+    // get the return value from choosing a file
+    fileChooser.setCurrentDirectory(file);
+    int returnVal = fileChooser.showOpenDialog(frame);
+    
+    // if the return value says the user picked a file 
+    if (returnVal == JFileChooser.APPROVE_OPTION)
+      file = fileChooser.getSelectedFile();
+    else
+      file = null;
+    return file;
+  }
 }

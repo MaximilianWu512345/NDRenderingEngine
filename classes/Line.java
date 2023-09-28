@@ -11,9 +11,9 @@ public class Line {
    
    public Line(Point a, Point b) {
       position = a;
-      float[] temp = a.getCoords();
+      float[] temp = new float[a.getCoords().length];
       for(int i = 0; i < temp.length; i++){
-         temp[i] -= b.getCoords()[i];
+         temp[i] = a.getCoords()[i] - b.getCoords()[i];
       }
       direction = new Vector(temp);
    }
