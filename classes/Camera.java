@@ -102,6 +102,6 @@ public class Camera{
             }
          }
       }
-      return null;
+      return result;
    }
 }

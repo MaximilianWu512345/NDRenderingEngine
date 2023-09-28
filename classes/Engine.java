@@ -64,6 +64,10 @@ public class Engine extends JFrame {
       p[2] = new Point(new float[]{20,30,20});
       p[3] = new Point(new float[]{20,20,30});
       Simplex s = new Simplex(p);
+      Point camPos = new Point(new float[3]);
+      float[] temp = {1,0,0};
+      Camera c = new Camera()
+      engine.renderImage()
       // Ask for img files to open and display until user clicks cancel.
       boolean askForFiles = false;
       if (askForFiles) {
