@@ -1,12 +1,32 @@
+/**
+* a matrix from linear algebra
+*/
 public class Matrix{
+   /**
+   *elements of the matrix
+   */
    private float[][] data;
+   /**
+   *width of the matrix
+   */
    private int width;
+   /**
+   *height of the matrix
+   */
    private int height;
+   /**
+   * generates a matrix with elements of d
+   * @param d must be a rectangular 2d array
+   */
    public Matrix(float[][] d){
       data = d;
       height = d.length;
       width = d[0].length;
    }
+   /**
+   * generates a matrix out of vectors
+   * @param d must contain vectors of the same length
+   */
    public Matrix(Vector[] d){
       data = new float[d.length][d.length];
       for(int i = 0; i<d.length; i++){
@@ -15,9 +35,18 @@ public class Matrix{
       height = d.length;
       width = d[0].length();
    }
+   /**
+   * returns data within matrix
+   * @return rectangular float[][]
+   */
    public float[][] getData(){
       return data;
    }
+   /**
+   * Multiplys this matrix with m
+   * @param m must be multipliable with this matrix
+   * @return a Matrix or null when multiplication fails
+   */
    public Matrix mult(Matrix m){
       int nWidth = m.width;
       int nHeight = height;
@@ -35,6 +64,10 @@ public class Matrix{
       }
       return null;
    }
+   /**
+   * genrates a array of vectors with a vector for each row of the matrix
+   * @return a vector[]
+   */
    public Vector[] toVectors(){
       Vector[] result = new Vector[height];
       for(int i = 0; i<height; i++){
@@ -44,7 +77,7 @@ public class Matrix{
    }
    /**
    * generates the augmented matrix
-   * @param Vector v must have the same length as the height of the matrix
+   * @param v must have the same length as the height of the matrix
    * @return a Matrix
    */
    public Matrix AugmentedMatrix(Vector v){
@@ -88,12 +121,6 @@ public class Matrix{
       //fix
       return new Matrix(d);
    }
-   
-   public void rotateMatrix(int dimension) {
-   
-   }
-   
-   
    public String toString(){
       String result = "";
       for(int i = 0; i<data.length; i++){
