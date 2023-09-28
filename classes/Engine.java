@@ -36,7 +36,7 @@ public class Engine extends JFrame {
       add(panel = new EnginePanel(width, height));
    }
    
-   // Convenience method to render, currently takes Color[][] and BufferedImage.
+   // Convenience method to render, currently takes Color[][], BufferedImage, Point, Vector, and Line.
    public void renderImage(Object object) {
       panel.renderImage(object);
    }
@@ -52,24 +52,33 @@ public class Engine extends JFrame {
    public static void main(String[] args) {
       // Create the engine, start the program.
       Engine engine = new Engine(1000, 1000);
+      engine.renderImage(new Point(new float[] { 50, 50 } ));
+      engine.renderImage(new Point(new float[] { 100, 100 } ));
+      Line line = new Line(new Point(new float[] {200, 200}), new Point(new float[] {250, 250}));
+      engine.renderImage(line);
+      line = new Line(new Point(new float[] {200, 200}), new Point(new float[] {700, 500}));
+      engine.renderImage(line);
       // Ask for img files to open and display until user clicks cancel.
-      try {
-         JFileChooser fileChooser = new JFileChooser();
-         File file = pickFile(fileChooser);
-         if (file != null) {
-            engine.renderImage(ImageIO.read(file));
-            engine.repaint();
-            while (file != null) {
-               file = pickFile(fileChooser);
-               if (file != null) {
-                  engine.renderImage(ImageIO.read(file));
-                  engine.repaint();
+      boolean askForFiles = false;
+      if (askForFiles) {
+         try {
+            JFileChooser fileChooser = new JFileChooser();
+            File file = pickFile(fileChooser);
+            if (file != null) {
+               engine.renderImage(ImageIO.read(file));
+               engine.repaint();
+               while (file != null) {
+                  file = pickFile(fileChooser);
+                  if (file != null) {
+                     engine.renderImage(ImageIO.read(file));
+                     engine.repaint();
+                  }
                }
             }
          }
-      }
-      catch (Exception e) {
-         System.out.println(e);
+         catch (Exception e) {
+            System.out.println(e);
+         }
       }
    }
    

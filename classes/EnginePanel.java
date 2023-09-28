@@ -66,6 +66,10 @@ public class EnginePanel extends JPanel {
          ((RenderHelper)dictComponents.get(PanelType.RENDER)).setImage((BufferedImage)object);
       else if (object instanceof Color[][])
          ((RenderHelper)dictComponents.get(PanelType.RENDER)).setColors((Color[][])object);
+      else if (object instanceof Point)
+         ((RenderHelper)dictComponents.get(PanelType.RENDER)).setPoint((Point)object);
+      else if (object instanceof Line)
+         ((RenderHelper)dictComponents.get(PanelType.RENDER)).setLine((Line)object);
    }
    
    public void renderTriangle(Color c) {
@@ -89,6 +93,8 @@ public class EnginePanel extends JPanel {
    protected class RenderHelper extends Component {
    
       private BufferedImage renderedImage;
+      
+      public static final int RESOLUTION = 5;
       
       /** Used for ImageObserver class, calls:
       * imageUpdate(Image img, int infoflags, int x, int y, int width, int height), 
@@ -141,6 +147,44 @@ public class EnginePanel extends JPanel {
             for (int x = 0; x < image.getHeight(); x++) {
                renderedImage.setRGB(i, x, image.getRGB(i, x));
             }
+         }
+      }
+      
+      public void setPoint(Point point) {
+         if (point == null || point.length() <= 0)
+            return;
+         int x = (int)point.getCoordinates()[0];
+         int y = point.length() > 1 ? (int)point.getCoordinates()[1] : 0;
+         int z = point.length() > 2 ? (int)point.getCoordinates()[2] : RESOLUTION;
+         for (int a = x - z; a >= 0 && a <= x + z && a < renderedImage.getWidth(); a++) {
+            for (int b = y - z; b >= 0 && b <= y + z && b < renderedImage.getHeight(); b++) {
+               renderedImage.setRGB(a, b, Color.black.getRGB());
+            }
+         }
+      }
+      
+      public void setLine(Line line) {
+         if (line == null)
+            return;
+         if (line.getPosition() == null || line.getDirection() == null)
+            return;
+         float[] vectorCoords = line.getDirection().getCoordinates();
+         float[] positionCoords = line.getPosition().getCoordinates();
+         if (vectorCoords == null || vectorCoords.length < 2 || positionCoords == null || positionCoords.length < 2)
+            return;
+         setPoint(line.getPosition());
+         int offsetX = Math.round(positionCoords[0]);
+         int offsetY = Math.round(positionCoords[1]);
+         float max = vectorCoords[0] > vectorCoords[1] ? vectorCoords[0] : vectorCoords[1];
+         float x = vectorCoords[0] / max;
+         float y = vectorCoords[1] / max;
+         float addX = x;
+         float addY = y;
+         while (Math.abs(x) < Math.abs(vectorCoords[0]) && Math.abs(y) < Math.abs(vectorCoords[1])) {
+            x += addX;
+            y += addY;
+            renderedImage.setRGB(offsetX + (int)Math.floor((double)x), offsetY + (int)Math.floor((double)y), Color.black.getRGB());
+            renderedImage.setRGB(offsetX + (int)Math.ceil((double)x), offsetY + (int)Math.ceil((double)y), Color.black.getRGB());
          }
       }
       
