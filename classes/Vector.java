@@ -179,4 +179,11 @@ public class Vector {
       ans += "]";
       return ans;
    }
+   public float mag(){
+      float sum = 0;
+      for(int i = 0; i<coordinates.length; i++){
+         sum += coordinates[i]*coordinates[i];
+      }
+      return (float)Math.sqrt(sum);
+   }
 }
