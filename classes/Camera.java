@@ -3,15 +3,15 @@ import java.util.ArrayList;
 public class Camera{
    public Point position;
    public Vector direction;
-   public float width;
-   public float height;
+   public int width;
+   public int height;
    public Color background;
    
-   public Camera (Point position, Vector V, float width, float Height){
+   public Camera (Point position, Vector V, int width, int Height){
       setData(position, V, width, Height);
       background = Color.BLACK;
    }
-   public void setData(Point position, Vector V, float width, float height){
+   public void setData(Point position, Vector V, int width, int height){
       this.position = position;
       this.direction = V;
       this.width = width;
@@ -81,11 +81,25 @@ public class Camera{
          currentD--;
       }
       //generate pixel grid
-      Color[][] result = new Color[1][1];
+      Color[][] result = new Color[width][height];
       //set all pixels to backgorund color
       for(int i = 0; i<result.length; i++){
          for(int j = 0; j<result[i].length; j++){
-         
+            result[i][j] = background;
+         }
+      }
+      for(Simplex s: simplexes){
+         //change to be faster later
+         for(int i = 0; i<result.length; i++){
+            for(int j = 0; j<result[i].length; j++){
+               float[] d = new float[2];
+               d[0] = i;
+               d[1] = j;
+               Point p = new Point(d);
+               if(s.isWithin(p)){
+                  result[i][j] = s.getColor();
+               }
+            }
          }
       }
       return null;
