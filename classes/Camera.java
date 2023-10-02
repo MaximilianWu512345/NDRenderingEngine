@@ -54,27 +54,15 @@ public class Camera{
             //shift points to lower dimention
             Point[] temp = new Point[newPoints.length];
             for(int j = 0; j<newPoints.length; j++){
-               float[] d = new float[currentD-1];
-               for(int k = 0; k<d.length; k++){
+               float[] d = new float[currentD];
+               for(int k = 0; k<d.length-1; k++){
                   d[k] = newPoints[j].getCoords()[k];
                }
+               d[d.length-1] = dir[0];
                temp[j] = new Point(d);
             }
             newPoints = temp;
-            
-            //loops through all points to exclude
-            for(int k = 0; k<newPoints.length; k++){
-               Point[] newSimplexPoints = new Point[newPoints.length-1];
-               int index = 0;
-               //adds points
-               for(int j = 0; j<newPoints.length; j++){
-                  if(j != k){
-                     newSimplexPoints[j] = newPoints[index];
-                  }
-                  index++;
-               }  
-               pojectedSimplexes.add(new Simplex(newSimplexPoints)); 
-            }
+            pojectedSimplexes.add(new Simplex(newPoints)); 
             
          }
          simplexes = pojectedSimplexes;
@@ -92,9 +80,12 @@ public class Camera{
          //change to be faster later
          for(int i = 0; i<result.length; i++){
             for(int j = 0; j<result[i].length; j++){
-               float[] d = new float[2];
+               float[] d = new float[dimention];
                d[0] = i;
                d[1] = j;
+               for(int k = 2; k<dimention; k++){
+                  d[k] = 1;
+               }
                Point p = new Point(d);
                if(s.isWithin(p)){
                   result[i][j] = s.getColor();

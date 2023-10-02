@@ -43,8 +43,9 @@ public class Simplex{
       for(int i = 0; i<p.length(); i++){
          argVal[i] = p.getCoords()[i];
       }
-      argVal[argVal.length] = 1;
+      argVal[argVal.length-1] = 1;
       Matrix aug = M.AugmentedMatrix(new Vector(argVal));
+      System.out.println(aug.toString());
       Matrix rref = aug.getRREF();
       Vector[] d = rref.toVectors();
       int[] var = new int[0];

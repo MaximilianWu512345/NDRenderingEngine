@@ -131,6 +131,13 @@ public class Vector {
       var[0] = (d.length-1);
       float[] value = new float[1];
       value[0] = 1; 
+      //find missing variable
+      for(int i = 0; i<d.length; i++){
+         if(d[i].getCoords()[i] == 0){
+            var[0] = i;
+            break;
+         }
+      }
       for(int i = d.length-2; i>=0; i--){
          LinearEquation le = new LinearEquation(d[i].getCoords());
          /*
@@ -156,7 +163,7 @@ public class Vector {
          temp2[temp2.length-1] = leRes[0];
          value = temp2;
       }
-      result[result.length-1] = 1;
+      result[var[0]] = value[0];
       return new Vector(result);
    }
    /**
