@@ -49,6 +49,6 @@ public class Line {
    }
    
    public String toString() {
-      return "Line (Position, Vector): {\n\t" + position + "\n\t" + direction + "\n}";
+      return "Line (Point position, Vector direction): {\n\t" + position + "\n\t" + direction + "\n}";
    }
 }

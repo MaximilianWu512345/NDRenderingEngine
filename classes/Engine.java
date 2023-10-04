@@ -52,9 +52,8 @@ public class Engine extends JFrame {
    public static void main(String[] args) {
       // Create the engine, start the program.
       Engine engine = new Engine(1000, 1000);
-      Point[] p = new Point[2];
-      p[0] = new Point(new float[]{100,100,10});
-      p[1] = new Point(new float[]{100,200,10});
+      Point[] p = new Point[1];
+      p[0] = new Point(new float[]{100,100});
       Simplex s = new Simplex(p);
       engine.renderImage(s);
       // Ask for img files to open and display until user clicks cancel.
@@ -81,19 +80,19 @@ public class Engine extends JFrame {
       }
    }
    
-     public static File pickFile(JFileChooser fileChooser)
-  {
-    File file = new File("images/PlaceImagesHere.txt");
-    JFrame frame = new JFrame();
+   public static File pickFile(JFileChooser fileChooser)
+   {
+      File file = new File("images/PlaceImagesHere.txt");
+      JFrame frame = new JFrame();
     // get the return value from choosing a file
-    fileChooser.setCurrentDirectory(file);
-    int returnVal = fileChooser.showOpenDialog(frame);
+      fileChooser.setCurrentDirectory(file);
+      int returnVal = fileChooser.showOpenDialog(frame);
     
     // if the return value says the user picked a file 
-    if (returnVal == JFileChooser.APPROVE_OPTION)
-      file = fileChooser.getSelectedFile();
-    else
-      file = null;
-    return file;
-  }
+      if (returnVal == JFileChooser.APPROVE_OPTION)
+         file = fileChooser.getSelectedFile();
+      else
+         file = null;
+      return file;
+   }
 }

@@ -49,13 +49,13 @@ public class Point {
    }
    
    public String toString() {
-      String toString = "Point (Length, float[]): ( " + (coordinates == null ? "" + 0 : coordinates.length) + ", float[]: { ";
+      String temp = "Point (int length, float[] coordinates): ( " + (coordinates == null ? "" + 0 : coordinates.length) + ", float[]: { ";
       if (coordinates != null && coordinates.length > 0) {
          for (int i = 0; i < coordinates.length - 1; i++) {
-            toString += coordinates[i] + ", ";
+            temp += coordinates[i] + ", ";
          }
-         toString += coordinates[coordinates.length - 1];
+         temp += coordinates[coordinates.length - 1];
       }
-      return toString + " } )";
+      return temp + " } )";
    }
 }

@@ -33,9 +33,11 @@ public class Simplex{
       //for()
       return false;
    }
+   
    public Color getColor(){
       return color;
    }
+   
    public void setColor(Color c){
       color = c;
    }
@@ -48,5 +50,17 @@ public class Simplex{
    public void rotate(int degrees) {
       for (Point p : points)
          p.rotate(degrees);
+   }
+   
+   public String toString() {
+      String temp = "Simplex (Point[] points, Plane surface, Color color): {\n\t{";
+      if (points != null && points.length > 0) {
+         for (int i = 0; i < points.length - 1; i++) {
+            temp += points[i] + ", ";
+         }
+         temp += points[points.length - 1];
+      }
+      temp += "}\n\t" + surface + "\n\t" + color + "\n}";
+      return temp;
    }
 }
