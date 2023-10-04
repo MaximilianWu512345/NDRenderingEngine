@@ -70,6 +70,8 @@ public class EnginePanel extends JPanel {
          ((RenderHelper)dictComponents.get(PanelType.RENDER)).setPoint((Point)object);
       else if (object instanceof Line)
          ((RenderHelper)dictComponents.get(PanelType.RENDER)).setLine((Line)object);
+      else if (object instanceof Simplex)
+         ((RenderHelper)dictComponents.get(PanelType.RENDER)).setSimplex((Simplex)object);
    }
    
    public void renderTriangle(Color c) {
@@ -155,7 +157,7 @@ public class EnginePanel extends JPanel {
             return;
          int x = (int)point.getCoordinates()[0];
          int y = point.length() > 1 ? (int)point.getCoordinates()[1] : 0;
-         int z = point.length() > 2 ? (int)point.getCoordinates()[2] : RESOLUTION;
+         int z = RESOLUTION;
          for (int a = x - z; a >= 0 && a <= x + z && a < renderedImage.getWidth(); a++) {
             for (int b = y - z; b >= 0 && b <= y + z && b < renderedImage.getHeight(); b++) {
                renderedImage.setRGB(a, b, Color.black.getRGB());
@@ -172,19 +174,35 @@ public class EnginePanel extends JPanel {
          float[] positionCoords = line.getPosition().getCoordinates();
          if (vectorCoords == null || vectorCoords.length < 2 || positionCoords == null || positionCoords.length < 2)
             return;
+         System.out.println(line.toString());
          setPoint(line.getPosition());
          int offsetX = Math.round(positionCoords[0]);
          int offsetY = Math.round(positionCoords[1]);
-         float max = vectorCoords[0] > vectorCoords[1] ? vectorCoords[0] : vectorCoords[1];
+         float max = Math.abs(vectorCoords[0]) > Math.abs(vectorCoords[1]) ? Math.abs(vectorCoords[0]) : Math.abs(vectorCoords[1]);
          float x = vectorCoords[0] / max;
          float y = vectorCoords[1] / max;
          float addX = x;
          float addY = y;
-         while (Math.abs(x) < Math.abs(vectorCoords[0]) && Math.abs(y) < Math.abs(vectorCoords[1])) {
+         while (Math.abs(x) < Math.abs(vectorCoords[0]) || Math.abs(y) < Math.abs(vectorCoords[1])) {
             x += addX;
             y += addY;
             renderedImage.setRGB(offsetX + (int)Math.floor((double)x), offsetY + (int)Math.floor((double)y), Color.black.getRGB());
             renderedImage.setRGB(offsetX + (int)Math.ceil((double)x), offsetY + (int)Math.ceil((double)y), Color.black.getRGB());
+         }
+      }
+      
+      public void setSimplex(Simplex simplex) {
+         if (simplex == null)
+            return;
+         Point[] points = simplex.getPoints();
+         if (points == null)
+            return;
+         for (int i = 0; i < points.length; i++) {
+            setPoint(points[i]);
+            if (i != points.length - 1)
+               setLine(new Line(points[i], points[i + 1]));
+            else if (i != 0)
+               setLine(new Line(points[i], points[0]));
          }
       }
       

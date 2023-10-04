@@ -13,7 +13,7 @@ public class Line {
       position = a;
       float[] temp = new float[a.getCoords().length];
       for(int i = 0; i < temp.length; i++){
-         temp[i] = a.getCoords()[i] - b.getCoords()[i];
+         temp[i] = b.getCoords()[i] - a.getCoords()[i];
       }
       direction = new Vector(temp);
    }
@@ -46,5 +46,9 @@ public class Line {
          nP[i] = position.getCoords()[i]+t*direction.getCoords()[i];
       }
       return new Point(nP);
+   }
+   
+   public String toString() {
+      return "Line (Position, Vector): {\n\t" + position + "\n\t" + direction + "\n}";
    }
 }

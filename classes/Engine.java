@@ -52,18 +52,11 @@ public class Engine extends JFrame {
    public static void main(String[] args) {
       // Create the engine, start the program.
       Engine engine = new Engine(1000, 1000);
-      engine.renderImage(new Point(new float[] { 50, 50 } ));
-      engine.renderImage(new Point(new float[] { 100, 100 } ));
-      Line line = new Line(new Point(new float[] {200, 200}), new Point(new float[] {250, 250}));
-      engine.renderImage(line);
-      line = new Line(new Point(new float[] {200, 200}), new Point(new float[] {700, 500}));
-      engine.renderImage(line);
-      Point[] p = new Point[4];
-      p[0] = new Point(new float[]{20,20,20});
-      p[1] = new Point(new float[]{30,20,20});
-      p[2] = new Point(new float[]{20,30,20});
-      p[3] = new Point(new float[]{20,20,30});
+      Point[] p = new Point[2];
+      p[0] = new Point(new float[]{100,100,10});
+      p[1] = new Point(new float[]{100,200,10});
       Simplex s = new Simplex(p);
+      engine.renderImage(s);
       // Ask for img files to open and display until user clicks cancel.
       boolean askForFiles = false;
       if (askForFiles) {

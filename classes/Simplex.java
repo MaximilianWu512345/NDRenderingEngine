@@ -39,4 +39,14 @@ public class Simplex{
    public void setColor(Color c){
       color = c;
    }
+   
+   public void translate(float[] coords) {
+      for (Point p : points)
+         p.translate(coords);
+   }
+   
+   public void rotate(int degrees) {
+      for (Point p : points)
+         p.rotate(degrees);
+   }
 }
