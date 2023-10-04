@@ -114,8 +114,10 @@ public class Matrix{
          }
          //Elimination
          for(int j = i+1; j<d.length; j++){
-            float r = d[j].getCoords()[i]/d[i].getCoords()[i];
-            d[j] = d[j].subtract(d[i].scale(r));
+            if(d[i].getCoords()[i] != 0){
+               float r = d[j].getCoords()[i]/d[i].getCoords()[i];
+               d[j] = d[j].subtract(d[i].scale(r));
+            }
          }
       }
       //fix

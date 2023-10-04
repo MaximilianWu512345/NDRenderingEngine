@@ -30,4 +30,12 @@ public class Point {
       }
       return (float)Math.sqrt((double)sum);
    }
+   public String toString(){
+      String result = "(" + coordinates[0];
+      for(int i = 1; i<coordinates.length; i++){
+         result += ", " + coordinates[i];
+      }
+      return result;
+      
+   }
 }
