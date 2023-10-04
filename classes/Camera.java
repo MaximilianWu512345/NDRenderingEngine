@@ -3,15 +3,15 @@ import java.util.ArrayList;
 public class Camera{
    public Point position;
    public Vector direction;
-   public float width;
-   public float height;
+   public int width;
+   public int height;
    public Color background;
    
-   public Camera (Point position, Vector V, float width, float Height){
+   public Camera (Point position, Vector V, int width, int Height){
       setData(position, V, width, Height);
       background = Color.BLACK;
    }
-   public void setData(Point position, Vector V, float width, float height){
+   public void setData(Point position, Vector V, int width, int height){
       this.position = position;
       this.direction = V;
       this.width = width;
@@ -54,40 +54,47 @@ public class Camera{
             //shift points to lower dimention
             Point[] temp = new Point[newPoints.length];
             for(int j = 0; j<newPoints.length; j++){
-               float[] d = new float[currentD-1];
-               for(int k = 0; k<d.length; k++){
+               float[] d = new float[currentD];
+               for(int k = 0; k<d.length-1; k++){
                   d[k] = newPoints[j].getCoords()[k];
                }
+               d[d.length-1] = dir[0];
                temp[j] = new Point(d);
             }
             newPoints = temp;
-            
-            //loops through all points to exclude
-            for(int k = 0; k<newPoints.length; k++){
-               Point[] newSimplexPoints = new Point[newPoints.length-1];
-               int index = 0;
-               //adds points
-               for(int j = 0; j<newPoints.length; j++){
-                  if(j != k){
-                     newSimplexPoints[j] = newPoints[index];
-                  }
-                  index++;
-               }  
-               pojectedSimplexes.add(new Simplex(newSimplexPoints)); 
-            }
+            pojectedSimplexes.add(new Simplex(newPoints)); 
             
          }
          simplexes = pojectedSimplexes;
          currentD--;
       }
       //generate pixel grid
-      Color[][] result = new Color[1][1];
+      Color[][] result = new Color[width][height];
       //set all pixels to backgorund color
       for(int i = 0; i<result.length; i++){
          for(int j = 0; j<result[i].length; j++){
-         
+            result[i][j] = background;
          }
       }
-      return null;
+      for(Simplex s: simplexes){
+         //change to be faster later
+         //add negitives later
+         for(int i = 0; i<result.length; i++){
+            for(int j = 0; j<result[i].length; j++){
+               float[] d = new float[dimention];
+               d[0] = i;
+               d[1] = j;
+               for(int k = 2; k<dimention; k++){
+                  d[k] = 1;
+               }
+               Point p = new Point(d);
+               if(s.isWithin(p)){
+                  result[i][j] = s.getColor();
+                  System.out.println(p);
+               }
+            }
+         }
+      }
+      return result;
    }
 }
