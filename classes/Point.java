@@ -22,16 +22,24 @@ public class Point {
       return getCoordinates();
    }
    
-   // around the origin
+   // around the origin if point == null
    // 2d rotation algorithim: https://academo.org/demos/rotation-about-point/#:~:text=If%20you%20wanted%20to%20rotate%20that%20point%20around,sin%20%CE%B8%20sin%20%CE%B8%20cos%20%CE%B8%29%20%28x%20y%29
    // 3d rotation algorithm: https://stackoverflow.com/questions/8602408/3d-rotation-around-the-origin
-   public void rotate(int degrees) {
+   public void rotate(int degrees, java.awt.Point point) {
       // 2d rotation
-      float x = coordinates[0] - Engine.WIDTH / 2;
-      float y = coordinates.length > 1 ? coordinates[1] - Engine.HEIGHT / 2 : 0;
+      float x;
+      float y;
+      if (point == null) {
+         x = coordinates[0] - Engine.WIDTH / 2;
+         y = coordinates.length > 1 ? coordinates[1] - Engine.HEIGHT / 2 : 0;
+      }
+      else {
+         x = coordinates[0] - (float)point.getX();
+         y = coordinates.length > 1 ? coordinates[1] - (float)point.getY() : 0;
+      }
       coordinates[0] = x * (float)Math.cos(degrees) - y * (float)Math.sin(degrees);
       if (coordinates.length > 1)
-         coordinates[1] = y * (float)Math.cos(degrees) + x * (float)Math.sin(degrees);
+            coordinates[1] = y * (float)Math.cos(degrees) + x * (float)Math.sin(degrees);
    }
    
    public void translate(float[] coords) {

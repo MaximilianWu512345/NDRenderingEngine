@@ -49,7 +49,8 @@ public class Simplex{
    
    public void rotate(int degrees) {
       for (Point p : points)
-         p.rotate(degrees);
+         // alternatively, new java.awt.Point(x, y)
+         p.rotate(degrees, null);
    }
    
    public String toString() {

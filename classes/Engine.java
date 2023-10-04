@@ -52,10 +52,6 @@ public class Engine extends JFrame {
    public static void main(String[] args) {
       // Create the engine, start the program.
       Engine engine = new Engine(1000, 1000);
-      Point[] p = new Point[1];
-      p[0] = new Point(new float[]{100,100});
-      Simplex s = new Simplex(p);
-      engine.renderImage(s);
       // Ask for img files to open and display until user clicks cancel.
       boolean askForFiles = false;
       if (askForFiles) {
