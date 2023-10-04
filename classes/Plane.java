@@ -36,4 +36,8 @@ public class Plane{
       t = num/dem;
       return l.getPointOn(t);
    }
+   
+   public String toString() {
+      return "Plane (Point p, Vector norm): {\n\t" + p + "\n\t" + norm + "\n}";
+   }
 }
