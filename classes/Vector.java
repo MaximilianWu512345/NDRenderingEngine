@@ -24,6 +24,17 @@ public class Vector {
       }
    }
    /**
+   *makes a Vector out of a pair of points
+   *@param p1 is the initial point, must be the same length as p2
+   *@param p2 is the terminal point, must be the same length as p1 
+   */
+   public Vector(Point p1, Point p2){
+      coordinates = new float[p1.length()];
+      for(int i = 0; i<p1.length(); i++){
+         coordinates[i] = p2.getCoords()[i]-p1.getCoords()[i];
+      }
+   }
+   /**
    *returns the dimention of the vector
    *@return dimention of the vector
    */

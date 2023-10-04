@@ -78,6 +78,7 @@ public class Camera{
       }
       for(Simplex s: simplexes){
          //change to be faster later
+         //add negitives later
          for(int i = 0; i<result.length; i++){
             for(int j = 0; j<result[i].length; j++){
                float[] d = new float[dimention];
@@ -89,6 +90,7 @@ public class Camera{
                Point p = new Point(d);
                if(s.isWithin(p)){
                   result[i][j] = s.getColor();
+                  System.out.println(p);
                }
             }
          }

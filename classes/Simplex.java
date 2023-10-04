@@ -29,23 +29,33 @@ public class Simplex{
       by ellisbben
    */
    public boolean isWithin(Point p){
-      Vector[] v = new Vector[points.length+1];
-      for(int i = 0; i<points.length; i++){
-         v[i] = new Vector(points[i].getCoords());
+      //shift points
+      Point[] ps = new Point[points.length];
+      for(int i = 0; i<ps.length; i++){
+         float[] shiftedPointData = new float[p.length()];
+         for(int j = 0; j<shiftedPointData.length; j++){
+            shiftedPointData[j] = points[i].getCoords()[j]-p.getCoords()[j];
+         }
+         ps[i] = new Point(shiftedPointData);
+      }
+      //set up vectors
+      Vector[] v = new Vector[points.length];
+      for(int i = 1; i<points.length; i++){
+         v[i-1] = new Vector(points[i], points[0]);
       }
       float[] t = new float[v.length];
       for(int i = 0; i<t.length; i++){
          t[i] = 1;
       }
+      //equation solver
       v[v.length-1] = new Vector(t); 
       Matrix M = new Matrix(v);
       float[] argVal = new float[v.length];
       for(int i = 0; i<p.length(); i++){
-         argVal[i] = p.getCoords()[i];
+         argVal[i] = 0;
       }
       argVal[argVal.length-1] = 1;
       Matrix aug = M.AugmentedMatrix(new Vector(argVal));
-      System.out.println(aug.toString());
       Matrix rref = aug.getRREF();
       Vector[] d = rref.toVectors();
       int[] var = new int[0];
