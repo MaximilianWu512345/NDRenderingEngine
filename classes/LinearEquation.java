@@ -59,6 +59,10 @@ public class LinearEquation{
       result[1] = term;
       return result;
    }
+   
+   /** Generic toString() method.
+   * @return String describing this Object.
+   */
    public String toString(){
       String s = "";
       for(int i = 0; i<numVar; i++){

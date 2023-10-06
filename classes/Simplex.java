@@ -1,12 +1,20 @@
 import java.awt.Color;
+/** Simplex class */
 public class Simplex{
+/** Points in this Simplex */
    private Point[] points;
+/** Plane in this Simplex */
    private Plane surface;
+/** Color of this Simplex */
    private Color color;
+/** Creates a new Point with coordinates of coords.
+* @param p The coordinates of the Point.
+*/
    public Simplex(Point[] vertex){
       setPoints(vertex);
       color = Color.RED;
    }
+/** Plane class */
    public void setPoints(Point[] vertex){
       points = vertex;
       Vector[] temp = new Vector[vertex.length-1];
@@ -107,15 +115,34 @@ public class Simplex{
          p.rotate(degrees, null);
    }
    
+/** Generic toString() method.
+* @return String describing this Object.
+*/
    public String toString() {
-      String temp = "Simplex (Point[] points, Plane surface, Color color): {\n\t{";
+      return toString(0);
+   }
+   
+/** Generic toString() method.
+* @param extraTabs the amount of extra tabbing after each \n in the String.
+* @return String describing this Object.
+*/
+   public String toString(int extraTabs) {
+      String tabs = "\t";
+      String lastTab = "";
+      int count = extraTabs;
+      while (extraTabs > 0) {
+         extraTabs--;
+         tabs += "\t";
+         lastTab += "\t";
+      }
+      String temp = lastTab + "Simplex (Point[] points, Plane surface, Color color): [\n" + tabs +"{";
       if (points != null && points.length > 0) {
          for (int i = 0; i < points.length - 1; i++) {
-            temp += points[i] + ", ";
+            temp += "\n\t" + tabs + points[i] + ", ";
          }
-         temp += points[points.length - 1];
+         temp += "\n\t" + tabs + points[points.length - 1];
       }
-      temp += "}\n\t" + surface + "\n\t" + color + "\n}";
+      temp += "\n" + tabs + "}\n" + surface.toString(1 + count) + "\n" + tabs + color + "\n" + lastTab + "]";
       return temp;
    }
 }

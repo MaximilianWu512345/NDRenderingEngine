@@ -26,7 +26,7 @@ public class Button extends JComponent {
    protected byte switches;
    
 /** Helper byte to determine whether mouse has entered or not */
-   protected byte ENTERED = 1;
+   protected static byte ENTERED = 1;
    
 /**
 * Creates a new Button at location (x, y) with size (w, h), with a color of c and with a text of t.
@@ -111,6 +111,14 @@ public class Button extends JComponent {
 */
    protected Color getGreyScale(int red, int green, int blue) {
       return new Color(red / 2, green / 2, blue / 2);
+   }
+   
+/** Generic toString() method.
+* @return String describing this Object.
+*/
+   public String toString() {
+      String temp = "Button (int x, int y, int width, int height, Color backgroundColor, String text, Listener listener, byte switches) : [\n\t" + x + "\n\t" + y + "\n\t" + width + "\n\t" + height + "\n\t" + backgroundColor + "\n\t" + text + "\n\t" + listener + "\n\t" + switches + "\n]";
+      return temp;
    }
    
 /** Custom MouseInputListener class for button */

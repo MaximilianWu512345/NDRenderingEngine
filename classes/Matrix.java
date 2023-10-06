@@ -123,15 +123,20 @@ public class Matrix{
       //fix
       return new Matrix(d);
    }
+   
+/** Generic toString() method.
+* @return String describing this Object.
+*/
    public String toString(){
-      String result = "";
+      String result = "Matrix (int width, int height, float[][] data): [\n\t" + width + "\n\t" + height + "\n\t{\n";
       for(int i = 0; i<data.length; i++){
+         result += "\t\t";
          for(int j = 0; j<data[i].length; j++){
             result += data[i][j] + " ";
          }
          result += "\n";
       }
-      return result + "\n";
+      return result + "\t}\n]";
    }
    
 }

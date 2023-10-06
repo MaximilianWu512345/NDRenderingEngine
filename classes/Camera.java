@@ -1,22 +1,50 @@
 import java.awt.Color;
 import java.util.ArrayList;
+/** Camera class */
 public class Camera{
+/** Position of this Camera */
    public Point position;
+/** Direction of this Camera */
    public Vector direction;
+/** Width of this Camera */
    public int width;
+/** Height of this Camera */
    public int height;
+/** Background color of this Camera */
    public Color background;
    
-   public Camera (Point position, Vector V, int width, int Height){
-      setData(position, V, width, Height);
+/**
+* Creates a new Camera.
+* @param position the position of the camera.
+* @param v the direction of the camera.
+* @param w the width of the camera.
+* @param h the height of the camera.
+*/
+   public Camera (Point position, Vector v, int w, int h){
+      setData(position, v, w, h);
       background = Color.BLACK;
    }
+   
+/**
+* Sets camera data.
+* @param position the new position of the camera.
+* @param v the new direction of the camera.
+* @param w the new width of the camera.
+* @param h the new height of the camera.
+*/
    public void setData(Point position, Vector V, int width, int height){
       this.position = position;
       this.direction = V;
       this.width = width;
       this.height = height;
    }
+/**
+
+* Projects a Mesh and an int dimension to a Color[][].
+* @param o the mesh.
+* @param dimention the dimension.
+* @return a projected Color[][]
+*/
    public Color[][] Project(Mesh[] o, int dimention){
       //convert to lower dimention
       //loop through all meshes
@@ -79,6 +107,7 @@ public class Camera{
       for(Simplex s: simplexes){
          //change to be faster later
          //add negitives later
+         Engine.Instance.renderImage(s);
          for(int i = 0; i<result.length; i++){
             for(int j = 0; j<result[i].length; j++){
                float[] d = new float[dimention];
@@ -88,13 +117,21 @@ public class Camera{
                   d[k] = 1;
                }
                Point p = new Point(d);
+               
                if(s.isWithin(p)){
                   result[i][j] = s.getColor();
-                  System.out.println(p);
                }
             }
          }
       }
       return result;
+   }
+   
+/** Generic toString() method.
+* @return String describing this Object.
+*/
+   public String toString() {
+      String temp = "Camera (int width, int height, Color background, Point position, Vector direction): [\n\t" + width + "\n\t" + height + "\n\t" + background + "\n\t" + position + "\n\t" + direction + "\n]";
+      return temp;
    }
 }
