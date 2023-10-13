@@ -66,11 +66,12 @@ public class Camera{
       int currentD = dimention;
       //loop through until at right dimention
       //resolve Intersections
-      //compare every object
+      //compare every simplex
       //reorder Overlaps
-      //compare every object
+      //quick sort
+      simplexes = reOrderSimplexes(simplexes);
       while(currentD != 2){
-
+      
       //find new coords
       //find projection plane
          float[] dir = new float[currentD];
@@ -144,5 +145,30 @@ public class Camera{
    public String toString() {
       String temp = "Camera (int width, int height, Color background, Point position, Vector direction): [\n\t" + width + "\n\t" + height + "\n\t" + background + "\n\t" + position + "\n\t" + direction + "\n]";
       return temp;
+   }
+   public ArrayList<Simplex> reOrderSimplexes(ArrayList<Simplex> in){
+      ArrayList<Simplex> s = (ArrayList<Simplex>)in.clone();
+      int pivotIndex = s.size()-1;
+      int pivotFinalLoc = 0;
+      //pivot
+      for(int i = 0; i<s.size() && i != pivotIndex; i++){
+         float dist = s.get(pivotIndex).BoundingBoxDistance();
+         float distCheck = s.get(i).BoundingBoxDistance();
+         if(dist>distCheck){
+            Simplex temp = s.get(i);
+            s.set(i, s.get(pivotFinalLoc));
+            s.set(pivotFinalLoc, temp);
+            pivotFinalLoc++;
+         }
+      }
+      Simplex temp = s.get(pivotIndex);
+      s.set(pivotIndex, s.get(pivotFinalLoc));
+      s.set(pivotFinalLoc, temp);
+      //split
+      ArrayList<Simplex> result = new ArrayList<Simplex>();
+      result.add(reOrderSimplexes(s.));
+      result.add(s.get(pivotFinalLoc));
+      result.add();
+      return result;
    }
 }
