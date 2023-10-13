@@ -60,14 +60,14 @@ public class Engine extends JFrame {
       line = new Line(new Point(new float[] {200, 200}), new Point(new float[] {700, 500}));
       engine.renderImage(line);
       Point[] p = new Point[3];
-      p[0] = new Point(new float[]{2,2,2});
-      p[1] = new Point(new float[]{3,2,2});
-      p[2] = new Point(new float[]{2,3,2});
+      p[0] = new Point(new float[]{2,200,200});
+      p[1] = new Point(new float[]{3,0,200});
+      p[2] = new Point(new float[]{2,300,0});
       Simplex s = new Simplex(p);
       Point camPos = new Point(new float[3]);
       float[] temp = {1,0,0};
       Vector camDirection = new Vector(temp);
-      Camera c = new Camera(camPos, camDirection, 300, 300);
+      Camera c = new Camera(camPos, camDirection, 900, 900);
       Simplex[] faces = new Simplex[1];
       faces[0] = s;
       Mesh obj1 = new Mesh(faces,3);
