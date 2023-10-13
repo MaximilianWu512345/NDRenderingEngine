@@ -1,5 +1,6 @@
 import java.awt.Color;
 import java.util.ArrayList;
+import java.lang.*;
 /** Camera class */
 public class Camera{
 /** Position of this Camera */
@@ -12,6 +13,7 @@ public class Camera{
    public int height;
 /** Background color of this Camera */
    public Color background;
+
    
 /**
 * Creates a new Camera.
@@ -46,23 +48,29 @@ public class Camera{
 * @return a projected Color[][]
 */
    public Color[][] Project(Mesh[] o, int dimention){
+      long timeStart = System.nanoTime(); 
       //convert to lower dimention
       //loop through all meshes
       ArrayList<Simplex> simplexes = new ArrayList();
       for(int i = 0; i<o.length; i++){
          Mesh t = o[i];
          //loop through all simplexes
-         for(int j = 0; j<t.faces.length; j++){
+         if(t!=null){
+            for(int j = 0; j<t.faces.length; j++){
             //add to list of simplexes
-            simplexes.add(t.faces[j]);
+               simplexes.add(t.faces[j]);
+            }
          }
       }
       //apply transformations so camera is straight
       int currentD = dimention;
       //loop through until at right dimention
-      while(currentD != 2){
       //resolve Intersections
-      //resolve Overlaps
+      //compare every object
+      //reorder Overlaps
+      //compare every object
+      while(currentD != 2){
+
       //find new coords
       //find projection plane
          float[] dir = new float[currentD];
@@ -75,21 +83,12 @@ public class Camera{
          //loop through all vertexes
             Point[] newPoints = new Point[Current.getPoints().length];
             for(int j = 0; j<newPoints.length; j++){
-               Line projLine = new Line(Screen.getPosition(), Current.getPoints()[j]);
+               float[] origin = new float[currentD];
+               Line projLine = new Line(new Point(origin), Current.getPoints()[j]);
                Point newPoint = Screen.intersect(projLine);
                newPoints[j] = Screen.intersect(projLine);
             }
             //shift points to lower dimention
-            Point[] temp = new Point[newPoints.length];
-            for(int j = 0; j<newPoints.length; j++){
-               float[] d = new float[currentD];
-               for(int k = 0; k<d.length-1; k++){
-                  d[k] = newPoints[j].getCoords()[k];
-               }
-               d[d.length-1] = dir[0];
-               temp[j] = new Point(d);
-            }
-            newPoints = temp;
             pojectedSimplexes.add(new Simplex(newPoints)); 
             
          }
@@ -107,23 +106,35 @@ public class Camera{
       for(Simplex s: simplexes){
          //change to be faster later
          //add negitives later
-         Engine.Instance.renderImage(s);
+         //shift simplexes to lower dimention
+         Point[] simplexD = new Point[s.getPoints().length];
+         for(int i = 0; i<s.getPoints().length; i++){
+            float[] shiftedPoint = new float[s.getPoints()[i].length()-1];
+            for(int j = 1; j<s.getPoints()[i].length(); j++){
+               shiftedPoint[j-1] = s.getPoints()[i].getCoords()[j];
+            }
+            simplexD[i] = new Point(shiftedPoint);
+         }
+         s = new Simplex(simplexD);
          for(int i = 0; i<result.length; i++){
             for(int j = 0; j<result[i].length; j++){
-               float[] d = new float[dimention];
-               d[0] = i;
-               d[1] = j;
-               for(int k = 2; k<dimention; k++){
+               float[] d = new float[dimention-1];
+               d[d.length-1] = i - result.length/2;
+               d[d.length-2] = j - result[i].length/2;
+               for(int k = 0; k<d.length-3; k++){
                   d[k] = 1;
                }
+               
                Point p = new Point(d);
                
                if(s.isWithin(p)){
                   result[i][j] = s.getColor();
+                  //System.out.println(p);
                }
             }
          }
       }
+      System.out.println(timeStart-System.nanoTime());
       return result;
    }
    

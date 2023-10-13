@@ -62,9 +62,13 @@ public class Simplex{
          ps[i] = new Point(shiftedPointData);
       }
       //set up vectors
-      Vector[] v = new Vector[points.length];
-      for(int i = 1; i<points.length; i++){
-         v[i-1] = new Vector(points[i], points[0]);
+      Vector[] v = new Vector[p.length()+1];
+      for(int i = 0; i<v.length-1; i++){
+         float[] vd = new float[ps.length];
+         for(int j = 0; j<vd.length; j++){
+            vd[j] = ps[j].getCoords()[i];
+         }
+         v[i] = new Vector(vd);
       }
       float[] t = new float[v.length];
       for(int i = 0; i<t.length; i++){
@@ -84,7 +88,7 @@ public class Simplex{
       int[] var = new int[0];
       float[] value = new float[0];
       float[] result = new float[v[0].length()];
-      for(int i = d.length-1; i<=0; i--){
+      for(int i = d.length-1; i>=0; i--){
          LinearEquation le = new LinearEquation(d[i].getCoords());
          float[] leRes = le.Evaluate(var, value);
          //add new vector values

@@ -55,7 +55,7 @@ public class Plane{
       float num = 0;
       float dem = 0;
       for(int i = 0; i<l.getDirection().length(); i++){
-         num -= norm.getCoords()[i]*l.getPosition().getCoords()[i] + norm.getCoords()[i]*p.getCoords()[i];
+         num += norm.getCoords()[i]*l.getPosition().getCoords()[i] + norm.getCoords()[i]*p.getCoords()[i];
          dem += l.getDirection().getCoords()[i]*norm.getCoords()[i];
       }
       t = num/dem;
