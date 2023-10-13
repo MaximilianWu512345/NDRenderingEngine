@@ -204,6 +204,9 @@ public class Vector {
       return ans;
    }
    
+/** Returns the mag of this Vector.
+* @return float of the mag of this Vector.
+*/
    public float mag(){
       float sum = 0;
       for(int i = 0; i<coordinates.length; i++){

@@ -1,20 +1,28 @@
 import java.awt.Color;
+
 /** Simplex class */
 public class Simplex{
+
 /** Points in this Simplex */
    private Point[] points;
+   
 /** Plane in this Simplex */
    private Plane surface;
+   
 /** Color of this Simplex */
    private Color color;
-/** Creates a new Point with coordinates of coords.
-* @param p The coordinates of the Point.
+   
+/** Creates a new Simplex with points of vertex.
+* @param vertex the Point[] vertex to set points to.
 */
    public Simplex(Point[] vertex){
       setPoints(vertex);
       color = Color.RED;
    }
-/** Plane class */
+   
+/** Sets points to be vertex.
+* @param vertex the Point[] vertex to set points to.
+*/
    public void setPoints(Point[] vertex){
       points = vertex;
       Vector[] temp = new Vector[vertex.length-1];
@@ -30,12 +38,19 @@ public class Simplex{
       }
       surface = new Plane(vertex[0], Vector.getOrthogonal(temp));
    }
+   
+/** Returns the points of this Simplex.
+* @return Point[] of the points of this Simplex.
+*/
    public Point[] getPoints(){
       return points;
    }
-   /* algorthm from https://stackoverflow.com/questions/21819132/how-do-i-check-if-a-simplex-contains-the-origin
-      by ellisbben
-   */
+   
+/** Returns whether or not Point p is within this Simplex.
+* Algorithm from https://stackoverflow.com/questions/21819132/how-do-i-check-if-a-simplex-contains-the-origin by ellisbben
+* @param p The point to check.
+* @return boolean of whether the point is within this Simplex.
+*/
    public boolean isWithin(Point p){
       //shift points
       Point[] ps = new Point[points.length];
@@ -96,23 +111,35 @@ public class Simplex{
       return true;
    }
    
+/** Returns the Color of this Simplex.
+* @return Color of this Simplex.
+*/
    public Color getColor(){
       return color;
    }
    
+/** Sets the Color of this Simplex.
+* @param c The color to set.
+*/
    public void setColor(Color c){
       color = c;
    }
    
+/** Translates all Points in this Simplex with coords.
+* @param coords The float[] to translate Points in this Simplex with.
+*/
    public void translate(float[] coords) {
       for (Point p : points)
          p.translate(coords);
    }
    
-   public void rotate(int degrees) {
+/** Rotates all Points in this Simplex by degrees, and optionally an origin.
+* @param degrees the amount to rotate by.
+* @param origin the java.awt.Point origin to rotate around, optional.
+*/
+   public void rotate(int degrees, java.awt.Point origin) {
       for (Point p : points)
-         // alternatively, new java.awt.Point(x, y)
-         p.rotate(degrees, null);
+         p.rotate(degrees, origin);
    }
    
 /** Generic toString() method.
