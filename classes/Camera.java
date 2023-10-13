@@ -40,14 +40,25 @@ public class Camera{
       this.width = width;
       this.height = height;
    }
+   
 /**
-
 * Projects a Mesh and an int dimension to a Color[][].
 * @param o the mesh.
 * @param dimention the dimension.
 * @return a projected Color[][]
 */
-   public Color[][] Project(Mesh[] o, int dimention){
+   public Color[][] Project(Mesh[] o, int dimension) {
+      return Project(o, dimension, background);
+   }
+   
+/**
+* Projects a Mesh and an int dimension to a Color[][].
+* @param o the mesh.
+* @param dimention the dimension.
+* @param the color of the background, optionally null.
+* @return a projected Color[][]
+*/
+   public Color[][] Project(Mesh[] o, int dimention, Color backgroundColor) {
       long timeStart = System.nanoTime(); 
       //convert to lower dimention
       //loop through all meshes
@@ -100,7 +111,7 @@ public class Camera{
       //set all pixels to backgorund color
       for(int i = 0; i<result.length; i++){
          for(int j = 0; j<result[i].length; j++){
-            result[i][j] = background;
+            result[i][j] = backgroundColor;
          }
       }
       for(Simplex s: simplexes){

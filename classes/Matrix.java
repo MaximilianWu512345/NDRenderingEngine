@@ -124,6 +124,14 @@ public class Matrix{
       return new Matrix(d);
    }
    
+   /** Returns an inverted form of this Matrix.
+   * https://byjus.com/maths/inverse-matrix/
+   * @return inverted matrix.
+   */
+   public Matrix invertMatrx() {
+   
+   }
+   
 /** Generic toString() method.
 * @return String describing this Object.
 */

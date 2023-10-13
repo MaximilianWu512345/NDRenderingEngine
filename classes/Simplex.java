@@ -135,6 +135,14 @@ public class Simplex{
    public void translate(float[] coords) {
       for (Point p : points)
          p.translate(coords);
+      setPoints(points);
+   }
+   
+/** Rotates all Points in this Simplex by degrees around the origin.
+* @param degrees the amount to rotate by.
+*/
+   public void rotate(int degrees) {
+      rotate(degrees, null);
    }
    
 /** Rotates all Points in this Simplex by degrees, and optionally an origin.
@@ -144,6 +152,7 @@ public class Simplex{
    public void rotate(int degrees, java.awt.Point origin) {
       for (Point p : points)
          p.rotate(degrees, origin);
+      setPoints(points);
    }
    
 /** Generic toString() method.
