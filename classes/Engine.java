@@ -10,6 +10,9 @@ import java.io.File;
 /** JFrame engine that creates a graphical application. */
 public class Engine extends JFrame {
 
+/** Holds most recently created Engine. */
+   public static Engine Instance;
+   
 /** Title of JFrame when program is run. */
    protected static final String TITLE = "Max Wu's Concoction Machine";
    
@@ -33,6 +36,7 @@ public class Engine extends JFrame {
 * @param height the height of the engine JPanel.
 */
    private void initialize(int width, int height) {
+      Instance = this;
       add(panel = new EnginePanel(width, height));
    }
    

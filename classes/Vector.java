@@ -189,14 +189,24 @@ public class Vector {
       }
       return new Vector(nC);
    }
+   
+/** Generic toString() method.
+* @return String describing this Object.
+*/
    public String toString(){
-      String ans = "[";
-      for(int i = 0; i<coordinates.length; i++){
-         ans += coordinates[i] + " ";
+      String ans = "Vector (float[] coordinates): [{";
+      if (coordinates != null && coordinates.length > 0) {
+         for(int i = 0; i<coordinates.length - 1; i++){
+            ans += coordinates[i] + ", ";
+         }
+         ans += coordinates[coordinates.length - 1] + "}]";
       }
-      ans += "]";
       return ans;
    }
+   
+/** Returns the mag of this Vector.
+* @return float of the mag of this Vector.
+*/
    public float mag(){
       float sum = 0;
       for(int i = 0; i<coordinates.length; i++){

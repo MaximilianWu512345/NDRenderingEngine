@@ -72,6 +72,9 @@ public class EnginePanel extends JPanel {
          ((RenderHelper)dictComponents.get(PanelType.RENDER)).setLine((Line)object);
       else if (object instanceof Simplex)
          ((RenderHelper)dictComponents.get(PanelType.RENDER)).setSimplex((Simplex)object);
+      else if (object instanceof Mesh) {
+         ((RenderHelper)dictComponents.get(PanelType.RENDER)).setMesh((Mesh)object);
+      }
    }
    
    public void renderTriangle(Color c) {
@@ -174,7 +177,6 @@ public class EnginePanel extends JPanel {
          float[] positionCoords = line.getPosition().getCoordinates();
          if (vectorCoords == null || vectorCoords.length < 2 || positionCoords == null || positionCoords.length < 2)
             return;
-         System.out.println(line.toString());
          setPoint(line.getPosition());
          int offsetX = Math.round(positionCoords[0]);
          int offsetY = Math.round(positionCoords[1]);
@@ -186,8 +188,14 @@ public class EnginePanel extends JPanel {
          while (Math.abs(x) < Math.abs(vectorCoords[0]) || Math.abs(y) < Math.abs(vectorCoords[1])) {
             x += addX;
             y += addY;
-            renderedImage.setRGB(offsetX + (int)Math.floor((double)x), offsetY + (int)Math.floor((double)y), Color.black.getRGB());
-            renderedImage.setRGB(offsetX + (int)Math.ceil((double)x), offsetY + (int)Math.ceil((double)y), Color.black.getRGB());
+            int newX = offsetX + (int)Math.floor((double)x);
+            int newY = offsetY + (int)Math.floor((double)y);
+            if (newX >= 0 && newY >= 0 && newX < renderedImage.getWidth() && newY < renderedImage.getHeight())
+               renderedImage.setRGB(newX, newY, Color.black.getRGB());
+            newX = offsetX + (int)Math.ceil((double)x);
+            newY = offsetY + (int)Math.ceil((double)y);
+            if (newX >= 0 && newY >= 0 && newX < renderedImage.getWidth() && newY < renderedImage.getHeight())
+               renderedImage.setRGB(newX, newY, Color.black.getRGB());
          }
       }
       
@@ -197,6 +205,7 @@ public class EnginePanel extends JPanel {
          Point[] points = simplex.getPoints();
          if (points == null)
             return;
+         System.out.println(simplex);
          for (int i = 0; i < points.length; i++) {
             setPoint(points[i]);
             if (i != points.length - 1)
@@ -204,6 +213,13 @@ public class EnginePanel extends JPanel {
             else if (i != 0)
                setLine(new Line(points[i], points[0]));
          }
+      }
+      
+      public void setMesh(Mesh mesh) {
+         if (mesh == null || mesh.getFaces() == null || mesh.getFaces().length == 0)
+            return;
+         for (Simplex s : mesh.getFaces())
+            setSimplex(s);
       }
       
       public void setCanvas(Canvas c) {
@@ -253,7 +269,6 @@ public class EnginePanel extends JPanel {
       private void addButtons(int width, int height) {
          dictButtons.put(ButtonType.LEFT, new Button(x, y, width / 2, height, Color.red, "-"));
          dictButtons.put(ButtonType.RIGHT, new Button(x + width / 2, y, width / 2, height, Color.green, "+"));
-         
       }
       
       /** Returns an array of every Button in dictButtons.
