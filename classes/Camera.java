@@ -1,11 +1,13 @@
 import java.awt.Color;
 import java.util.ArrayList;
+   import java.lang.*;
 public class Camera{
    public Point position;
    public Vector direction;
    public int width;
    public int height;
    public Color background;
+
    
    public Camera (Point position, Vector V, int width, int Height){
       setData(position, V, width, Height);
@@ -18,6 +20,7 @@ public class Camera{
       this.height = height;
    }
    public Color[][] Project(Mesh[] o, int dimention){
+      long timeStart = System.nanoTime(); 
       //convert to lower dimention
       //loop through all meshes
       ArrayList<Simplex> simplexes = new ArrayList();
@@ -34,9 +37,12 @@ public class Camera{
       //apply transformations so camera is straight
       int currentD = dimention;
       //loop through until at right dimention
-      while(currentD != 2){
       //resolve Intersections
-      //resolve Overlaps
+      //compare every object
+      //reorder Overlaps
+      //compare every object
+      while(currentD != 2){
+
       //find new coords
       //find projection plane
          float[] dir = new float[currentD];
@@ -94,11 +100,12 @@ public class Camera{
                Point p = new Point(d);
                if(s.isWithin(p)){
                   result[i][j] = s.getColor();
-                  System.out.println(p);
+                  //System.out.println(p);
                }
             }
          }
       }
+      System.out.println(timeStart-System.nanoTime());
       return result;
    }
 }
