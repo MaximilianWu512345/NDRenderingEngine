@@ -138,5 +138,23 @@ public class Matrix{
       }
       return result + "\t}\n]";
    }
+   public static Matrix GivensRot(int d, float theta, int axis1, int axis2){
+      float[][] rotData = new float[d][d];
+      if(axis1 > axis2){
+         int temp = axis2;
+         axis2 = axis1;
+         axis1 = temp;
+      }
+      for(int i = 0; i<d; i++){
+         if(i!=axis1 || i!=axis2){
+            rotData[i][i] = 1;
+         }
+      }
+      rotData[axis1][axis1] = (float) Math.cos(theta);
+      rotData[axis2][axis2] = (float) Math.cos(theta);
+      rotData[axis1][axis2] = (float) Math.sin(theta);
+      rotData[axis2][axis1] = (-1f)*(float) Math.sin(theta);
+      return new Matrix(rotData);
+   }
    
 }
