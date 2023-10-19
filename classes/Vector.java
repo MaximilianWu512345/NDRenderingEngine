@@ -189,7 +189,19 @@ public class Vector {
       }
       return new Vector(nC);
    }
-   
+   /** rotates vector
+   * @param rot must be a rotation Matrix
+   * @return rotated vector
+   */
+   public Vector rotBy(Matrix rot){
+      Vector[] temp = new Vector[1];
+      temp[0] = this;
+      Matrix v = new Matrix(temp);
+      v = v.transpose();
+      Matrix postRot = rot.mult(v).transpose();
+      Vector[] result = postRot.toVectors();
+      return result[0];
+   }
 /** Generic toString() method.
 * @return String describing this Object.
 */
@@ -213,5 +225,28 @@ public class Vector {
          sum += coordinates[i]*coordinates[i];
       }
       return (float)Math.sqrt(sum);
+   }
+   public Vector unitVector(){
+      float[] nd = new float[coordinates.length];
+      float div = mag();
+      for(int i = 0; i<nd.length; i++){
+         nd[i] = coordinates[i]/div;
+      }
+      return new Vector(nd);
+   }
+   public Vector clone(){
+      float[] nd = new float[coordinates.length];
+      for(int i = 0; i<nd.length; i++){
+         nd[i] = coordinates[i];
+      }
+      return new Vector(nd);
+   }
+   public boolean equals(Vector v){
+      for(int i = 0; i<coordinates.length; i++){
+         if(v.getCoords()[i] != coordinates[i]){
+            return false;
+         }
+      }
+      return true;
    }
 }

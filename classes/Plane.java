@@ -1,7 +1,7 @@
 /** Plane class */
-public class Plane{
+import java.util.*;
+public class Plane extends subSpace{
 /** The position of this Plane. */
-   public Point p;
 /** The norm of this Plane. */
    public Vector norm;
 /** Creates a new Plane at a position of p and a norm of norm.
@@ -11,6 +11,24 @@ public class Plane{
    public Plane(Point p, Vector norm){
       this.p = p;
       this.norm = norm;
+      int d = p.length();
+      int pointer = 0;
+      ArrayList<Vector> temp = new ArrayList<Vector>();
+      for(int i = 0; i<d; i++){
+         for(int j = 0; j<d; j++){
+            if(i != j){
+               Matrix rot = Matrix.GivensRot(d, 90, i, j);
+               Vector res = norm.rotBy(rot);
+               if(!res.equals(norm)){
+                  temp.add(res);
+               }
+            }
+         }
+      }
+      dir = temp.toArray(dir);
+   }
+   public Plane(Point p, Vector[] dir){
+      super(p, dir);
    }
 /** Returns the Point position of this Plane.
 * @return the position of this Plane.

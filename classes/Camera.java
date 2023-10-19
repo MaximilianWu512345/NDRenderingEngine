@@ -1,5 +1,5 @@
 import java.awt.Color;
-import java.util.ArrayList;
+import java.util.*;
 import java.lang.*;
 /** Camera class */
 public class Camera{
@@ -146,8 +146,8 @@ public class Camera{
       String temp = "Camera (int width, int height, Color background, Point position, Vector direction): [\n\t" + width + "\n\t" + height + "\n\t" + background + "\n\t" + position + "\n\t" + direction + "\n]";
       return temp;
    }
-   public ArrayList<Simplex> reOrderSimplexes(ArrayList<Simplex> in){
-      ArrayList<Simplex> s = (ArrayList<Simplex>)in.clone();
+   public ArrayList<Simplex> reOrderSimplexes(List<Simplex> in){
+      List<Simplex> s = new ArrayList<Simplex>(in);
       int pivotIndex = s.size()-1;
       int pivotFinalLoc = 0;
       //pivot
@@ -166,9 +166,14 @@ public class Camera{
       s.set(pivotFinalLoc, temp);
       //split
       ArrayList<Simplex> result = new ArrayList<Simplex>();
-      result.add(reOrderSimplexes(s.));
+      if(pivotFinalLoc !=0 ){
+         result.add(reOrderSimplexes(s.subList(0,pivotFinalLoc)));
+      }
       result.add(s.get(pivotFinalLoc));
-      result.add();
+      if(pivotFinalLoc+1!=s.size()){
+         result.add(reOrderSimplexes(pivotFinalLoc+1, s.size()));
+      }
+      
       return result;
    }
 }

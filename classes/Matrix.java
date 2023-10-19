@@ -156,5 +156,13 @@ public class Matrix{
       rotData[axis2][axis1] = (-1f)*(float) Math.sin(theta);
       return new Matrix(rotData);
    }
-   
+   public Matrix transpose(){
+      float[][] temp = new float[height][width];
+      for(int i = 0; i<width; i++){
+         for(int j = 0; j<height; j++){
+            temp[i][j] = data[j][i];
+         }
+      }
+      return null;
+   }
 }

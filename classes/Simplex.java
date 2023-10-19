@@ -36,7 +36,8 @@ public class Simplex{
          }
          temp[i-1] = new Vector(temp2);
       }
-      surface = new Plane(vertex[0], Vector.getOrthogonal(temp));
+      
+      surface = new Plane(vertex[0], temp);
    }
    
 /** Returns the points of this Simplex.
