@@ -45,7 +45,8 @@ public class Simplex{
          }
          temp[i-1] = new Vector(temp2);
       }
-      surface = new Plane(vertex[0], Vector.getOrthogonal(temp));
+      
+      surface = new Plane(vertex[0], temp);
    }
    
 /** Returns the points of this Simplex.
@@ -163,7 +164,40 @@ public class Simplex{
          p.rotate(degrees, origin);
       setPoints(points);
    }
-   
+   public float BoundingBoxDistance(){
+      float[] max = new float[points[0].length()];
+      float[] min = new float[points[0].length()];
+      for(int i = 0; i<max.length; i++){
+         max[i] = points[0].getCoords()[i];
+         min[i] = points[0].getCoords()[i];
+      }
+      for(int i = 1; i<points.length; i++){
+         Point p = points[i];
+         for(int j = 0; j<max.length; j++){
+            if(p.getCoords()[j]>max[j]){
+               max[j] = p.getCoords()[j];
+            } else if (p.getCoords()[j]<min[j]){
+               min[j] = p.getCoords()[j];
+            }
+         }
+      }
+      float[] furthestPoint = new float[max.length];
+      for(int i = 0; i<max.length; i++){
+         float avg = (max[i]+min[i])/2f;
+         if(avg < 0){
+            furthestPoint[i] = min[i];
+         } else if (avg > 0){
+            furthestPoint[i] = max[i];
+         } else {
+            furthestPoint[i] = avg;
+         }
+      }
+      int sum = 0;
+      for(float c: furthestPoint){
+         sum += c*c;
+      }
+      return (float) Math.sqrt(sum);
+   }
 /** Generic toString() method.
 * @return String describing this Object.
 */
@@ -194,4 +228,5 @@ public class Simplex{
       temp += "\n" + tabs + "}\n" + surface.toString(1 + count) + "\n" + tabs + color + "\n" + lastTab + "]";
       return temp;
    }
+   
 }

@@ -1,5 +1,5 @@
 import java.awt.Color;
-import java.util.ArrayList;
+import java.util.*;
 import java.lang.*;
 /** Camera class */
 public class Camera{
@@ -81,11 +81,12 @@ public class Camera{
       int currentD = dimention;
       //loop through until at right dimention
       //resolve Intersections
-      //compare every object
+      //compare every simplex
       //reorder Overlaps
-      //compare every object
+      //quick sort
+      simplexes = reOrderSimplexes(simplexes);
       while(currentD != 2){
-
+      
       //find new coords
       //find projection plane
          float[] dir = new float[currentD];
@@ -161,5 +162,35 @@ public class Camera{
    public String toString() {
       String temp = "Camera (int width, int height, Color triangleColor, Color backgroundColor, Point position, Vector direction): [\n\t" + width + "\n\t" + height + "\n\t" + triangleColor + "\n\t" + backgroundColor + "\n\t" + position + "\n\t" + direction + "\n]";
       return temp;
+   }
+   public ArrayList<Simplex> reOrderSimplexes(List<Simplex> in){
+      List<Simplex> s = new ArrayList<Simplex>(in);
+      int pivotIndex = s.size()-1;
+      int pivotFinalLoc = 0;
+      //pivot
+      for(int i = 0; i<s.size() && i != pivotIndex; i++){
+         float dist = s.get(pivotIndex).BoundingBoxDistance();
+         float distCheck = s.get(i).BoundingBoxDistance();
+         if(dist>distCheck){
+            Simplex temp = s.get(i);
+            s.set(i, s.get(pivotFinalLoc));
+            s.set(pivotFinalLoc, temp);
+            pivotFinalLoc++;
+         }
+      }
+      Simplex temp = s.get(pivotIndex);
+      s.set(pivotIndex, s.get(pivotFinalLoc));
+      s.set(pivotFinalLoc, temp);
+      //split
+      ArrayList<Simplex> result = new ArrayList<Simplex>();
+      if(pivotFinalLoc !=0 ){
+         result.add(reOrderSimplexes(s.subList(0,pivotFinalLoc)));
+      }
+      result.add(s.get(pivotFinalLoc));
+      if(pivotFinalLoc+1!=s.size()){
+         result.add(reOrderSimplexes(pivotFinalLoc+1, s.size()));
+      }
+      
+      return result;
    }
 }
