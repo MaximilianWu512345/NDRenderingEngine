@@ -184,11 +184,11 @@ public class Camera{
       //split
       ArrayList<Simplex> result = new ArrayList<Simplex>();
       if(pivotFinalLoc !=0 ){
-         result.add(reOrderSimplexes(s.subList(0,pivotFinalLoc)));
+         result.addAll(reOrderSimplexes(s.subList(0,pivotFinalLoc)));
       }
       result.add(s.get(pivotFinalLoc));
       if(pivotFinalLoc+1!=s.size()){
-         result.add(reOrderSimplexes(pivotFinalLoc+1, s.size()));
+         result.addAll(reOrderSimplexes(s.subList(pivotFinalLoc+1, s.size())));
       }
       
       return result;
