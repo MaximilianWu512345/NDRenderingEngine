@@ -52,8 +52,13 @@ public class Point {
       return getCoordinates();
    }
    
+   // V1 * A = V2
+   public Matrix rotate(Vector one, Vector two) {
+      return null;
+   }
+   
 /** Rotates this point's coordinates according to the degrees given. Optional java.awt.Point parameter to rotate around. Otherwise, default is the origin.
-* @param degrees the amount of degrees to rotate.
+* @param rotation the amount of degrees to rotate.
 * @param point the point to rotate around. Optional.
 */
    // around the origin if point == null
@@ -64,16 +69,16 @@ public class Point {
       float x;
       float y;
       if (point == null) {
-         x = coordinates[0] - Engine.WIDTH / 2;
-         y = coordinates.length > 1 ? coordinates[1] - Engine.HEIGHT / 2 : 0;
+         x = coordinates[1] - Engine.Instance.getWidth() / 2;
+         y = coordinates.length > 2 ? coordinates[2] - Engine.Instance.getHeight() / 2 : 0;
       }
       else {
-         x = coordinates[0] - (float)point.getX();
-         y = coordinates.length > 1 ? coordinates[1] - (float)point.getY() : 0;
+         x = coordinates[1] - (float)point.getX();
+         y = coordinates.length > 2 ? coordinates[2] - (float)point.getY() : 0;
       }
-      coordinates[0] = x * (float)Math.cos(degrees) - y * (float)Math.sin(degrees);
-      if (coordinates.length > 1)
-            coordinates[1] = y * (float)Math.cos(degrees) + x * (float)Math.sin(degrees);
+      coordinates[1] = x * (float)Math.cos(degrees) - y * (float)Math.sin(degrees);
+      if (coordinates.length > 2)
+            coordinates[2] = y * (float)Math.cos(degrees) + x * (float)Math.sin(degrees);
    }
    
    public void translate(float[] coords) {

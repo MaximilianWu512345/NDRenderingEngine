@@ -11,8 +11,10 @@ public class Camera{
    public int width;
 /** Height of this Camera */
    public int height;
+/** Triangle color of this Camera */
+   public Color triangleColor;
 /** Background color of this Camera */
-   public Color background;
+   public Color backgroundColor;
 
    
 /**
@@ -24,7 +26,8 @@ public class Camera{
 */
    public Camera (Point position, Vector v, int w, int h){
       setData(position, v, w, h);
-      background = Color.BLACK;
+      triangleColor = Color.RED;
+      backgroundColor = Color.BLACK;
    }
    
 /**
@@ -40,14 +43,26 @@ public class Camera{
       this.width = width;
       this.height = height;
    }
+   
+   
 /**
-
 * Projects a Mesh and an int dimension to a Color[][].
 * @param o the mesh.
 * @param dimention the dimension.
 * @return a projected Color[][]
 */
-   public Color[][] Project(Mesh[] o, int dimention){
+   public Color[][] Project(Mesh[] o, int dimension) {
+      return Project(o, dimension, triangleColor, backgroundColor);
+   }
+   
+/**
+* Projects a Mesh and an int dimension to a Color[][].
+* @param o the mesh.
+* @param dimention the dimension.
+* @param the color of the background, optionally null.
+* @return a projected Color[][]
+*/
+   public Color[][] Project(Mesh[] o, int dimention, Color triangleC, Color backgroundC) {
       long timeStart = System.nanoTime(); 
       //convert to lower dimention
       //loop through all meshes
@@ -98,9 +113,11 @@ public class Camera{
       //generate pixel grid
       Color[][] result = new Color[width][height];
       //set all pixels to backgorund color
-      for(int i = 0; i<result.length; i++){
-         for(int j = 0; j<result[i].length; j++){
-            result[i][j] = background;
+      if (backgroundC != null) {
+         for(int i = 0; i<result.length; i++){
+            for(int j = 0; j<result[i].length; j++){
+               result[i][j] = backgroundC;
+            }
          }
       }
       for(Simplex s: simplexes){
@@ -115,7 +132,7 @@ public class Camera{
             }
             simplexD[i] = new Point(shiftedPoint);
          }
-         s = new Simplex(simplexD);
+         s = new Simplex(simplexD, triangleC);
          for(int i = 0; i<result.length; i++){
             for(int j = 0; j<result[i].length; j++){
                float[] d = new float[dimention-1];
@@ -142,7 +159,7 @@ public class Camera{
 * @return String describing this Object.
 */
    public String toString() {
-      String temp = "Camera (int width, int height, Color background, Point position, Vector direction): [\n\t" + width + "\n\t" + height + "\n\t" + background + "\n\t" + position + "\n\t" + direction + "\n]";
+      String temp = "Camera (int width, int height, Color triangleColor, Color backgroundColor, Point position, Vector direction): [\n\t" + width + "\n\t" + height + "\n\t" + triangleColor + "\n\t" + backgroundColor + "\n\t" + position + "\n\t" + direction + "\n]";
       return temp;
    }
 }

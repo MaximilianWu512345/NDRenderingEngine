@@ -6,12 +6,16 @@ import java.util.Hashtable;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.io.File;
+import com.aparapi.Kernel;
 
 /** JFrame engine that creates a graphical application. */
 public class Engine extends JFrame {
 
 /** Holds most recently created Engine. */
    public static Engine Instance;
+   
+/** Holds most recently created Camera. */
+   public static Camera Camera;
    
 /** Title of JFrame when program is run. */
    protected static final String TITLE = "Max Wu's Concoction Machine";
@@ -50,34 +54,51 @@ public class Engine extends JFrame {
    public void renderTriangle(Color c) {
       panel.renderTriangle(c);
    }
+   
+   public void renderSimplex(Simplex s, Color c) {
+      Simplex[] faces = new Simplex[] { s };
+      Mesh obj1 = new Mesh(faces, 3);
+      Mesh[] listObj = new Mesh[] { obj1 };
+      Instance.renderImage(Camera.Project(listObj, 3, c, null));
+   }
+   
+   public void renderSimplexes(Simplex[] s, Color c) {
+      Mesh obj1 = new Mesh(s, 3);
+      Mesh[] listObj = new Mesh[] { obj1 };
+      Instance.renderImage(Camera.Project(listObj, 3, c, null));
+   }
+   
+   public static class Squarer extends Kernel{
+      int[] in;
+      int[] out;
+      @Override public void run(){
+         int gid = getGlobalId(0);
+         out[gid] = in[gid] * in[gid];
+      }
+   }
 
 /** Placeholder method to run TestDriver.
 * @param args default args for main method.
 */
    public static void main(String[] args) {
       // Create the engine, start the program.
-      Engine engine = new Engine(1000, 1000);
-      engine.renderImage(new Point(new float[] { 50, 50 } ));
-      engine.renderImage(new Point(new float[] { 100, 100 } ));
-      Line line = new Line(new Point(new float[] {200, 200}), new Point(new float[] {250, 250}));
-      engine.renderImage(line);
-      line = new Line(new Point(new float[] {200, 200}), new Point(new float[] {700, 500}));
-      engine.renderImage(line);
-      Point[] p = new Point[3];
-      p[0] = new Point(new float[]{2,200,200});
-      p[1] = new Point(new float[]{3,0,200});
-      p[2] = new Point(new float[]{2,300,0});
-      Simplex s = new Simplex(p);
-      Point camPos = new Point(new float[3]);
-      float[] temp = {1,0,0};
-      Vector camDirection = new Vector(temp);
-      Camera c = new Camera(camPos, camDirection, 900, 900);
-      Simplex[] faces = new Simplex[1];
-      faces[0] = s;
-      Mesh obj1 = new Mesh(faces,3);
-      Mesh[] listObj = new Mesh[1];
-      listObj[0] = obj1;
-      engine.renderImage(c.Project(listObj, 3));
+      CreateEngine();
+      CreateCamera();
+      
+      Simplex[] simplexes = new Simplex[100];
+      for (int i = 0; i < 100; i++) {
+         Point[] points = new Point[3];
+         for (int x = 0; x < 3; x++) {
+            int z = (int)(Math.random() * 2) + 1;
+            int ex = (int)(Math.random() * 1000);
+            int y = (int)(Math.random() * 1000);
+            points[x] = new Point(new float[] {z, ex, y});
+         }
+         Simplex s = new Simplex(points);
+         //simplexes[i] = s;
+         //Instance.renderSimplex(s, randomColor());
+      }
+      
       
       // Ask for img files to open and display until user clicks cancel.
       boolean askForFiles = false;
@@ -86,13 +107,13 @@ public class Engine extends JFrame {
             JFileChooser fileChooser = new JFileChooser();
             File file = pickFile(fileChooser);
             if (file != null) {
-               engine.renderImage(ImageIO.read(file));
-               engine.repaint();
+               Instance.renderImage(ImageIO.read(file));
+               Instance.repaint();
                while (file != null) {
                   file = pickFile(fileChooser);
                   if (file != null) {
-                     engine.renderImage(ImageIO.read(file));
-                     engine.repaint();
+                     Instance.renderImage(ImageIO.read(file));
+                     Instance.repaint();
                   }
                }
             }
@@ -101,6 +122,20 @@ public class Engine extends JFrame {
             System.out.println(e);
          }
       }
+   }
+   
+   public static Color[] colors = { Color.RED, Color.BLUE, Color.BLACK, Color.WHITE, Color.GREEN, Color.YELLOW, Color.GRAY};
+   
+   public static Color randomColor() {
+      return colors[(int)(Math.random() * colors.length)];
+   }
+   
+   public static Engine CreateEngine() {
+      return new Engine(1000, 1000);
+   }
+   
+   public static Camera CreateCamera() {
+      return Camera = new Camera(new Point(/*camPos*/new float[3]), /*camDirection*/new Vector(new float[] {1,0,0}), 900, 900);
    }
    
    public static File pickFile(JFileChooser fileChooser)

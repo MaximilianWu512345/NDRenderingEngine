@@ -204,8 +204,8 @@ public class Vector {
       return ans;
    }
    
-/** Returns the mag of this Vector.
-* @return float of the mag of this Vector.
+/** Returns the magnitude of this Vector.
+* @return float of the magnitude of this Vector.
 */
    public float mag(){
       float sum = 0;

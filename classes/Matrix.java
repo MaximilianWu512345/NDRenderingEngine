@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 /**
 * a matrix from linear algebra
 */
@@ -22,6 +23,20 @@ public class Matrix{
       data = d;
       height = d.length;
       width = d[0].length;
+   }
+   /**
+   * generates a matrix with elements of d
+   * @param d must be a rectangular 2d array
+   */
+   public Matrix(ArrayList<ArrayList<Float>> d){
+      data = new float[d.size()][d.get(0).size()];
+      for (int i = 0; i < d.size(); i++) {
+         for (int x = 0; x < d.get(i).size(); x++) {
+            data[i][x] = d.get(i).get(x);
+         }
+      }
+      height = d.size();
+      width = d.get(0).size();
    }
    /**
    * generates a matrix out of vectors
@@ -57,12 +72,28 @@ public class Matrix{
                float sum = 0;
                for(int k = 0; k<width; k++){
                   // check if this line is correct later
-                  sum += m.data[k][i] + data[j][k];
+                  sum += m.data[k][i] * data[j][k];
                }
+               newData[j][i] = sum;
             }
          }
+         return new Matrix(newData);
       }
       return null;
+   }
+   /**
+   * Divides this matrix by m
+   * @param m must be dividable with this matrix
+   * @return a Matrix
+   */
+   public Matrix div(float m){
+      float[][] newData = new float[width][height];
+      for(int i = 0; i<height; i++){
+         for(int j = 0; j<width; j++){
+            newData[i][j] = data[i][j]/m;
+         }
+      }
+      return new Matrix(newData);
    }
    /**
    * genrates a array of vectors with a vector for each row of the matrix
@@ -122,6 +153,129 @@ public class Matrix{
       }
       //fix
       return new Matrix(d);
+   }
+   private int getRREFPivotCount(){
+      //algorithem from https://www.codewithc.com/gauss-elimination-method-algorithm-flowchart/
+      int count = 0;
+      Vector[] d = this.toVectors();
+      for(int i = 0; i<d.length-1; i++){
+         if(d[i].getCoords()[i] == 0){
+            //pivot
+            
+            for(int j = i+1; j<d.length; j++){
+               if(d[j].getCoords()[i] != 0){
+                  Vector temp = d[i];
+                  d[i] = d[j];
+                  d[j] = temp;
+                  count++;
+                  break;
+               }
+            }
+         }
+      }
+      //fix
+      return count;
+   }
+   
+   public Matrix invert() {
+      return Matrix.invert(this);      
+   }
+   
+   public static Matrix invert(Matrix m) {
+      return Matrix.invert(m.data);
+   }
+   
+   /** Returns an inverted form of this Matrix.
+   * https://byjus.com/maths/inverse-matrix/
+   * https://www.mathsisfun.com/algebra/matrix-determinant.html
+   * @return inverted matrix.
+   */
+   public static Matrix invert(float[][] data) {
+      // convert to cofactor matrix first, transpose the cofactor matrix, then divide it by the determinent of data.
+      System.out.println(Matrix.getCoFactor(data));
+      return new Matrix(Matrix.getTranspose(Matrix.getCoFactor(data))).div(Matrix.getDeterminant(data));
+   }
+   
+   public float[][] getMinorsMatrix(int skipRow, int skipCol) {
+      return Matrix.getMinorsMatrix(this, skipRow, skipCol);
+   }
+   
+   public static float[][] getMinorsMatrix(Matrix m, int skipRow, int skipCol) {
+      return Matrix.getMinorsMatrix(m.data, skipRow, skipCol);
+   }
+   
+   public static float[][] getMinorsMatrix(float[][] m, int skipRow, int skipCol) {
+      int indexRow = 0;
+      int indexCol = 0;
+      float[][] temp = new float[m.length - 1][m[0].length - 1];
+      for (int i = 0; i < m.length; i++) {
+         for (int x = 0; x < m[i].length; x++) {
+            if (i == skipRow || x == skipCol)
+               continue;
+            temp[indexRow][indexCol++] = m[i][x];
+            indexRow += indexCol / (m[i].length - 1);
+            indexCol %= (m[i].length - 1);
+         }
+      }
+      return temp;
+   }
+   
+   public float getDeterminant() {
+      return Matrix.getDeterminant(this);
+   }
+   
+   public static float getDeterminant(Matrix m) {
+      return Matrix.getDeterminant(m.data);
+   }
+   
+   // Gaussian method.
+   public static float getDeterminant(float[][] m) {
+      int sign = (new Matrix(m)).getRREFPivotCount();
+      float[][] RREF = new Matrix(m).getRREF().data;
+      int sum = 1;
+      for (int i = 0; i < RREF.length && i < RREF[0].length; i++) {
+         sum *= RREF[i][i];
+      }
+      return sum * ((sign) % 2 == 0 ? 1 : -1);
+   }
+   
+   public float[][] getCoFactor() {
+      return Matrix.getCoFactor(this);
+   }
+   
+   public static float[][] getCoFactor(Matrix m) {
+      return Matrix.getCoFactor(m.data);
+   }
+   
+   public static float[][] getCoFactor(float[][] m) {
+      float[][] temp = new float[m.length][m[0].length];
+      for (int i = 0; i < m.length; i++) {
+         for (int x = 0; x < m[i].length; x++) {
+            float det = getDeterminant(getMinorsMatrix(m, i, x)) * ((i + x) % 2 == 0 ? 1 : -1);
+            if (det != 0) {
+               temp[i][x] = det;
+            }
+         }
+      }
+      return temp;
+   }
+   
+   public float[][] getTranspose() {
+      return Matrix.getTranspose(this);
+   }
+   
+   public static float[][] getTranspose(Matrix m) {
+      return Matrix.getTranspose(m.data);
+   }
+   
+   public static float[][] getTranspose(float[][] m) {
+      float[][] temp = new float[m[0].length][m.length];
+      for (int i = 0; i < m.length; i++) {
+         for (int x = 0; x < m[i].length; x++) {
+            temp[x][i] = m[i][x];
+         }
+      }
+      return temp;
    }
    
 /** Generic toString() method.
