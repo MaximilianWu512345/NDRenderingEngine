@@ -6,6 +6,7 @@ import java.util.Hashtable;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.io.File;
+import com.aparapi.Kernel;
 
 /** JFrame engine that creates a graphical application. */
 public class Engine extends JFrame {
@@ -54,11 +55,26 @@ public class Engine extends JFrame {
       panel.renderTriangle(c);
    }
    
-   public void renderSimplex(Simplex s) {
+   public void renderSimplex(Simplex s, Color c) {
       Simplex[] faces = new Simplex[] { s };
       Mesh obj1 = new Mesh(faces, 3);
       Mesh[] listObj = new Mesh[] { obj1 };
-      Instance.renderImage(Camera.Project(listObj, 3, null));
+      Instance.renderImage(Camera.Project(listObj, 3, c, null));
+   }
+   
+   public void renderSimplexes(Simplex[] s, Color c) {
+      Mesh obj1 = new Mesh(s, 3);
+      Mesh[] listObj = new Mesh[] { obj1 };
+      Instance.renderImage(Camera.Project(listObj, 3, c, null));
+   }
+   
+   public static class Squarer extends Kernel{
+      int[] in;
+      int[] out;
+      @Override public void run(){
+         int gid = getGlobalId(0);
+         out[gid] = in[gid] * in[gid];
+      }
    }
 
 /** Placeholder method to run TestDriver.
@@ -68,24 +84,22 @@ public class Engine extends JFrame {
       // Create the engine, start the program.
       CreateEngine();
       CreateCamera();
-      Point[] sP = new Point[] {
-         new Point(new float[]{2,200,200}),
-         new Point(new float[]{3,0,200}),
-         new Point(new float[]{2,300,0}),
-      };
-      Point[] xP = new Point[] {
-         new Point(new float[]{2,200,200}),
-         new Point(new float[]{3,0,200}),
-         new Point(new float[]{2,300,0}),
-      };
-      Simplex s = new Simplex(sP);
-      s.rotate(90);
-      Instance.renderSimplex(s);
-      System.out.println(s);
-      Simplex x = new Simplex(xP);
-      x.translate(new float[] { 0, 500, 500});
-      Instance.renderSimplex(x);
-      System.out.println(x);
+      
+      Simplex[] simplexes = new Simplex[100];
+      for (int i = 0; i < 100; i++) {
+         Point[] points = new Point[3];
+         for (int x = 0; x < 3; x++) {
+            int z = (int)(Math.random() * 2) + 1;
+            int ex = (int)(Math.random() * 1000);
+            int y = (int)(Math.random() * 1000);
+            points[x] = new Point(new float[] {z, ex, y});
+         }
+         Simplex s = new Simplex(points);
+         //simplexes[i] = s;
+         //Instance.renderSimplex(s, randomColor());
+      }
+      
+      
       // Ask for img files to open and display until user clicks cancel.
       boolean askForFiles = false;
       if (askForFiles) {
@@ -108,6 +122,12 @@ public class Engine extends JFrame {
             System.out.println(e);
          }
       }
+   }
+   
+   public static Color[] colors = { Color.RED, Color.BLUE, Color.BLACK, Color.WHITE, Color.GREEN, Color.YELLOW, Color.GRAY};
+   
+   public static Color randomColor() {
+      return colors[(int)(Math.random() * colors.length)];
    }
    
    public static Engine CreateEngine() {

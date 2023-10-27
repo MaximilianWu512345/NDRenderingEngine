@@ -52,8 +52,9 @@ public class Point {
       return getCoordinates();
    }
    
-   public void rotate(Line line, float degrees) {
-   
+   // V1 * A = V2
+   public Matrix rotate(Vector one, Vector two) {
+      return null;
    }
    
 /** Rotates this point's coordinates according to the degrees given. Optional java.awt.Point parameter to rotate around. Otherwise, default is the origin.
@@ -67,8 +68,6 @@ public class Point {
       // 2d rotation
       float x;
       float y;
-      System.out.println(coordinates[1] + " " + coordinates[2]);
-      System.out.println(Engine.Instance.getWidth() / 2 + " " + Engine.Instance.getHeight() / 2);
       if (point == null) {
          x = coordinates[1] - Engine.Instance.getWidth() / 2;
          y = coordinates.length > 2 ? coordinates[2] - Engine.Instance.getHeight() / 2 : 0;

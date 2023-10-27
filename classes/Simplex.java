@@ -20,6 +20,15 @@ public class Simplex{
       color = Color.RED;
    }
    
+/** Creates a new Simplex with points of vertex.
+* @param vertex the Point[] vertex to set points to.
+* @param c the color to set points to.
+*/
+   public Simplex(Point[] vertex, Color c){
+      setPoints(vertex);
+      color = c;
+   }
+   
 /** Sets points to be vertex.
 * @param vertex the Point[] vertex to set points to.
 */

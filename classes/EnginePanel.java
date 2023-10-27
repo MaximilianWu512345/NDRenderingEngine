@@ -205,7 +205,6 @@ public class EnginePanel extends JPanel {
          Point[] points = simplex.getPoints();
          if (points == null)
             return;
-         System.out.println(simplex);
          for (int i = 0; i < points.length; i++) {
             setPoint(points[i]);
             if (i != points.length - 1)
