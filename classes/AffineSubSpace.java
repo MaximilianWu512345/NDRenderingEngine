@@ -1,11 +1,11 @@
-public class subSpace{
+public class AffineSubSpace{
    protected Vector[] dir;
    protected Point p;
-   public subSpace(Point p, Vector[] dir){
+   public AffineSubSpace(Point p, Vector[] dir){
       this.p = p;
       this.dir = dir;
    }
-   public subSpace(){
+   public AffineSubSpace(){
    
    }
    public boolean isOnSubspace(Point target){
@@ -58,7 +58,29 @@ public class subSpace{
       }
       return true;
    }
-   public subSpace intersect(subSpace s){
+   public AffineSubSpace intersect(AffineSubSpace s){
+      //get matrix
+      this.simplify();
+      s.simplify();
+      Vector[] thisSubspaceMatrixData = new Vector[p.length()];
+      for(int i = 0; i<thisSubspaceMatrixData.length; i++){
+         float[] coordData = new float[dir.length+s.dir.length+2];
+         for(int j = 0; j<dir.length; j++){
+            coordData[j] = dir[j].getCoords()[i];
+         }
+         for(int j = 0; j<s.dir.length; j++){
+            coordData[j + dir.length] = s.dir[j].getCoords()[i];
+         }
+         coordData[dir.length+s.dir.length] = p.getCoords()[i];
+         coordData[dir.length+s.dir.length+1] = p.getCoords()[i];
+         thisSubspaceMatrixData[i] = new Vector(coordData);
+      }
+      Matrix m = new Matrix(thisSubspaceMatrixData);
+      Vector zero = new Vector(new float[p.length()]);
+      Matrix aug = m.AugmentedMatrix(zero);
+      Matrix rref = m.getRREF();
+      //check for impossibility
+      
       return null;
    }
    public Point getPos(){
@@ -66,5 +88,9 @@ public class subSpace{
    }
    public Vector[] getDir(){
       return dir;
+   }
+   //https://dept.math.lsa.umich.edu/~speyer/LinearAlgebraVideos/Lecture3d.pdf
+   public void simplify(){
+      
    }
 }
