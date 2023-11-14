@@ -71,6 +71,7 @@ public class Engine extends JFrame {
 * @param args default args for main method.
 */
    public static void main(String[] args) {
+   /*
       // Create the engine, start the program.
       
       CreateEngine();
@@ -86,7 +87,8 @@ public class Engine extends JFrame {
          }
          Simplex s = new Simplex(points);
          simplexes[i] = s;
-         
+         Instance.renderSimplex(s, randomColor());
+
       }
       Instance.renderSimplex(simplexes[0], randomColor());
       
@@ -112,8 +114,7 @@ public class Engine extends JFrame {
             System.out.println(e);
          }
       }
-      
-      System.out.println((new Vector(new float[100])).add(new Vector(new float[100])));
+      */
    }
    
    public static Color[] colors = { Color.RED, Color.BLUE, Color.BLACK, Color.WHITE, Color.GREEN, Color.YELLOW, Color.GRAY};
@@ -127,7 +128,7 @@ public class Engine extends JFrame {
    }
    
    public static Camera CreateCamera() {
-      return Camera = new Camera(new Point(/*camPos*/new float[3]), /*camDirection*/new Vector(new float[] {1,0,0}), 900, 900);
+      return Camera = new CameraRastorizationV1(new Point(/*camPos*/new float[3]), /*camDirection*/new Vector(new float[] {1,0,0}), 900, 900);
    }
    
    public static File pickFile(JFileChooser fileChooser)

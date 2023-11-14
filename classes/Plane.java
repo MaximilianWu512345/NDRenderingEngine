@@ -1,6 +1,6 @@
 /** Plane class */
 import java.util.*;
-public class Plane extends subSpace{
+public class Plane extends AffineSubSpace{
 /** The position of this Plane. */
 /** The norm of this Plane. */
    public Vector norm;
