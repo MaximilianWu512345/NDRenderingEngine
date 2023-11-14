@@ -84,7 +84,7 @@ public class Camera{
       //compare every simplex
       //reorder Overlaps
       //quick sort
-      simplexes = reOrderSimplexes(simplexes);
+      //simplexes = reOrderSimplexes(simplexes);
       while(currentD != 2){
       
       //find new coords
@@ -163,6 +163,7 @@ public class Camera{
       String temp = "Camera (int width, int height, Color triangleColor, Color backgroundColor, Point position, Vector direction): [\n\t" + width + "\n\t" + height + "\n\t" + triangleColor + "\n\t" + backgroundColor + "\n\t" + position + "\n\t" + direction + "\n]";
       return temp;
    }
+   /*
    public ArrayList<Simplex> reOrderSimplexes(List<Simplex> in){
       List<Simplex> s = new ArrayList<Simplex>(in);
       int pivotIndex = s.size()-1;
@@ -193,4 +194,5 @@ public class Camera{
       
       return result;
    }
+   */
 }
