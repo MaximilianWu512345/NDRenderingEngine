@@ -52,7 +52,7 @@ public class CameraRastorizationV1 implements Camera{
 * @param dimention the dimension.
 * @return a projected Color[][]
 */
-   public Color[][] Project(Mesh[] o, int dimension) {
+   public Texture Project(Mesh[] o, int dimension) {
       return Project(o, dimension, triangleColor, backgroundColor);
    }
    
@@ -63,7 +63,7 @@ public class CameraRastorizationV1 implements Camera{
 * @param the color of the background, optionally null.
 * @return a projected Color[][]
 */
-   public Color[][] Project(Mesh[] o, int dimention, Color triangleC, Color backgroundC) {
+   public Texture Project(Mesh[] o, int dimention, Color triangleC, Color backgroundC) {
       long timeStart = System.nanoTime(); 
       //convert to lower dimention
       //loop through all meshes
@@ -154,7 +154,7 @@ public class CameraRastorizationV1 implements Camera{
          }
       }
       System.out.println(timeStart-System.nanoTime());
-      return result;
+      return new ArrayTexture(result);
    }
    
 /** Generic toString() method.

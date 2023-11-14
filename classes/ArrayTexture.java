@@ -6,6 +6,17 @@ public class ArrayTexture implements Texture{
       this.bounds = bounds;
       this.data = data;
    }
+   public ArrayTexture(Color[][] data){
+      bounds = new int[2];
+      bounds[0] = data[0].length;
+      bounds[1] = data.length;
+      this.data = new Color[(bounds[0]*bounds[1])];
+      for(int i = 0; i<data.length; i++){
+         for(int j = 0; j<data[i].length; j++){
+            this.data[i*bounds[0] + j] = data[i][j];
+         }
+      }
+   }
    public int getDimention(){
       return bounds.length;
    }
