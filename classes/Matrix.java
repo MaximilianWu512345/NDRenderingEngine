@@ -72,7 +72,7 @@ public class Matrix{
                float sum = 0;
                for(int k = 0; k<width; k++){
                   // check if this line is correct later
-                  sum += m.data[k][i] * data[j][k];
+                  sum += m.data[k][j] * data[i][k];
                }
                newData[j][i] = sum;
             }
@@ -311,12 +311,12 @@ public class Matrix{
       return new Matrix(rotData);
    }
    public Matrix transpose(){
-      float[][] temp = new float[height][width];
+      float[][] temp = new float[width][height];
       for(int i = 0; i<width; i++){
          for(int j = 0; j<height; j++){
             temp[i][j] = data[j][i];
          }
       }
-      return null;
+      return new Matrix(temp);
    }
 }

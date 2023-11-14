@@ -10,14 +10,14 @@ public class Simplex{
    private Plane surface;
    
 /** Color of this Simplex */
-   private Color color;
+   private Texture t;
    
 /** Creates a new Simplex with points of vertex.
 * @param vertex the Point[] vertex to set points to.
 */
    public Simplex(Point[] vertex){
       setPoints(vertex);
-      color = Color.RED;
+      t = new ConstentTexture(Color.RED, vertex.length-1);
    }
    
 /** Creates a new Simplex with points of vertex.
@@ -26,7 +26,7 @@ public class Simplex{
 */
    public Simplex(Point[] vertex, Color c){
       setPoints(vertex);
-      color = c;
+      t = new ConstentTexture(c, vertex.length-1);
    }
    
 /** Sets points to be vertex.
@@ -128,15 +128,15 @@ public class Simplex{
 /** Returns the Color of this Simplex.
 * @return Color of this Simplex.
 */
-   public Color getColor(){
-      return color;
+   public Texture getTexture(){
+      return t;
    }
    
 /** Sets the Color of this Simplex.
 * @param c The color to set.
 */
-   public void setColor(Color c){
-      color = c;
+   public void setTexture(Texture t){
+      this.t = t;
    }
    
 /** Translates all Points in this Simplex with coords.
@@ -225,7 +225,7 @@ public class Simplex{
          }
          temp += "\n\t" + tabs + points[points.length - 1];
       }
-      temp += "\n" + tabs + "}\n" + surface.toString(1 + count) + "\n" + tabs + color + "\n" + lastTab + "]";
+      temp += "\n" + tabs + "}\n" + surface.toString(1 + count) + "\n" + tabs + t + "\n" + lastTab + "]";
       return temp;
    }
    

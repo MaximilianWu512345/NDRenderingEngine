@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 public class AffineSubSpace{
    protected Vector[] dir;
    protected Point p;
@@ -80,7 +81,6 @@ public class AffineSubSpace{
       Matrix aug = m.AugmentedMatrix(zero);
       Matrix rref = m.getRREF();
       //check for impossibility
-      
       return null;
    }
    public Point getPos(){
@@ -91,6 +91,28 @@ public class AffineSubSpace{
    }
    //https://dept.math.lsa.umich.edu/~speyer/LinearAlgebraVideos/Lecture3d.pdf
    public void simplify(){
+      Matrix m = new Matrix((new Matrix(dir)).getTranspose());
+      Matrix rref = m.getRREF();
+      Vector[] dat = rref.toVectors();
+      ArrayList<Vector> result = new ArrayList<Vector>();
+      ArrayList<Integer> indexes = new ArrayList<Integer>();
+      int j = 0;
+      for(int i = 0; i<dat.length; i++){
+         for(int k = j; k<dat[i].length(); k++){
+            if(dat[i].getCoords()[k] != 0){
+               j = k;
+               indexes.add(k);
+               break;
+            }
+         }
+      }
+      for(int i:indexes){
+         if(result.indexOf(dir[i]) == -1){
+            result.add(dir[i]);
+         }
+      }
+      dir = new Vector[result.size()];
+      dir = result.toArray(dir);
       
    }
 }

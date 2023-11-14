@@ -25,6 +25,7 @@ public class Plane extends AffineSubSpace{
             }
          }
       }
+      dir = new Vector[temp.size()];
       dir = temp.toArray(dir);
    }
    public Plane(Point p, Vector[] dir){

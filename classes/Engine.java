@@ -81,6 +81,7 @@ public class Engine extends JFrame {
 * @param args default args for main method.
 */
    public static void main(String[] args) {
+   /*
       // Create the engine, start the program.
       CreateEngine();
       CreateCamera();
@@ -95,8 +96,8 @@ public class Engine extends JFrame {
             points[x] = new Point(new float[] {z, ex, y});
          }
          Simplex s = new Simplex(points);
-         //simplexes[i] = s;
-         //Instance.renderSimplex(s, randomColor());
+         simplexes[i] = s;
+         Instance.renderSimplex(s, randomColor());
       }
       
       
@@ -122,7 +123,26 @@ public class Engine extends JFrame {
             System.out.println(e);
          }
       }
-      
+      */
+      Vector[] temp = new Vector[5];
+      float[] v1 = new float[]{1,2,4};
+      float[] v2 = new float[]{3,6,12};
+      float[] v3 = new float[]{1,0,2};
+      float[] v4 = new float[]{2,2,6};
+      float[] v5 = new float[]{1,6,8};
+      temp[0] = new Vector(v1);
+      temp[1] = new Vector(v2);
+      temp[2] = new Vector(v3);
+      temp[3] = new Vector(v4);
+      temp[4] = new Vector(v5);
+      AffineSubSpace s = new AffineSubSpace(new Point(new float[3]), temp);
+      for(int i = 0; i<s.getDir().length; i++){
+         System.out.println(s.getDir()[i]);
+      }
+      s.simplify();
+      for(int i = 0; i<s.getDir().length; i++){
+         System.out.println(s.getDir()[i]);
+      }
    }
    
    public static Color[] colors = { Color.RED, Color.BLUE, Color.BLACK, Color.WHITE, Color.GREEN, Color.YELLOW, Color.GRAY};
@@ -136,7 +156,7 @@ public class Engine extends JFrame {
    }
    
    public static Camera CreateCamera() {
-      return Camera = new Camera(new Point(/*camPos*/new float[3]), /*camDirection*/new Vector(new float[] {1,0,0}), 900, 900);
+      return Camera = new CameraRastorizationV1(new Point(/*camPos*/new float[3]), /*camDirection*/new Vector(new float[] {1,0,0}), 900, 900);
    }
    
    public static File pickFile(JFileChooser fileChooser)
