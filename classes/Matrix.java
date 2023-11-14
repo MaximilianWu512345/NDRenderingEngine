@@ -62,6 +62,7 @@ public class Matrix{
    * @param m must be multipliable with this matrix
    * @return a Matrix or null when multiplication fails
    */
+   // aparapi
    public Matrix mult(Matrix m){
       int nWidth = m.width;
       int nHeight = height;
@@ -72,7 +73,7 @@ public class Matrix{
                float sum = 0;
                for(int k = 0; k<width; k++){
                   // check if this line is correct later
-                  sum += m.data[k][i] * data[j][k];
+                  sum += m.data[k][j] * data[i][k];
                }
                newData[j][i] = sum;
             }
@@ -124,44 +125,19 @@ public class Matrix{
       }
       return new Matrix(newv);
    }
+   static boolean run = true;
    /**
    * gets reduced row echelon form
    * @return a Matrix
    */
-   public Matrix getRREF(){
-      //algorithem from https://www.codewithc.com/gauss-elimination-method-algorithm-flowchart/
-      Vector[] d = this.toVectors();
-      for(int i = 0; i<d.length-1; i++){
-         if(d[i].getCoords()[i] == 0){
-            //pivot
-            for(int j = i+1; j<d.length; j++){
-               if(d[j].getCoords()[i] != 0){
-                  Vector temp = d[i];
-                  d[i] = d[j];
-                  d[j] = temp;
-                  break;
-               }
-            }
-         }
-         //Elimination
-         for(int j = i+1; j<d.length; j++){
-            if(d[i].getCoords()[i] != 0){
-               float r = d[j].getCoords()[i]/d[i].getCoords()[i];
-               d[j] = d[j].subtract(d[i].scale(r));
-            }
-         }
-      }
-      //fix
-      return new Matrix(d);
-   }
-   private int getRREFPivotCount(){
+   // aparapi not possible here
+   public MatrixInformation getRREF(){
       //algorithem from https://www.codewithc.com/gauss-elimination-method-algorithm-flowchart/
       int count = 0;
       Vector[] d = this.toVectors();
       for(int i = 0; i<d.length-1; i++){
          if(d[i].getCoords()[i] == 0){
             //pivot
-            
             for(int j = i+1; j<d.length; j++){
                if(d[j].getCoords()[i] != 0){
                   Vector temp = d[i];
@@ -172,9 +148,18 @@ public class Matrix{
                }
             }
          }
+         
+         
+         //Elimination
+         for(int j = i+1; j<d.length; j++){
+            if(d[i].getCoords()[i] != 0){
+               float r = d[j].getCoords()[i]/d[i].getCoords()[i];
+               d[j] = d[j].subtract(d[i].scale(r));
+            }
+         }
       }
       //fix
-      return count;
+      return new MatrixInformation(new Matrix(d), count);
    }
    
    public Matrix invert() {
@@ -230,8 +215,9 @@ public class Matrix{
    
    // Gaussian method.
    public static float getDeterminant(float[][] m) {
-      int sign = (new Matrix(m)).getRREFPivotCount();
-      float[][] RREF = new Matrix(m).getRREF().data;
+      MatrixInformation rrefInformation = (new Matrix(m)).getRREF();
+      int sign = rrefInformation.getPivotCount();
+      float[][] RREF = rrefInformation.getMatrix().data;
       int sum = 1;
       for (int i = 0; i < RREF.length && i < RREF[0].length; i++) {
          sum *= RREF[i][i];
@@ -309,14 +295,5 @@ public class Matrix{
       rotData[axis1][axis2] = (float) Math.sin(theta);
       rotData[axis2][axis1] = (-1f)*(float) Math.sin(theta);
       return new Matrix(rotData);
-   }
-   public Matrix transpose(){
-      float[][] temp = new float[height][width];
-      for(int i = 0; i<width; i++){
-         for(int j = 0; j<height; j++){
-            temp[i][j] = data[j][i];
-         }
-      }
-      return null;
    }
 }

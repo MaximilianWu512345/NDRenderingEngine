@@ -93,7 +93,7 @@ public class Simplex{
       }
       argVal[argVal.length-1] = 1;
       Matrix aug = M.AugmentedMatrix(new Vector(argVal));
-      Matrix rref = aug.getRREF();
+      Matrix rref = aug.getRREF().getMatrix();
       Vector[] d = rref.toVectors();
       int[] var = new int[0];
       float[] value = new float[0];

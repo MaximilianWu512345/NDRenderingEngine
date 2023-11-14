@@ -6,7 +6,6 @@ import java.util.Hashtable;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.io.File;
-import com.aparapi.Kernel;
 
 /** JFrame engine that creates a graphical application. */
 public class Engine extends JFrame {
@@ -67,24 +66,15 @@ public class Engine extends JFrame {
       Mesh[] listObj = new Mesh[] { obj1 };
       Instance.renderImage(Camera.Project(listObj, 3, c, null));
    }
-   
-   public static class Squarer extends Kernel{
-      int[] in;
-      int[] out;
-      @Override public void run(){
-         int gid = getGlobalId(0);
-         out[gid] = in[gid] * in[gid];
-      }
-   }
 
 /** Placeholder method to run TestDriver.
 * @param args default args for main method.
 */
    public static void main(String[] args) {
       // Create the engine, start the program.
+      
       CreateEngine();
       CreateCamera();
-      
       Simplex[] simplexes = new Simplex[100];
       for (int i = 0; i < 100; i++) {
          Point[] points = new Point[3];
@@ -95,10 +85,10 @@ public class Engine extends JFrame {
             points[x] = new Point(new float[] {z, ex, y});
          }
          Simplex s = new Simplex(points);
-         //simplexes[i] = s;
-         //Instance.renderSimplex(s, randomColor());
+         simplexes[i] = s;
+         
       }
-      
+      Instance.renderSimplex(simplexes[0], randomColor());
       
       // Ask for img files to open and display until user clicks cancel.
       boolean askForFiles = false;
@@ -122,6 +112,8 @@ public class Engine extends JFrame {
             System.out.println(e);
          }
       }
+      
+      System.out.println((new Vector(new float[100])).add(new Vector(new float[100])));
    }
    
    public static Color[] colors = { Color.RED, Color.BLUE, Color.BLACK, Color.WHITE, Color.GREEN, Color.YELLOW, Color.GRAY};
