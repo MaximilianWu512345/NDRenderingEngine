@@ -132,7 +132,7 @@ public class Vector {
       //System.out.println("aug");
       //System.out.println(aug);
       //get rref
-      Matrix rref = aug.getRREF();
+      Matrix rref = aug.getRREF().getMatrix();
       //System.out.println("rref");
       //System.out.println(rref);
       //evaluate
@@ -197,7 +197,7 @@ public class Vector {
       Vector[] temp = new Vector[1];
       temp[0] = this;
       Matrix v = new Matrix(temp);
-      v = v.transpose();
+      v = new Matrix(v.getTranspose());
       Matrix postRot = new Matrix(rot.mult(v).getTranspose());
       Vector[] result = postRot.toVectors();
       return result[0];

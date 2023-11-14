@@ -30,8 +30,5 @@ public interface Camera{
 * @return a projected Color[][]
 */
    public Texture Project(Mesh[] o, int dimention, Color triangleC, Color backgroundC);
-   
-/** Generic toString() method.
-* @return String describing this Object.
-*/
+
 }

@@ -6,7 +6,6 @@ import java.util.Hashtable;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.io.File;
-import com.aparapi.Kernel;
 
 /** JFrame engine that creates a graphical application. */
 public class Engine extends JFrame {
@@ -67,15 +66,6 @@ public class Engine extends JFrame {
       Mesh[] listObj = new Mesh[] { obj1 };
       Instance.renderImage(Camera.Project(listObj, 3, c, null));
    }
-   
-   public static class Squarer extends Kernel{
-      int[] in;
-      int[] out;
-      @Override public void run(){
-         int gid = getGlobalId(0);
-         out[gid] = in[gid] * in[gid];
-      }
-   }
 
 /** Placeholder method to run TestDriver.
 * @param args default args for main method.
@@ -83,9 +73,9 @@ public class Engine extends JFrame {
    public static void main(String[] args) {
    /*
       // Create the engine, start the program.
+      
       CreateEngine();
       CreateCamera();
-      
       Simplex[] simplexes = new Simplex[100];
       for (int i = 0; i < 100; i++) {
          Point[] points = new Point[3];
@@ -98,8 +88,9 @@ public class Engine extends JFrame {
          Simplex s = new Simplex(points);
          simplexes[i] = s;
          Instance.renderSimplex(s, randomColor());
+
       }
-      
+      Instance.renderSimplex(simplexes[0], randomColor());
       
       // Ask for img files to open and display until user clicks cancel.
       boolean askForFiles = false;
@@ -124,25 +115,6 @@ public class Engine extends JFrame {
          }
       }
       */
-      Vector[] temp = new Vector[5];
-      float[] v1 = new float[]{1,2,4};
-      float[] v2 = new float[]{3,6,12};
-      float[] v3 = new float[]{1,0,2};
-      float[] v4 = new float[]{2,2,6};
-      float[] v5 = new float[]{1,6,8};
-      temp[0] = new Vector(v1);
-      temp[1] = new Vector(v2);
-      temp[2] = new Vector(v3);
-      temp[3] = new Vector(v4);
-      temp[4] = new Vector(v5);
-      AffineSubSpace s = new AffineSubSpace(new Point(new float[3]), temp);
-      for(int i = 0; i<s.getDir().length; i++){
-         System.out.println(s.getDir()[i]);
-      }
-      s.simplify();
-      for(int i = 0; i<s.getDir().length; i++){
-         System.out.println(s.getDir()[i]);
-      }
    }
    
    public static Color[] colors = { Color.RED, Color.BLUE, Color.BLACK, Color.WHITE, Color.GREEN, Color.YELLOW, Color.GRAY};
