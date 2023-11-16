@@ -135,7 +135,7 @@ public class Engine extends JFrame {
    }
    
    public static Camera CreateCamera() {
-      return Camera = new Camera(new Point(/*camPos*/new float[3]), /*camDirection*/new Vector(new float[] {1,0,0}), 900, 900);
+      return Camera = new CameraRastorizationV1(new Point(/*camPos*/new float[3]), /*camDirection*/new Vector(new float[] {1,0,0}), 900, 900);
    }
    
    public static File pickFile(JFileChooser fileChooser)
