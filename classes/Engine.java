@@ -66,16 +66,21 @@ public class Engine extends JFrame {
       Mesh[] listObj = new Mesh[] { obj1 };
       Instance.renderImage(Camera.Project(listObj, 3, c, null));
    }
+   
+   public void renderMesh(Mesh m, Color c) {
+      Mesh[] listObj = new Mesh[] { m };
+      Instance.renderImage(Camera.Project(listObj, 3, c, null));
+   }
 
 /** Placeholder method to run TestDriver.
 * @param args default args for main method.
 */
    public static void main(String[] args) {
-   /*
       // Create the engine, start the program.
       
       CreateEngine();
       CreateCamera();
+   /*
       Simplex[] simplexes = new Simplex[100];
       for (int i = 0; i < 100; i++) {
          Point[] points = new Point[3];

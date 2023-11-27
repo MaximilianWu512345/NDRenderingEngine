@@ -41,7 +41,7 @@ public class AffineSubSpace{
          }
       }
       Matrix aug = M.AugmentedMatrix(new Vector(adjtarg));
-      Matrix rref = aug.getRREF();
+      Matrix rref = aug.getRREF().getMatrix();
       Vector[] eq = rref.toVectors();
       for(Vector c:eq){
          if(c.getCoords()[c.length()] != 0){
@@ -79,7 +79,7 @@ public class AffineSubSpace{
       Matrix m = new Matrix(thisSubspaceMatrixData);
       Vector zero = new Vector(new float[p.length()]);
       Matrix aug = m.AugmentedMatrix(zero);
-      Matrix rref = m.getRREF();
+      Matrix rref = m.getRREF().getMatrix();
       //check for impossibility
       return null;
    }
@@ -92,7 +92,7 @@ public class AffineSubSpace{
    //https://dept.math.lsa.umich.edu/~speyer/LinearAlgebraVideos/Lecture3d.pdf
    public void simplify(){
       Matrix m = new Matrix((new Matrix(dir)).getTranspose());
-      Matrix rref = m.getRREF();
+      Matrix rref = m.getRREF().getMatrix();
       Vector[] dat = rref.toVectors();
       ArrayList<Vector> result = new ArrayList<Vector>();
       ArrayList<Integer> indexes = new ArrayList<Integer>();

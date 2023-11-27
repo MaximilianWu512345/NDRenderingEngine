@@ -1,7 +1,7 @@
 import java.awt.Color;
 
 /** Simplex class */
-public class Simplex{
+public class Simplex {
 
 /** Points in this Simplex */
    private Point[] points;
@@ -16,7 +16,8 @@ public class Simplex{
 * @param vertex the Point[] vertex to set points to.
 */
    public Simplex(Point[] vertex){
-      setPoints(vertex);
+      points = vertex;
+      //setPoints(vertex);
       t = new ConstentTexture(Color.RED, vertex.length-1);
    }
    
@@ -225,7 +226,7 @@ public class Simplex{
          }
          temp += "\n\t" + tabs + points[points.length - 1];
       }
-      temp += "\n" + tabs + "}\n" + surface.toString(1 + count) + "\n" + tabs + t + "\n" + lastTab + "]";
+      temp += "\n" + tabs + "}\n" + (surface == null ? tabs + null : surface.toString(1 + count)) + "\n" + tabs + t + "\n" + lastTab + "]";
       return temp;
    }
    
