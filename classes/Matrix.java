@@ -25,6 +25,21 @@ public class Matrix{
       width = d[0].length;
    }
    /**
+   *gets the hight of this matrix
+   *@return the ight of this matrix as an int
+   */
+   public int getHeight(){
+      return height;
+   }
+   
+   /**
+   *gets the width of this matrix
+   *@return the ight of this matrix as an int
+   */
+   public int getWidth(){
+      return width;
+   }
+   /**
    * generates a matrix with elements of d
    * @param d must be a rectangular 2d array
    */
@@ -318,5 +333,19 @@ public class Matrix{
          }
       }
       return null;
+   }
+   //returns null if there is no solution or infitite solutions
+   public Vector solve(Vector v){
+      Matrix aug = AugmentedMatrix(v);
+      Matrix rref = aug.getRREF();
+   Vector[] allEq = rref.toVectors();
+   Vector result = null;
+      //check for multiple or impossible
+      boolean sol = true;
+      for(int i = allEq.length-1;i<=0 i++){
+         Vector eq = allEq[i];
+         
+      }
+      return result;
    }
 }

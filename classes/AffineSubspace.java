@@ -1,6 +1,6 @@
 public class AffineSubspace{
-   private SubSpace s;
-   private Point p;
+   protected SubSpace s;
+   protected Point p;
    public AffineSubspace(SubSpace s, Point p){
       this.s = s;
       this.p = p;
