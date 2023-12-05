@@ -74,6 +74,6 @@ public class ShapeLibrary {
    }
    
    public static void main(String[] args) {
-      System.out.println(GenerateHypercube(1, 2));
+      System.out.println(GenerateHypercube(2, 2));
    }
 }

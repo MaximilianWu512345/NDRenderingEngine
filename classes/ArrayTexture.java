@@ -23,6 +23,9 @@ public class ArrayTexture implements Texture{
    public int[] getBounds(){
       return bounds;
    }
+   public Color[] getData() {
+      return data;
+   }
    public Color getColor(Point p){
    
       int mult = 1;

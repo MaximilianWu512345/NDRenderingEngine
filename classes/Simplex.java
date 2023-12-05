@@ -40,8 +40,8 @@ public class Simplex {
          for(int j = 0; j<vertex[0].length(); j++){
             temp2[j] = vertex[0].getCoords()[j];
          }
-         for(int j = 0; j < temp.length; j++){
-            temp2[j] -= vertex[i].getCoords()[j];
+         for(int j = 1; j < temp.length; j++){
+            temp2[j - 1] -= vertex[i].getCoords()[j-1];
          }
          temp[i-1] = new Vector(temp2);
       }
