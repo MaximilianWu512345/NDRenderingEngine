@@ -6,6 +6,9 @@ public class Simplex{
 /** Points in this Simplex */
    private Point[] points;
    
+/** Corrisponding points on texture **/
+   private Point[] texturePoints;
+   
 /** Plane in this Simplex */
    private Plane surface;
    
@@ -55,7 +58,15 @@ public class Simplex{
    public Point[] getPoints(){
       return points;
    }
-   
+   /** Returns the texture points of this simplex
+   *@return Point[] of the texture poitns of this simplex
+   */
+   public Point[] getTexturePoints(){
+      return texturePoints;
+   }
+   public void setTexturePoints(Point[] texturePoints){
+      this.texturePoints = texturePoints;
+   }
 /** Returns whether or not Point p is within this Simplex.
 * Algorithm from https://stackoverflow.com/questions/21819132/how-do-i-check-if-a-simplex-contains-the-origin by ellisbben
 * @param p The point to check.
@@ -125,20 +136,36 @@ public class Simplex{
       return true;
    }
    
-/** Returns the Color of this Simplex.
-* @return Color of this Simplex.
+/** Returns the Texture of this Simplex.
+* @return Texture of this Simplex.
 */
    public Texture getTexture(){
       return t;
    }
    
-/** Sets the Color of this Simplex.
-* @param c The color to set.
+/** Sets the Texture of this Simplex.
+* @param t The texture to set.
 */
    public void setTexture(Texture t){
       this.t = t;
    }
-   
+   /** gets color of this simplex at specifyed location definde by points of simplex
+   *@param v The location to look at in terms of how much of each vertex, values between 1 and 0, must have length equal to the number of vertexes
+   *@return Color The color at the location, return null if outside of texture bounds
+   */
+   public Color getColor(float[] v){
+      int[] texBound = t.getBounds();
+      Vector texLoc = new Vector(new float[texBound.length]);
+      for(int i = 0; i<v.length; i++){
+         texLoc.add(new Vector(texturePoints[i].getCoords()).scale(v[i]));
+      }
+      for(int i = 0; i<texLoc.length(); i++){
+         if(texLoc.getCoords()[i] <= texBound[i]){
+            return null;
+         }
+      }
+      return t.getColor(new Point(texLoc.getCoords()));
+   }
 /** Translates all Points in this Simplex with coords.
 * @param coords The float[] to translate Points in this Simplex with.
 */

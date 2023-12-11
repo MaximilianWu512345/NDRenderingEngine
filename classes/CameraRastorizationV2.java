@@ -2,12 +2,15 @@ import java.awt.Color;
 import java.util.*;
 import java.lang.*;
 public class CameraRastorizationV2 implements Camera{
-   private Point c;
-   private AffineSubspace s;
-   private Matrix m;
-   private Vector sol;
-   private int[] bounds;
-   private final float EXISTS = 1;
+   protected Point c;
+   protected AffineSubspace s;
+   protected Matrix m;
+   protected Vector sol;
+   protected int[] bounds;
+   protected final float EXISTS = 1;
+   protected int g = 0;
+   protected int ms = 0;
+   protected int n = 0;
    public CameraRastorizationV2 (Point c, AffineSubspace s, int[] bounds){
       this.s = s;
       this.c = c;
@@ -26,10 +29,10 @@ public class CameraRastorizationV2 implements Camera{
       this.s = s;
    }
    public void reCalculateMatrix(Simplex s){
-      int g = c.length()-1;
-      int ms = this.s.getSubSpace().getDir().length;
-      int n = c.length();
-      int numCol = 2*ms+2*g+2;
+      g = s.getPoints().length-1;
+      ms = this.s.getSubSpace().getDir().length;
+      n = c.length();
+      int numCol = 2*ms+g+3;
       int numRow = n+g+1;
       float[][] data = new float[numCol][numRow];
       int currentCol = 0;
@@ -72,13 +75,13 @@ public class CameraRastorizationV2 implements Camera{
          for(int i = 0; i<n; i++){
             data[currentCol][i] = v[currentCol-start].getCoords()[i];
          }
-         data[currentCol][n+(start-currentCol)] = 1;
+         data[currentCol][n+1] = 1;
          currentCol++;
       }
       //alpha restrict (in simplex)
       start = currentCol;
       while(currentCol-start<g){
-         data[currentCol][n+(start-currentCol)] = 1;
+         data[currentCol][n+1] = -1;
          currentCol++;
       }
       //const
@@ -91,9 +94,7 @@ public class CameraRastorizationV2 implements Camera{
       //remove reduntant bases later
       //generate solution
       float[] result = new float[numRow];
-      for(int i = n; i<numRow; i++){
-         result[i] = 1;
-      }
+      result[n+1] = 1;
       sol = new Vector(result);
    }
 
@@ -123,7 +124,10 @@ public class CameraRastorizationV2 implements Camera{
       for(int i = 0; i<bounds.length; i++){
          numColors *= bounds[i];
       }
-      Texture t = new ArrayTexture(new Color[numColors],bounds);
+      Color[] pix = new Color[numColors];
+      for(int i = 0; i<numColors; i++){
+         pix[i] = backgroundC;
+      }
       LinkedList<Simplex> original = new LinkedList<Simplex>();
       for(Mesh obj: o){
          Simplex[] faces = obj.getFaces();
@@ -133,18 +137,53 @@ public class CameraRastorizationV2 implements Camera{
       }
       //cull by bounding box?
       
-      //calculate vertex positions, let 1 be exists, let -1 be doesn't exist
       LinkedList<Simplex> projected = new LinkedList<Simplex>();
       //for each simplex, project points
       for(Simplex current: original){
          projected.add(projectSimplex(current)); 
       }
-      //z-buffering
-      //paint
+      //z-buffering and painting
+      zBufferArrayTexture zBuff = new zBufferArrayTexture(pix,bounds);
+      for(Simplex current: projected){
+         Point[] allPoints = current.getPoints();
+         if(allPoints.length>ms){
+            //select ms+1 points to draw (triangles)
+            int[] selectedPoints = new int[ms+1];
+            int pointCount = current.getPoints().length;
+            for(int i = 0; i<pointCount; i++){
+               selectedPoints[i] = i;
+            }
+            boolean cont = true;
+            while(cont){
+               //restirctions
+               int[] projBoundingBoxMax = new int[ms];
+               int[] projBoundingBoxMin = new int[ms];
+               for(int i = 0; i<bounds.length; i++){
+                  projBoundingBoxMax[i] = bounds[i];
+                  projBoundingBoxMin[i] = bounds[i];
+               }
+               boolean hasPix = true;
+               int[] pixPos = new int[ms];
+               while(hasPix){
+                  //set up solve
+                  
+                  //next pixel
+                  pixelPos = incrementArray(pixelPos, projBoundingBoxMax, projBoundingBoxMin, pixelPos.length-1);
+                  hasPix = pixelPos == null;
+               }
+               selectedPoints = shiftSelected(selectedPoints, pointCount, selectedPoints.length-1);
+               cont = selectedPoints == null;
+            }
+         } else {
+            //draw normaly
+            
+         }
+      }
       return null;
    }
-   private Simplex projectSimplex(Simplex s){
+   protected Simplex projectSimplex(Simplex s){
       ArrayList<Point> newPoints = new ArrayList<Point>();
+      ArrayList<Point> corrispond = new ArrayList<Point>();
       //get simplex slice
       reCalculateMatrix(s);
    
@@ -178,17 +217,54 @@ public class CameraRastorizationV2 implements Camera{
          }
          
          Matrix currentEq = new Matrix(selectedData);
-         //solve
-         Vector mixedSolution = currentEq.solve(sol);
+         //solve part
+         Vector partSolution = currentEq.solve(sol);
+         if(partSolution == null){
+            continue;
+         }
+         //get rest
+         float[] newPointData = new float[numUnknowns];
+         for(int i = 0; i<selectedCol.length; i++){
+            newPointData[selectedCol[i]] = partSolution.getCoords()[i];
+         }
+         Vector mixedSolution = new Vector(newPointData);
+         float[] mixedSolData = mixedSolution.getCoords();
          //fix format
-         
+         float[] fixedSolData = new float[ms+1];
+         float[] corrispondVectors = new float[g];
+         //camera vectors
+         fixedSolData[ms] = mixedSolData[ms];
+         for(int i = 0; i<ms; i++){
+            fixedSolData[i] = (mixedSolData[i] + mixedSolData[i+ms+1])/mixedSolData[ms];
+         }
+         //simplex vectors
+         for(int i = 2*ms+1; i<2*ms+g+1; i++){
+            corrispondVectors[i-2*ms-1] = mixedSolData[i];
+         }
+         newPoints.add(new Point(fixedSolData));
+         corrispond.add(new Point(corrispondVectors));
          //change selection
          selectedCol = shiftSelected(selectedCol, maxUnknowns, selectedCol.length-1);
          cont = selectedCol == null;            
       }
-      
-      
-      return null;
+      Point[] tempPoints = new Point[newPoints.size()];
+      tempPoints = newPoints.toArray(tempPoints);
+      Simplex resultSimplex = new Simplex(tempPoints);
+      //set texture
+      resultSimplex.setTexture(s.getTexture());
+      LinkedList<Point> shiftedTexturePoints = new LinkedList<Point>();
+      for(int i = 0; i<tempPoints.length; i++){
+         Vector target = new Vector(corrispond.get(i).getCoords());
+         Vector newTextPoint = new Vector(new float[s.getTexture().getBounds().length]);
+         for(int j = 0; j<g; j++){
+            newTextPoint.add(new Vector(s.getTexturePoints()[j].getCoords()).scale(target.getCoords()[j]));
+         }
+         shiftedTexturePoints.add(new Point(newTextPoint.getCoords()));
+      }
+      tempPoints = new Point[shiftedTexturePoints.size()];
+      tempPoints = shiftedTexturePoints.toArray(tempPoints);
+      resultSimplex.setTexturePoints(tempPoints);
+      return resultSimplex;
       //just in case 
       /*
       Matrix aug = m.AugmentedMatrix(sol);
@@ -233,7 +309,7 @@ public class CameraRastorizationV2 implements Camera{
       Vector bf = new Vector(fixedRes);
       */
    }
-   private int[] shiftSelected(int[] selected, int maximum, int index){
+   protected int[] shiftSelected(int[] selected, int maximum, int index){
       selected[index]++;
       int len = selected.length;
       if(selected[index] == (maximum-len+index)){
@@ -245,5 +321,19 @@ public class CameraRastorizationV2 implements Camera{
          }
       }  
       return selected;
+   }
+   protected int[] incrementArray(int[] arr, int[] max, int[] min, int index){
+      if(index == -1){
+         return arr;
+      }
+      arr[index]++;
+      if(arr[index]>= max[index]){
+         if(index == 0){
+            return null;
+         }
+         arr[index] = min[index];
+         arr = incrementArray(arr, max, min, index-1);
+      }
+      return arr;
    }
 }

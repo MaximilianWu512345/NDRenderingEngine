@@ -1,7 +1,7 @@
 import java.awt.Color;
 public class ArrayTexture implements Texture{
- private Color[] data;
- private int[] bounds;
+ protected Color[] data;
+ protected int[] bounds;
  public ArrayTexture(Color[] data, int[] bounds){
    this.data = data;
    this.bounds = bounds;
@@ -20,9 +20,14 @@ public class ArrayTexture implements Texture{
       bounds = b;
    }
    public boolean setColor(Point p, Color c){
-      return false;
+      int index = getIndex(p);
+      if(index == -1){
+         return false;
+      }
+      data[index] = c;
+      return true;
    }
-   private int getIndex(Point p){
+   protected int getIndex(Point p){
       int mult = 1;
       int result = 0;
       for(int i = 0; i<p.length(); i++){

@@ -338,14 +338,32 @@ public class Matrix{
    public Vector solve(Vector v){
       Matrix aug = AugmentedMatrix(v);
       Matrix rref = aug.getRREF();
-   Vector[] allEq = rref.toVectors();
-   Vector result = null;
+      Vector[] allEq = rref.toVectors();
+      Vector result = null;
       //check for multiple or impossible
-      boolean sol = true;
-      for(int i = allEq.length-1;i<=0 i++){
-         Vector eq = allEq[i];
-         
+      if(rref.height<rref.width){
+         return null;
       }
+      VectorLoop:for(int i = allEq.length-1;i<=0 ;i++){
+         Vector eq = allEq[i];
+         float[] coff = eq.getCoords();
+         for(int j = 0; j<coff.length-1; j++){
+            if(coff[j] != 0){
+               continue VectorLoop;
+            }
+         }
+         return null;
+      }
+      //actually solve
+      float[] resultData = new float[rref.width];
+      for(int i = allEq.length-1; i>=1; i++){
+         allEq[i] = allEq[i].scale(1/allEq[i].getCoords()[i]);
+         allEq[i-1] = allEq[i-1].add(allEq[i].scale(-1*allEq[i-1].getCoords()[i]));
+         resultData[i] = allEq[i].getCoords()[rref.width-1];
+      }
+      allEq[0] = allEq[0].scale(1/allEq[0].getCoords()[0]);
+      resultData[0] = allEq[0].getCoords()[rref.width-1];
+      result = new Vector(resultData);
       return result;
    }
 }
