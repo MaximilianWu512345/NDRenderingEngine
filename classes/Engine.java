@@ -15,7 +15,7 @@ public class Engine extends JFrame {
    public static Engine Instance;
    
 /** Holds most recently created Camera. */
-   public static Camera Camera;
+   public static Camera camera;
    
 /** Title of JFrame when program is run. */
    protected static final String TITLE = "Max Wu's Concoction Machine";
@@ -59,13 +59,13 @@ public class Engine extends JFrame {
       Simplex[] faces = new Simplex[] { s };
       Mesh obj1 = new Mesh(faces, 3);
       Mesh[] listObj = new Mesh[] { obj1 };
-      Instance.renderImage(Camera.Project(listObj, 3, c, null));
+      Instance.renderImage(camera.Project(listObj, c, null));
    }
    
    public void renderSimplexes(Simplex[] s, Color c) {
       Mesh obj1 = new Mesh(s, 3);
       Mesh[] listObj = new Mesh[] { obj1 };
-      Instance.renderImage(Camera.Project(listObj, 3, c, null));
+      Instance.renderImage(camera.Project(listObj, c, null));
    }
    
    public static class Squarer extends Kernel{
@@ -81,47 +81,28 @@ public class Engine extends JFrame {
 * @param args default args for main method.
 */
    public static void main(String[] args) {
-      // Create the engine, start the program.
+      // Create the engine and camera, start the program.
+      int dimention = 5;
       CreateEngine();
-      CreateCamera();
+      Point screenPos = new Point(new float[dimention]);
+      screenPos.getCoords()[0] = 1;
+      Vector[] axis = new Vector[2];
+      float[] axis1 = new float[dimention];
+      float[] axis2 = new float[dimention];
+      axis1[1] = 1;
+      axis2[2] = 2;
+      axis[0] = new Vector(axis1);
+      axis[1] = new Vector(axis2);
+      SubSpace screenDir = new SubSpace(axis);
+      AffineSubspace screen = new AffineSubspace(screenDir, screenPos);
+      Point camPos = new Point(new float[dimention]);
+      int[] pixBounds = new int[]{900, 900};
+      camera = new CameraRastorizationV2(camPos, screen, pixBounds);
       
-      Simplex[] simplexes = new Simplex[100];
-      for (int i = 0; i < 100; i++) {
-         Point[] points = new Point[3];
-         for (int x = 0; x < 3; x++) {
-            int z = (int)(Math.random() * 2) + 1;
-            int ex = (int)(Math.random() * 1000);
-            int y = (int)(Math.random() * 1000);
-            points[x] = new Point(new float[] {z, ex, y});
-         }
-         Simplex s = new Simplex(points);
-         //simplexes[i] = s;
-         //Instance.renderSimplex(s, randomColor());
-      }
-      
-      
-      // Ask for img files to open and display until user clicks cancel.
-      boolean askForFiles = false;
-      if (askForFiles) {
-         try {
-            JFileChooser fileChooser = new JFileChooser();
-            File file = pickFile(fileChooser);
-            if (file != null) {
-               Instance.renderImage(ImageIO.read(file));
-               Instance.repaint();
-               while (file != null) {
-                  file = pickFile(fileChooser);
-                  if (file != null) {
-                     Instance.renderImage(ImageIO.read(file));
-                     Instance.repaint();
-                  }
-               }
-            }
-         }
-         catch (Exception e) {
-            System.out.println(e);
-         }
-      }
+      //generate simplex
+      Mesh[] scene = null;
+      //render
+      Instance.renderImage(camera.Project(scene));
    }
    
    public static Color[] colors = { Color.RED, Color.BLUE, Color.BLACK, Color.WHITE, Color.GREEN, Color.YELLOW, Color.GRAY};
@@ -135,7 +116,8 @@ public class Engine extends JFrame {
    }
    
    public static Camera CreateCamera() {
-      return Camera = new CameraRastorizationV1(new Point(/*camPos*/new float[3]), /*camDirection*/new Vector(new float[] {1,0,0}), 900, 900);
+      //return Camera = new CameraRastorizationV2(new Point(/*camPos*/new float[3]), /*camDirection*/new Vector(new float[] {1,0,0}), 900, 900);
+      return null;
    }
    
    public static File pickFile(JFileChooser fileChooser)

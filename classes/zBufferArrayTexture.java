@@ -54,4 +54,11 @@ public class zBufferArrayTexture implements Texture{
       public Color c;
       public float z;
    }
+   public ArrayTexture getArrayTexture(){
+      Color[] colorData = new Color[data.length];
+      for(int i = 0; i<colorData.length; i++){
+         colorData[i] = data[i].c;
+      }
+      return new ArrayTexture(colorData, bounds);
+   }
 }

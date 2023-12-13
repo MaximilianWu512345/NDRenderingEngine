@@ -107,8 +107,8 @@ public class CameraRastorizationV2 implements Camera{
 * @param dimention the dimension.
 * @return a projected Color[][]
 */
-   public Texture Project(Mesh[] o, int dimension){
-      return Project(o, dimension, Color.RED, Color.BLACK);
+   public Texture Project(Mesh[] o){
+      return Project(o, Color.RED, Color.BLACK);
    }
    
 /**
@@ -118,7 +118,7 @@ public class CameraRastorizationV2 implements Camera{
 * @param the color of the background, optionally null.
 * @return a projected Color[][]
 */
-   public Texture Project(Mesh[] o, int dimention, Color triangleC, Color backgroundC){
+   public Texture Project(Mesh[] o, Color triangleC, Color backgroundC){
       //get all simplexes
       int numColors = 1;
       for(int i = 0; i<bounds.length; i++){
@@ -155,31 +155,118 @@ public class CameraRastorizationV2 implements Camera{
             }
             boolean cont = true;
             while(cont){
+               //put points in simplex
+               Point[] neededPoints = new Point[ms+1];
+               Point[] flatPoints = new Point[ms+1];
+               for(int i = 0; i<selectedPoints.length; i++){
+                  //has depth
+                  neededPoints[i] = allPoints[selectedPoints[i]];
+                  //check pos
+                  float[] pixCoords = new float[allPoints[0].getCoords().length];
+                  for(int j = 0; j<pixCoords.length; j++){
+                     pixCoords[j] = allPoints[selectedPoints[i]].getCoords()[j];
+                  }
+                  flatPoints[i] = new Point(pixCoords);
+               }
+               Simplex currentPart = new Simplex(neededPoints);
+               Simplex flatCurrentPart = new Simplex(flatPoints);
                //restirctions
-               int[] projBoundingBoxMax = new int[ms];
-               int[] projBoundingBoxMin = new int[ms];
+               float[] projBoundingBoxMax = new float[ms];
+               float[] projBoundingBoxMin = new float[ms];
                for(int i = 0; i<bounds.length; i++){
                   projBoundingBoxMax[i] = bounds[i];
                   projBoundingBoxMin[i] = bounds[i];
                }
                boolean hasPix = true;
-               int[] pixPos = new int[ms];
-               while(hasPix){
-                  //set up solve
-                  
+               float[] pixPos = new float[ms];
+               for(int i = 0; i<pixPos.length; i++){
+                  pixPos[i] = projBoundingBoxMin[i];
+               }
+               drawLoop:while(hasPix){
+                  Point pixPoint = new Point(pixPos);
+                  //draw pixel
+                  Vector bary = flatCurrentPart.getBaryCentricCoords(pixPoint);
+                  //is in triangle
+                  if(bary == null){
+                     continue drawLoop;
+                  }
+                  for(int i = 0; i<bary.length(); i++){
+                     if(bary.getCoords()[i] < 0 || bary.getCoords()[i] > 1){
+                        continue drawLoop;
+                     }
+                  }
+                  //get color
+                  Color pixColor = currentPart.getColor(bary.getCoords());
+                  //get depth
+                  Vector actualPoint = new Vector(new float[bary.length()]);
+                  for(int i = 0; i<currentPart.getPoints().length; i++){
+                     actualPoint.add((new Vector(currentPart.getPoints()[i].getCoords())).scale(bary.getCoords()[i]));
+                  }
+                  Point zbuffPoint = new Point(actualPoint.getCoords());
+                  zBuff.setColor(zbuffPoint, pixColor);
                   //next pixel
-                  pixelPos = incrementArray(pixelPos, projBoundingBoxMax, projBoundingBoxMin, pixelPos.length-1);
-                  hasPix = pixelPos == null;
+                  pixPos = incrementArray(pixPos, projBoundingBoxMax, projBoundingBoxMin, pixPos.length-1);
+                  hasPix = pixPos == null;
                }
                selectedPoints = shiftSelected(selectedPoints, pointCount, selectedPoints.length-1);
                cont = selectedPoints == null;
             }
-         } else {
-            //draw normaly
+         } else if (allPoints.length == 0){
+            //no points to draw
             
+         }else {
+            //less points (e.g. line or point)
+            Point[] neededPoints = new Point[allPoints.length];
+            Point[] flatPoints = new Point[allPoints.length];
+            for(int i = 0; i<allPoints.length; i++){
+                  //has depth
+               neededPoints[i] = allPoints[i];
+                  //check pos
+               float[] pixCoords = new float[allPoints[0].getCoords().length];
+               for(int j = 0; j<pixCoords.length; j++){
+                  pixCoords[j] = allPoints[i].getCoords()[j];
+               }
+               flatPoints[i] = new Point(pixCoords);
+            }
+            Simplex currentPart = new Simplex(neededPoints);
+            Simplex flatCurrentPart = new Simplex(flatPoints);
+            float[] projBoundingBoxMax = new float[ms];
+            float[] projBoundingBoxMin = new float[ms];
+            for(int i = 0; i<bounds.length; i++){
+               projBoundingBoxMax[i] = bounds[i];
+               projBoundingBoxMin[i] = bounds[i];
+            }
+            boolean hasPix = true;
+            float[] pixPos = new float[ms];
+            for(int i = 0; i<pixPos.length; i++){
+               pixPos[i] = projBoundingBoxMin[i];
+            }
+            drawLoop:while(hasPix){
+               Point pixPoint = new Point(pixPos);
+                  //draw pixel
+               Vector bary = flatCurrentPart.getBaryCentricCoords(pixPoint);
+                  //is in triangle
+               if(bary == null){
+                  continue drawLoop;
+               }
+               for(int i = 0; i<bary.length(); i++){
+                  if(bary.getCoords()[i] < 0 || bary.getCoords()[i] > 1){
+                     continue drawLoop;
+                  }
+               }
+                  //get color
+               Color pixColor = currentPart.getColor(bary.getCoords());
+                  //get depth
+               Vector actualPoint = new Vector(new float[bary.length()]);
+               for(int i = 0; i<currentPart.getPoints().length; i++){
+                  actualPoint.add((new Vector(currentPart.getPoints()[i].getCoords())).scale(bary.getCoords()[i]));
+               }
+               Point zbuffPoint = new Point(actualPoint.getCoords());
+               zBuff.setColor(zbuffPoint, pixColor);
+            }
          }
       }
-      return null;
+      return zBuff.getArrayTexture();
    }
    protected Simplex projectSimplex(Simplex s){
       ArrayList<Point> newPoints = new ArrayList<Point>();
@@ -322,7 +409,7 @@ public class CameraRastorizationV2 implements Camera{
       }  
       return selected;
    }
-   protected int[] incrementArray(int[] arr, int[] max, int[] min, int index){
+   protected float[] incrementArray(float[] arr, float[] max, float[] min, int index){
       if(index == -1){
          return arr;
       }

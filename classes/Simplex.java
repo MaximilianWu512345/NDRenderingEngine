@@ -72,6 +72,27 @@ public class Simplex{
 * @param p The point to check.
 * @return boolean of whether the point is within this Simplex.
 */
+   public Vector getBaryCentricCoords(Point p){
+      //set up matrix
+      int datWidth = points.length;
+      int datHight = points[0].getCoords().length;
+      float[][] matData = new float[datWidth][datHight];
+      for(int i = 0; i<points.length; i++){
+         float[] currentPoint = points[i].getCoords();
+         for(int j = 0; j<currentPoint.length; j++){
+            matData[i][j] = currentPoint[j];
+         }
+      }
+      Matrix m = new Matrix(matData);
+      //set up solution
+      float[] sol = new float[datHight];
+      for(int i = 0; i<sol.length-1; i++){
+         sol[i] = p.getCoords()[i];
+      }
+      Vector solVec = new Vector(sol);
+      Vector result = m.solve(solVec);
+      return result;
+   }
    public boolean isWithin(Point p){
       //shift points
       Point[] ps = new Point[points.length];

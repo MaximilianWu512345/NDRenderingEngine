@@ -11,7 +11,7 @@ public interface Camera{
 * @param dimention the dimension.
 * @return a projected Color[][]
 */
-   public Texture Project(Mesh[] o, int dimension) ;
+   public Texture Project(Mesh[] o) ;
    
 /**
 * Projects a Mesh and an int dimension to a Color[][].
@@ -20,5 +20,5 @@ public interface Camera{
 * @param the color of the background, optionally null.
 * @return a projected Color[][]
 */
-   public Texture Project(Mesh[] o, int dimention, Color triangleC, Color backgroundC);
+   public Texture Project(Mesh[] o, Color triangleC, Color backgroundC);
 }
