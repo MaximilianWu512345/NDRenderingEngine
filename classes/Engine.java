@@ -3,11 +3,12 @@ import javax.swing.JPanel;
 import javax.swing.JFileChooser;
 import javax.imageio.ImageIO;
 import java.util.Hashtable;
+import java.util.*;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.io.File;
+import java.io.*;
 import com.aparapi.Kernel;
-
 /** JFrame engine that creates a graphical application. */
 public class Engine extends JFrame {
 
@@ -89,8 +90,8 @@ public class Engine extends JFrame {
       Vector[] axis = new Vector[2];
       float[] axis1 = new float[dimention];
       float[] axis2 = new float[dimention];
-      axis1[1] = 1;
-      axis2[2] = 2;
+      axis1[1] = 3/900;
+      axis2[2] = 2/900;
       axis[0] = new Vector(axis1);
       axis[1] = new Vector(axis2);
       SubSpace screenDir = new SubSpace(axis);
@@ -99,10 +100,33 @@ public class Engine extends JFrame {
       int[] pixBounds = new int[]{900, 900};
       camera = new CameraRastorizationV2(camPos, screen, pixBounds);
       
-      //generate simplex
-      Mesh[] scene = null;
+      //generate scene
+      ArrayList<Mesh> scene = new ArrayList<Mesh>();
+      //generate mesh
+      int numTestSimplexes = 1;
+      int numTestMeshes = 1;
+      for(int i = 0; i<numTestMeshes; i++){
+         Simplex[] tempSimplex = new Simplex[numTestSimplexes];
+         for(int j = 0; j< numTestSimplexes; j++){
+            tempSimplex[j] = generateRandomSimplex(dimention, 10);
+         }
+         scene.add(new Mesh(tempSimplex, dimention));
+      }
+      Mesh[] sceneArr = new Mesh[scene.size()];
+      sceneArr = scene.toArray(sceneArr);
       //render
-      Instance.renderImage(camera.Project(scene));
+      long timeStart = System.nanoTime();
+      Texture realPixels = camera.Project(sceneArr);
+      long timeEnd = (System.nanoTime()-timeStart);
+      System.out.println( timeEnd + " nanoseconds taken to render the image, or " + (timeEnd/1000000000f) + " seconds");
+      int[] b = realPixels.getBounds();
+      Color[][] pixelArray = new Color[b[0]][b[1]];
+      for(int i = 0; i<pixelArray.length; i++){
+         for(int j = 0; j<pixelArray[i].length; j++){
+            pixelArray[i][j] = realPixels.getColor(new Point(new float[]{i, j}));
+         }
+      }
+      Instance.renderImage(pixelArray);
    }
    
    public static Color[] colors = { Color.RED, Color.BLUE, Color.BLACK, Color.WHITE, Color.GREEN, Color.YELLOW, Color.GRAY};
@@ -119,7 +143,18 @@ public class Engine extends JFrame {
       //return Camera = new CameraRastorizationV2(new Point(/*camPos*/new float[3]), /*camDirection*/new Vector(new float[] {1,0,0}), 900, 900);
       return null;
    }
+   public static Simplex generateRandomSimplex(int dimention, float bounds){
+      Point[] data = new Point[dimention];
+      for(int i = 0; i<dimention; i++){
+         float[] coord = new float[dimention];
+         for(int j = 0; j<dimention; j++){
+            coord[j] = (float)(Math.random()*2*bounds)-bounds;
+         }
+         data[i] = new Point(coord);
+      }
+      return new Simplex(data);
    
+   }
    public static File pickFile(JFileChooser fileChooser)
    {
       File file = new File("images/PlaceImagesHere.txt");

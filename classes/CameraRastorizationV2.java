@@ -32,7 +32,7 @@ public class CameraRastorizationV2 implements Camera{
       g = s.getPoints().length-1;
       ms = this.s.getSubSpace().getDir().length;
       n = c.length();
-      int numCol = 2*ms+g+3;
+      int numCol = 2*ms+2*g+3;
       int numRow = n+g+1;
       float[][] data = new float[numCol][numRow];
       int currentCol = 0;
@@ -140,6 +140,7 @@ public class CameraRastorizationV2 implements Camera{
       LinkedList<Simplex> projected = new LinkedList<Simplex>();
       //for each simplex, project points
       for(Simplex current: original){
+         //null check add
          projected.add(projectSimplex(current)); 
       }
       //z-buffering and painting
@@ -352,49 +353,6 @@ public class CameraRastorizationV2 implements Camera{
       tempPoints = shiftedTexturePoints.toArray(tempPoints);
       resultSimplex.setTexturePoints(tempPoints);
       return resultSimplex;
-      //just in case 
-      /*
-      Matrix aug = m.AugmentedMatrix(sol);
-      Matrix rref = aug.getRREF();
-      Vector[] allEq = rref.toVectors();
-      //remove zero vectors and check for impossible
-      LinkedList<Vector> fixedEq = new LinkedList<Vector>();
-      for(Vector eq: allEq){
-         float[] eqCoeff = eq.getCoords();
-         float sum = 0;
-         boolean isZero = true;
-         for(float coeff: eqCoeff){
-            sum += coeff;
-            isZero = isZero && (coeff==0f);
-         }
-         if(!isZero) {
-            if(sum == eqCoeff[eqCoeff.length-1]){
-               return null;
-            }  
-            fixedEq.add(eq);
-         }
-      }
-      Vector[] temp = new Vector[fixedEq.size()];
-      temp = fixedEq.toArray(temp);
-      //seperate m and b
-      float[][] fixedData = new float[fixedEq.size()-1][m.getWidth()];
-      float[] fixedRes = new float[m.getWidth()];
-      {// just limiting scope to make things easier
-         int j = 0;
-         for(Vector eq: fixedEq){
-            for(int i = 0; i<eq.length(); i++){
-               if(i+1 = eq.length()){
-                  fixedRes[j] = eq.toCoords()[i];
-               } else {
-                  fixedData[j][i] = eq.toCoords()[i];
-               }
-            }
-            j++;
-         }
-      }
-      Matrix mf = new Matrix(fixedData);
-      Vector bf = new Vector(fixedRes);
-      */
    }
    protected int[] shiftSelected(int[] selected, int maximum, int index){
       selected[index]++;
