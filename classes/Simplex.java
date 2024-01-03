@@ -37,6 +37,10 @@ public class Simplex{
 */
    public void setPoints(Point[] vertex){
       points = vertex;
+      if(vertex.length == 0){
+         surface = null;
+         return;
+      }
       Vector[] temp = new Vector[vertex.length-1];
       for(int i = 1; i<vertex.length; i++){
          float[] temp2 = new float[vertex.length];

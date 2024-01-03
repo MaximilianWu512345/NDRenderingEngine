@@ -34,7 +34,7 @@ public class CameraRastorizationV2 implements Camera{
       n = c.length();
       int numCol = 2*ms+2*g+3;
       int numRow = n+g+1;
-      float[][] data = new float[numCol][numRow];
+      float[][] data = new float[numRow][numCol];
       int currentCol = 0;
       Point[] newData = s.getPoints();
       Vector[] v = new Vector[newData.length-1];
@@ -43,20 +43,20 @@ public class CameraRastorizationV2 implements Camera{
       Vector exten = new Vector(c, this.s.getPoint());
       Vector constShift = new Vector(p,this.s.getPoint());
       for(int i = 1; i<newData.length; i++){
-         v[i-1] = new Vector(p, this.s.getPoint());
+         v[i-1] = new Vector(p, newData[i]);
       }
       //u vectors positive
       int start = currentCol;
       while(currentCol-start < ms){
          //add current vector
          for(int i = 0; i<n; i++){
-            data[currentCol][i] = u[currentCol-start].getCoords()[i];
+            data[i][currentCol] = u[currentCol-start].getCoords()[i];
          }
          currentCol++;
       }
       //extention vector
       for(int i = 0; i<n; i++){
-         data[currentCol][i] = exten.getCoords()[i];
+         data[i][currentCol] = exten.getCoords()[i];
       }
       currentCol++;
       //u vectors negative
@@ -64,7 +64,7 @@ public class CameraRastorizationV2 implements Camera{
       while(currentCol-start < ms){
          //add negative vector
          for(int i = 0; i<n; i++){
-            data[currentCol][i] = -1*u[currentCol-start].getCoords()[i];
+            data[i][currentCol] = -1*u[currentCol-start].getCoords()[i];
          }
          currentCol++;
       }
@@ -73,28 +73,29 @@ public class CameraRastorizationV2 implements Camera{
       while(currentCol-start < g){
          //add current vector
          for(int i = 0; i<n; i++){
-            data[currentCol][i] = v[currentCol-start].getCoords()[i];
+            data[i][currentCol] = v[currentCol-start].getCoords()[i];
          }
-         data[currentCol][n+1] = 1;
+         data[n+1][currentCol] = 1;
          currentCol++;
       }
       //alpha restrict (in simplex)
       start = currentCol;
       while(currentCol-start<g){
-         data[currentCol][n+1] = -1;
+         data[n+1][currentCol] = -1;
          currentCol++;
       }
       //const
       for(int i = 0; i<n; i++){
-         data[currentCol][i] = constShift.getCoords()[i];
+         data[i][currentCol] = constShift.getCoords()[i];
       }
-      data[currentCol][numRow-1] = 1;
+      data[numRow-1][currentCol] = 1;
       currentCol++;
       m = new Matrix(data);
       //remove reduntant bases later
       //generate solution
       float[] result = new float[numRow];
       result[n+1] = 1;
+      result[numRow-1] = 1;
       sol = new Vector(result);
    }
 
@@ -141,7 +142,10 @@ public class CameraRastorizationV2 implements Camera{
       //for each simplex, project points
       for(Simplex current: original){
          //null check add
-         projected.add(projectSimplex(current)); 
+         Simplex tempFace = projectSimplex(current);
+         if(tempFace != null){
+            projected.add(tempFace); 
+         }
       }
       //z-buffering and painting
       zBufferArrayTexture zBuff = new zBufferArrayTexture(pix,bounds);
@@ -282,38 +286,21 @@ public class CameraRastorizationV2 implements Camera{
       if(numUnknowns == 0){
          return null;
       }
+      float[][] data = m.getData();
       //todo - symplify matrix
       //if is already square
       if(maxUnknowns >= numUnknowns){
          //solve System
-         return null;
-      }
-      int[] selectedCol = new int[numUnknowns];
-      for(int i = 0; i<selectedCol.length; i++){
-         selectedCol[i] = i;
-      }
-      boolean cont = true;
-      float[][] data = m.getData();
-      while(cont){
-         float[][] selectedData = new float[selectedCol.length][selectedCol.length];
-         for(int i = 0; i<numUnknowns; i++){
-            int col = selectedCol[i];
-            //add to matrix
-            for(int j = 0; j<maxUnknowns; j++){
-               selectedData[i][maxUnknowns] = data[col][maxUnknowns];
-            }
-         }
-         
-         Matrix currentEq = new Matrix(selectedData);
+         Matrix currentEq = new Matrix(data);
          //solve part
          Vector partSolution = currentEq.solve(sol);
          if(partSolution == null){
-            continue;
+            return null;
          }
          //get rest
          float[] newPointData = new float[numUnknowns];
-         for(int i = 0; i<selectedCol.length; i++){
-            newPointData[selectedCol[i]] = partSolution.getCoords()[i];
+         for(int i = 0; i<numUnknowns; i++){
+            newPointData[numUnknowns] = partSolution.getCoords()[i];
          }
          Vector mixedSolution = new Vector(newPointData);
          float[] mixedSolData = mixedSolution.getCoords();
@@ -331,13 +318,64 @@ public class CameraRastorizationV2 implements Camera{
          }
          newPoints.add(new Point(fixedSolData));
          corrispond.add(new Point(corrispondVectors));
+      } else {
+         int[] selectedCol = new int[maxUnknowns];
+         for(int i = 0; i<selectedCol.length; i++){
+            selectedCol[i] = i;
+         }
+         boolean cont = true;
+         while(cont){
+            float[][] selectedData = new float[selectedCol.length][selectedCol.length];
+            for(int i = 0; i<maxUnknowns; i++){
+               int col = selectedCol[i];
+            //add to matrix
+               for(int j = 0; j<maxUnknowns; j++){
+                  selectedData[j][i] = data[j][col];
+               }
+            }
+         
+            Matrix currentEq = new Matrix(selectedData);
+         //solve part
+            Vector partSolution = currentEq.solve(sol);
+            if(partSolution == null){
+               selectedCol = shiftSelected(selectedCol, maxUnknowns, selectedCol.length-1);
+               cont = selectedCol == null;     
+               continue;
+            }
+         //get rest
+            float[] newPointData = new float[numUnknowns];
+            for(int i = 0; i<selectedCol.length; i++){
+               newPointData[selectedCol[i]] = partSolution.getCoords()[i];
+            }
+            Vector mixedSolution = new Vector(newPointData);
+            float[] mixedSolData = mixedSolution.getCoords();
+         //fix format
+            float[] fixedSolData = new float[ms+1];
+            float[] corrispondVectors = new float[g];
+         //camera vectors
+            fixedSolData[ms] = mixedSolData[ms];
+            for(int i = 0; i<ms; i++){
+               fixedSolData[i] = (mixedSolData[i] + mixedSolData[i+ms+1])/mixedSolData[ms];
+            }
+         //simplex vectors
+            for(int i = 2*ms+1; i<2*ms+g+1; i++){
+               corrispondVectors[i-2*ms-1] = mixedSolData[i];
+            }
+            newPoints.add(new Point(fixedSolData));
+            corrispond.add(new Point(corrispondVectors));
          //change selection
-         selectedCol = shiftSelected(selectedCol, maxUnknowns, selectedCol.length-1);
-         cont = selectedCol == null;            
+            selectedCol = shiftSelected(selectedCol, maxUnknowns, selectedCol.length-1);
+            cont = selectedCol == null;            
+         }
       }
       Point[] tempPoints = new Point[newPoints.size()];
       tempPoints = newPoints.toArray(tempPoints);
-      Simplex resultSimplex = new Simplex(tempPoints);
+      Simplex resultSimplex;
+      if(tempPoints.length>0){
+         resultSimplex = new Simplex(tempPoints);
+      } else {
+         return null;
+      }
       //set texture
       resultSimplex.setTexture(s.getTexture());
       LinkedList<Point> shiftedTexturePoints = new LinkedList<Point>();

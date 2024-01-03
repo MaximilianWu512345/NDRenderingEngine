@@ -83,15 +83,15 @@ public class Engine extends JFrame {
 */
    public static void main(String[] args) {
       // Create the engine and camera, start the program.
-      int dimention = 5;
+      int dimention = 3;
       CreateEngine();
       Point screenPos = new Point(new float[dimention]);
       screenPos.getCoords()[0] = 1;
       Vector[] axis = new Vector[2];
       float[] axis1 = new float[dimention];
       float[] axis2 = new float[dimention];
-      axis1[1] = 3/900;
-      axis2[2] = 2/900;
+      axis1[1] = 3f/900f;
+      axis2[2] = 2f/900f;
       axis[0] = new Vector(axis1);
       axis[1] = new Vector(axis2);
       SubSpace screenDir = new SubSpace(axis);
@@ -103,8 +103,10 @@ public class Engine extends JFrame {
       //generate scene
       ArrayList<Mesh> scene = new ArrayList<Mesh>();
       //generate mesh
+      
       int numTestSimplexes = 1;
       int numTestMeshes = 1;
+      
       for(int i = 0; i<numTestMeshes; i++){
          Simplex[] tempSimplex = new Simplex[numTestSimplexes];
          for(int j = 0; j< numTestSimplexes; j++){
@@ -112,6 +114,20 @@ public class Engine extends JFrame {
          }
          scene.add(new Mesh(tempSimplex, dimention));
       }
+      
+      //manuel Input
+      /*
+      Simplex[] manSimplex = new Simplex[1];
+      Point[] parr1 = new Point[dimention];
+      parr1[0] = new Point(new float[]{2,1,1,1,1});
+      parr1[1] = new Point(new float[]{2,2,1,5,1});
+      parr1[2] = new Point(new float[]{1,-1,-1,-1,-1});
+      parr1[3] = new Point(new float[]{1,-7,-1,-1,-1});
+      parr1[4] = new Point(new float[]{1,-7,-1,8,-1});
+      manSimplex[0] = new Simplex(parr1);
+      scene.add(new Mesh(manSimplex, dimention));
+      */
+      //set up
       Mesh[] sceneArr = new Mesh[scene.size()];
       sceneArr = scene.toArray(sceneArr);
       //render
