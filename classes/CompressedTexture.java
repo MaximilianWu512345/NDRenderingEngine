@@ -2,85 +2,92 @@ import java.awt.Color;
 import java.util.Map.Entry;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.function.Predicate;
 
 public class CompressedTexture implements Texture {
    
-   private int[] bounds;
-   
-   private Color[] data;
-   
+   // 2d array of an array containing the 3 channels of ycc
+   private HuffmanTree[][][] textures;
    // https://www.baeldung.com/cs/jpeg-compression
    // https://stackoverflow.com/questions/19459831/rgb-to-ycbcr-conversion-problems
 
    public CompressedTexture(Color[][] image) {
-      CompressedTexture.DivideImageIntoEights(CompressedTexture.DownsampleImage(CompressedTexture.ConvertImageColorSpace(image)));
+      YCC[][] colorSpace = ConvertImageColorSpace(image);
+      YCC[][] downsample = DownsampleImage(colorSpace);
+      YCCBlock[][] eights = DivideImageIntoEights(downsample);
+      YCCBlock[][] dct = ForwardDCT(eights);
+      YCCBlock[][] quant = Quantization(dct);
+      HuffmanTree[][][] tex = Encode(quant);
+      textures = tex;
    }
    
-   public int getDimention(){
-      return bounds.length;
+   public Color[][] decompress() {
+      if (textures == null)
+         return null;
+      YCCBlock[][] decode = Decode(textures);
+      YCCBlock[][] quant = ReverseQuantization(decode);
+      YCCBlock[][] dct = ReverseDCT(quant);
+      YCC[][] block = CombineImageFromEights(dct);
+      Print(block);
+      Color[][] rgb = ReverseImageColorSpace(block);
+      return rgb;
    }
    
-   public int[] getBounds(){
-      return bounds;
+   public CompressedTexture(HuffmanTree[][][] tex) {
+      textures = tex;
    }
-   
-   public Color getColor(Point p){
-      int mult = 1;
-      float[] pos = p.getCoords();
-      int index = (int)pos[0];
-      for(int i = 1; i<pos.length; i++){
-         mult *= bounds[0];
-         index += pos[i]*mult;
-      }
-      if(index<data.length){
-         return data[index];
-      }
+
+   public int[] getBounds() {
       return null;
    }
    
+   public Color getColor(Point p){
+      return null;
+   }
+   
+   public int getDimention() {
+      return 0;
+   }
+   
    public boolean setColor(Point p, Color c){
-      if(p.length()==bounds.length){
-         int mult = 1;
-         float[] pos = p.getCoords();
-         int index = (int)pos[0];
-         for(int i = 1; i<pos.length; i++){
-            if((int)pos[i] >=0 && (int)pos[i] <bounds[i]){
-               mult *= bounds[0];
-               index += pos[i]*mult;
-            } else {
-               return false;
-            }
-         }
-         if(index<data.length){
-            data[index] = c;
-            return true;
-         }
-      }
       return false;
    }
    
-   public static double[] ToYCC(Color rgb) {
+   public static YCC ToYCC(Color rgb) {
       return CompressedTexture.ToYCC(new int[] { rgb.getRed(), rgb.getGreen(), rgb.getBlue() });
    }
    
    // also called YCbCr
-   public static double[] ToYCC(int[] rgb) {
+   public static YCC ToYCC(int[] rgb) {
       double y = .299*rgb[0] + .587*rgb[1] + .114*rgb[2];
       double cb = 128 -.168736*rgb[0] -.331364*rgb[1] + .5*rgb[2];
       double cr = 128 +.5*rgb[0] - .418688*rgb[1] - .081312*rgb[2];
-      return new double[] { y, cb, cr };
+      return new YCC(y, cb, cr);
    }
    
-   public static int[] ToRGB(double[] ycc) {
+   public static Color ToRGB(double[] ycc) {
       double r = ycc[0] + 1.402 * (ycc[2]-128);
       double g = ycc[0] - .34414 * (ycc[1]-128) -  .71414 * (ycc[2]-128);
       double b = ycc[0] + 1.772 * (ycc[1]-128);
-      return new int[] { (int)Math.round(r), (int)Math.round(g), (int)Math.round(b) };
+      if (r < 0)
+         r = 0;
+      if (g < 0)
+         g = 0;
+      if (b < 0)
+         b = 0;
+      if (r > 255)
+         r = 255;
+      if (g > 255)
+         g = 255;
+      if (b > 255)
+         b = 255;
+      return new Color((int)Math.round(r), (int)Math.round(g), (int)Math.round(b));
    }
    
-   public static double[][][] ConvertImageColorSpace(Color[][] image) {
-      double[][][] imageYCC = new double[image.length][image[0].length][];
+   public static YCC[][] ConvertImageColorSpace(Color[][] image) {
+      YCC[][] imageYCC = new YCC[image.length][];
       for (int i = 0; i < image.length; i++) {
+         imageYCC[i] = new YCC[image[i].length];
          for (int x = 0; x < image[i].length; x++) {
             imageYCC[i][x] = ToYCC(image[i][x]);
          }
@@ -88,10 +95,21 @@ public class CompressedTexture implements Texture {
       return imageYCC;
    }
    
-   public static double[][][] DownsampleImage(double[][][] list) {
+   public static Color[][] ReverseImageColorSpace(YCC[][] image) {
+      Color[][] imageColor = new Color[image.length][];
+      for (int i = 0; i < image.length; i++) {
+         imageColor[i] = new Color[image[i].length];
+         for (int x = 0; x < image[i].length; x++) {
+            imageColor[i][x] = ToRGB(image[i][x].toArray());
+         }
+      }
+      return imageColor;
+   }
+   
+   public static YCC[][] DownsampleImage(YCC[][] list) {
       for (int i = 0; i < list.length; i += 2) {
          for (int x = 0; x < list[i].length; x += 2) {
-            Average(new double[][] {
+            Average(new YCC[] {
                TryGet(list, i, x),
                TryGet(list, i, x + 1),
                TryGet(list, i + 1, x),
@@ -102,61 +120,104 @@ public class CompressedTexture implements Texture {
       return list;
    }
    
-   public static void Average(double[][] list) {
+   public static void Average(YCC[] list) {
       double cb = 0;
       double cr = 0;
       for (int i = 0; i < list.length; i++) {
-         cb += list[i][1];
-         cr += list[i][2];
+         if (list[i] == null)
+            continue;
+         cb += list[i].getChrominanceBlue();
+         cr += list[i].getChrominanceRed();
       }
       cb = cb / list.length;
       cr = cr / list.length;
-      for (double[] l : list) {
-         l[1] = cb;
-         l[2] = cr;
+      for (YCC l : list) {
+         if (l == null)
+            continue;
+         l.setChrominanceBlue(cb);
+         l.setChrominanceRed(cr);
       }
    }
    
-   public static double[] TryGet(double[][][] o, int r, int c) {
+   public static YCC TryGet(YCC[][] o, int r, int c) {
       if (r >= 0 && r < o.length && c >= 0 && c < o[r].length)
          return o[r][c];
       return null;
    }
    
-   public static double[][][][] DivideImageIntoEights(double[][][] list) {
-      double[][][][] imageEights = new double[list.length / 8 + list.length % 8 > 0 ? 1 : 0][][][];
-      int eightsIndex = 0;
-      for (int i = 0; i < list.length; i += 8) {
-         for (int x = 0; x < list[i].length; x += 8) {
-            double[][][] imageSixtyFour = new double[8][8][];
-            for (int e = 0; e < 8; e++) {
-               for (int f = 0; f < 8; f++) {
-                  imageSixtyFour[e][f] = TryGet(list, i + e, x + f);
+   public static YCCBlock[][] DivideImageIntoEights(YCC[][] list) {
+      YCCBlock[][] imageEights = new YCCBlock[list.length / 8 + (list.length % 8 > 0 ? 1 : 0)][];
+      for (int i = 0; i < imageEights.length; i++) {
+         imageEights[i] = new YCCBlock[list[i].length / 8 + (list[i].length % 8 > 0 ? 1 : 0)];
+         for (int x = 0; x < imageEights[i].length; x++) {
+            YCC[][] imageSixtyFour = new YCC[8][8];
+            for (int e = 0; e < imageSixtyFour.length; e++) {
+               for (int f = 0; f < imageSixtyFour[e].length; f++) {
+                  imageSixtyFour[e][f] = TryGet(list, i * 8 + e, x * 8 + f);
                }
             }
-            imageEights[eightsIndex++] = imageSixtyFour;
+            
+            imageEights[i][x] = new YCCBlock(imageSixtyFour);
          }
       }
       return imageEights;
    }
    
-   // Discrete Cosine transform, 3 matrixes: { luminance, chrominance, chrominance };
-   public static Matrix[][] ForwardDCT(double[][][][] list) {
-      Matrix[][] temp = new Matrix[list.length][3];
-      for (int i = 0; i < temp.length; i++) {
+   public static YCC[][] CombineImageFromEights(YCCBlock[][] list) {
+      YCC[][] image = new YCC[list.length * 8][list[0].length * 8];
+      for (int i = 0; i < list.length; i++) {
          for (int x = 0; x < list[i].length; x++) {
-            temp[i][x] = new Matrix(DoubleToFloat(applyDCT(list[i], x)));
+            YCC[][] eights = list[i][x].getYCCBlock();
+            for (int e = 0; e < eights.length; e++) {
+               for (int f = 0; f < eights[e].length; f++) {
+                  image[i * 8 + e][x * 8 + f] = eights[e][f];
+               }
+            }
          }
       }
-      return temp;
+      return image;
+   }
+   
+   // Discrete Cosine transform, 3 matrixes: { luminance, chrominance, chrominance };
+   public static YCCBlock[][] ForwardDCT(YCCBlock[][] list) {
+      for (int i = 0; i < list.length; i++) {
+         for (int x = 0; x < list[i].length; x++) {
+            Matrix[] temp = new Matrix[3];
+            for (int c = 0; c < temp.length; c++) {
+               temp[c] = new Matrix(DoubleToFloat(applyDCT(list[i][x].getYCCBlock(), c)));
+            }
+            list[i][x].setMatrixBlock(temp);
+         }
+      }
+      return list;
+   }
+   
+   public static YCCBlock[][] ReverseDCT(YCCBlock[][] list) {
+      for (int i = 0; i < list.length; i++) {
+         for (int x = 0; x < list[i].length; x++) {
+            Matrix[] temp = list[i][x].getMatrixBlock();
+            double[][][] ycc = new double[3][][];
+            for (int c = 0; c < temp.length; c++) {
+               ycc[c] = applyIDCT(FloatToDouble(temp[c].getData()));
+            }
+            YCC[][] block = new YCC[ycc[0].length][ycc[0][0].length];
+            for (int f = 0; f < ycc[0].length; f++) {
+               for (int g = 0; g < ycc[0][f].length; g++) {
+                  block[f][g] = new YCC(ycc[0][f][g], ycc[1][f][g], ycc[2][f][g]);
+               }
+            }
+            list[i][x].setYCCBlock(block);
+         }
+      }
+      return list;
    }
    
    // https://stackoverflow.com/questions/4240490/problems-with-dct-and-idct-algorithm-in-java
-   public static double[][] applyDCT(double[][][] f, int index) {
-      int N = 2;
+   public static double[][] applyDCT(YCC[][] f, int type) {
+      int N = 8;
       double[] c = new double[N];
       c[0] = 1/Math.sqrt(2.0);
-      for (int i = 1; 1 < N; i++) {
+      for (int i = 1; i < N; i++) {
          c[i] = 1;
       }
       double[][] F = new double[N][N];
@@ -165,7 +226,19 @@ public class CompressedTexture implements Texture {
             double sum = 0.0;
             for (int i=0;i<N;i++) {
                for (int j=0;j<N;j++) {
-                  sum+=Math.cos(((2*i+1)/(2.0*N))*u*Math.PI)*Math.cos(((2*j+1)/(2.0*N))*v*Math.PI)*f[i][j][index];
+                  if (f[i][j] == null)
+                     continue;
+                  double channel = 1;
+                  if (type == 0) {
+                     channel = f[i][j].getLuminance();
+                  }
+                  else if (type == 1) {
+                     channel = f[i][j].getChrominanceBlue();
+                  }
+                  else if (type == 2) {
+                     channel = f[i][j].getChrominanceRed();
+                  }
+                  sum+=Math.cos(((2*i+1)/(2.0*N))*u*Math.PI)*Math.cos(((2*j+1)/(2.0*N))*v*Math.PI)*channel;
                }
             }
             sum*=((c[u]*c[v])/4.0);
@@ -175,13 +248,75 @@ public class CompressedTexture implements Texture {
       return F;
    }
    
-   public static Matrix[][] Quantization(Matrix[][] list) {
-      for (Matrix[] matrix : list) {
-         for (int i = 0; i < matrix.length; i++) {
-            if (i == 0)
-               matrix[i] = matrix[i].mult(PrecalculatedTables.LuminanceChannel.invert());
-            else
-               matrix[i] = matrix[i].mult(PrecalculatedTables.ChrominanceChannel.invert());
+   public static double[][] applyIDCT(double[][] F) {
+      int N = 8;
+      double[] c = new double[N];
+      c[0] = 1/Math.sqrt(2.0);
+      for (int i = 1; i < N; i++) {
+         c[i] = 1;
+      }
+      double[][] f = new double[N][N];
+      for (int i=0;i<N;i++) {
+         for (int j=0;j<N;j++) {
+            double sum = 0.0;
+            for (int u=0;u<N;u++) {
+               for (int v=0;v<N;v++) {
+                  sum+=(c[u]*c[v])/4.0*Math.cos(((2*i+1)/(2.0*N))*u*Math.PI)*Math.cos(((2*j+1)/(2.0*N))*v*Math.PI)*F[u][v];
+               }
+            }
+            f[i][j]=Math.round(sum);
+         }
+      }
+      return f;
+   }
+   
+   public static YCCBlock[][] Quantization(YCCBlock[][] list) {
+      for (YCCBlock[] blockList : list) {
+         for (YCCBlock block : blockList) {
+            for (int i = 0; i < block.getMatrixBlock().length; i++) {
+               if (i == 0) {
+                  float[][] data = PrecalculatedTables.LuminanceChannel;
+                  for (int r = 0; r < data.length; r++) {
+                     for (int c = 0; c < data[r].length; c++) {
+                        block.getMatrixBlock()[i].getData()[r][c] = (float)(int)Math.round(block.getMatrixBlock()[i].getData()[r][c] / data[r][c]);
+                     }
+                  }
+               }
+               else {
+                  float[][] data = PrecalculatedTables.ChrominanceChannel;
+                  for (int r = 0; r < data.length; r++) {
+                     for (int c = 0; c < data[r].length; c++) {
+                        block.getMatrixBlock()[i].getData()[r][c] = (float)(int)Math.round(block.getMatrixBlock()[i].getData()[r][c] / data[r][c]);
+                     }
+                  }
+               }
+            }
+         }
+      }
+      return list;
+   }
+   
+   public static YCCBlock[][] ReverseQuantization(YCCBlock[][] list) {
+      for (YCCBlock[] blockList : list) {
+         for (YCCBlock block : blockList) {
+            for (int i = 0; i < block.getMatrixBlock().length; i++) {
+               if (i == 0) {
+                  float[][] data = PrecalculatedTables.LuminanceChannel;
+                  for (int r = 0; r < data.length; r++) {
+                     for (int c = 0; c < data[r].length; c++) {
+                        block.getMatrixBlock()[i].getData()[r][c] = block.getMatrixBlock()[i].getData()[r][c] * data[r][c];
+                     }
+                  }
+               }
+               else {
+                  float[][] data = PrecalculatedTables.ChrominanceChannel;
+                  for (int r = 0; r < data.length; r++) {
+                     for (int c = 0; c < data[r].length; c++) {
+                        block.getMatrixBlock()[i].getData()[r][c] = block.getMatrixBlock()[i].getData()[r][c] * data[r][c];
+                     }
+                  }
+               }
+            }
          }
       }
       return list;
@@ -189,26 +324,66 @@ public class CompressedTexture implements Texture {
 
    // huffmanarray consisting of an array of 8x8 pixels, which each consist of a 3-length array of channels.
    // where each huffman tree is representative of a compressed matrix
-   public static HuffmanTree[][] Encode(Matrix[][] list) {
-      HuffmanTree[][] huffmanTrees = new HuffmanTree[list.length][list[0].length];
+   public static HuffmanTree[][][] Encode(YCCBlock[][] list) {
+      HuffmanTree[][][] huffmanTrees = new HuffmanTree[list.length][][];
       for (int i = 0; i < list.length; i++) {
-         HuffmanTree[] trees = new HuffmanTree[list[i].length];
+         HuffmanTree[][] trees = new HuffmanTree[list[i].length][];
          for (int x = 0; x < list[i].length; x++) {
-            float[] temp = ZigZagEncode(list[i][x]);
-            ArrayList<HuffmanTreeNode> nodes = new ArrayList<HuffmanTreeNode>();
-            for (int f = 0; f < temp.length; f++) {
-               int freq = 1;
-               while (f + 1 < temp.length && temp[f] == temp[f + 1]) {
-                  f++;
-                  freq++;
+            HuffmanTree[] channels = new HuffmanTree[list[i][x].getMatrixBlock().length];
+            for (int c = 0; c < channels.length; c++) {
+               float[] temp = ZigZagEncode(list[i][x].getMatrixBlock()[c]);
+               ArrayList<HuffmanTreeNode> nodes = new ArrayList<HuffmanTreeNode>();
+               for (int f = 0; f < temp.length; f++) {
+                  int freq = 1;
+                  while (f + 1 < temp.length && temp[f] == temp[f + 1]) {
+                     f++;
+                     freq++;
+                  }
+                  HuffmanTreeNode orig = null;
+                  for (HuffmanTreeNode t : nodes) {
+                     if (t.getValue().equals(temp[f])) {
+                        orig = t;
+                        break;
+                     }
+                  }
+                  if (orig != null) {
+                     orig.addFrequency(freq);
+                  }
+                  else
+                     nodes.add(new HuffmanTreeNode(freq, temp[f]));
                }
-               nodes.add(new HuffmanTreeNode(freq, f));
+               Float[] objArray = new Float[temp.length];
+               for (int g = 0; g < temp.length; g++) {
+                  objArray[g] = temp[g];
+               }
+               channels[c] = new HuffmanTree<Float>(nodes, objArray);
             }
-            trees[x] = new HuffmanTree(nodes);
+            trees[x] = channels;
          }
          huffmanTrees[i] = trees;
       }
       return huffmanTrees;
+   }
+   
+   public static YCCBlock[][] Decode(HuffmanTree[][][] huffmanTrees) {
+      YCCBlock[][] temp = new YCCBlock[huffmanTrees.length][];
+      for (int i = 0; i < huffmanTrees.length; i++) {
+         temp[i] = new YCCBlock[huffmanTrees[i].length];
+         for (int x = 0; x < huffmanTrees[i].length; x++) {
+            temp[i][x] = new YCCBlock(null);
+            Matrix[] matrixes = new Matrix[huffmanTrees[i][x].length];
+            for (int c = 0; c < matrixes.length; c++) {
+               String[] decode = huffmanTrees[i][x][c].getDecodedString().split(" ");
+               float[] decodeFloat = new float[decode.length];
+               for (int f = 0; f < decodeFloat.length; f++) {
+                  decodeFloat[f] = Float.parseFloat(decode[f]);
+               }
+               matrixes[c] = ZigZagDecode(decodeFloat);
+            }
+            temp[i][x].setMatrixBlock(matrixes);
+         }
+      }
+      return temp;
    }
    
    public static float[] ZigZagEncode(Matrix matrix) {
@@ -309,7 +484,7 @@ public class CompressedTexture implements Texture {
    
    public static class PrecalculatedTables {
       
-      public static Matrix LuminanceChannel = new Matrix(new float[][]
+      public static float[][] LuminanceChannel = new float[][]
          {
             { 6, 4, 4, 6, 10, 16, 20, 24 },
             { 5, 5, 6, 8, 10, 23, 24, 22 },
@@ -319,10 +494,9 @@ public class CompressedTexture implements Texture {
             { 10, 14, 22, 26, 32, 42, 45, 37 },
             { 20, 26, 31, 35, 41, 48, 48, 40 },
             { 29, 37, 38, 39, 45, 40, 41, 40 }
-         }
-      );
+         };
       
-      public static Matrix ChrominanceChannel = new Matrix(new float[][]
+      public static float[][] ChrominanceChannel = new float[][]
          {
             { 10, 8, 9, 9, 9, 8, 10, 9 },
             { 10, 8, 9, 9, 9, 8, 10, 9 },
@@ -331,9 +505,8 @@ public class CompressedTexture implements Texture {
             { 14, 17, 18, 20, 23, 23, 22, 20 },
             { 25, 25, 25, 25, 25, 25, 25, 25},
             { 25, 25, 25, 25, 25, 25, 25, 25},
-            { 25, 25, 25, 25, 25, 25, 25, 25},
-         }
-      );
+            { 25, 25, 25, 25, 25, 25, 25, 25}
+         };
    }
    
    
@@ -348,20 +521,69 @@ public class CompressedTexture implements Texture {
       return temp;
    }
    
-   public static void main(String[] args) {
-      var v = ZigZagEncode(new Matrix(new float[][] {
-         {1, 2, 3, 4, 5, 6, 7, 8 },
-         {1, 2, 3, 4, 5, 6, 7, 8 },
-         {1, 2, 3, 4, 5, 6, 7, 8 },
-         {1, 2, 3, 4, 5, 6, 7, 8 },
-         {1, 2, 3, 4, 5, 6, 7, 8 },
-         {1, 2, 3, 4, 5, 6, 7, 8 },
-         {1, 2, 3, 4, 5, 6, 7, 8 },
-         {1, 2, 3, 4, 5, 6, 7, 8 },
-         }));
-      for (float f : v) {
-         System.out.print(f + " ");
+   public static double[][] FloatToDouble(float[][] list) {
+      double[][] temp = new double[list.length][];
+      for (int i = 0; i < list.length; i++) {
+         temp[i] = new double[list[i].length];
+         for (int x = 0; x < list[i].length; x++) {
+            temp[i][x] = (double)list[i][x];
+         }
       }
-      System.out.println(ZigZagDecode(v));
+      return temp;
+   }
+   
+   public static CompressedTexture CreateTexture(Color[][] image) {
+      YCC[][] colorSpace = ConvertImageColorSpace(image);
+      YCC[][] downsample = DownsampleImage(colorSpace);
+      YCCBlock[][] eights = DivideImageIntoEights(downsample);
+      YCCBlock[][] dct = ForwardDCT(eights);
+      YCCBlock[][] quant = Quantization(dct);
+      HuffmanTree[][][] tex = Encode(quant);
+      return new CompressedTexture(tex);
+   }
+   
+   public static void Print(float[] array) {
+      for (float o : array) {
+         System.out.print(o + " ");
+      }
+      System.out.println("");
+   }
+   
+   public static void Print(Object[] array) {
+      for (Object o : array) {
+         System.out.print(o + " ");
+      }
+   }
+   
+   public static void Print(Object[][] array) {
+      for (Object[] list : array) {
+         Print(list);
+         System.out.println("");
+      }
+   }
+   
+   public static void PrintMatrix(YCCBlock[][] array) {
+      for (YCCBlock[] list : array) {
+         for (YCCBlock o : list)
+            System.out.print(o.toString() + " ");
+         System.out.println("");
+      }
+   }
+   
+   public static void PrintTree(HuffmanTree[][][] array) {
+      for (HuffmanTree[][] l : array) {
+         for (HuffmanTree[] trees : l) {
+            for (HuffmanTree tree : trees) {
+               System.out.println(tree.getEncodedString());
+               System.out.println(tree.getDecodedString());
+            }
+         }
+      }
+   }
+   
+   public static void main(String[] args) {
+      /*CompressedTexture t = new CompressedTexture(v);
+      Print(v);
+      Print(t.decompress());*/
    }
 }
