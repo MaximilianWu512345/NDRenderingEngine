@@ -33,8 +33,12 @@ public class HuffmanTree<anyType> {
    }
    
    public void initialize(ArrayList<HuffmanTreeNode> nodes) {
-      if (nodes == null || nodes.size() == 0)
+      if (nodes == null)
          return;
+      if (nodes.size() == 1) {
+         root = nodes.remove(0);
+         return;
+      }
       while (nodes.size() > 0) {
          HuffmanTreeNode one = root != null ? root : nodes.remove(nodes.size() - 1);
          HuffmanTreeNode two = nodes.remove(nodes.size() - 1);

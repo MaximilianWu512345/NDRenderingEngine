@@ -28,7 +28,6 @@ public class CompressedTexture implements Texture {
       YCCBlock[][] quant = ReverseQuantization(decode);
       YCCBlock[][] dct = ReverseDCT(quant);
       YCC[][] block = CombineImageFromEights(dct);
-      Print(block);
       Color[][] rgb = ReverseImageColorSpace(block);
       return rgb;
    }
@@ -261,7 +260,8 @@ public class CompressedTexture implements Texture {
             double sum = 0.0;
             for (int u=0;u<N;u++) {
                for (int v=0;v<N;v++) {
-                  sum+=(c[u]*c[v])/4.0*Math.cos(((2*i+1)/(2.0*N))*u*Math.PI)*Math.cos(((2*j+1)/(2.0*N))*v*Math.PI)*F[u][v];
+                  if (u < F.length && v < F[u].length)
+                     sum+=(c[u]*c[v])/4.0*Math.cos(((2*i+1)/(2.0*N))*u*Math.PI)*Math.cos(((2*j+1)/(2.0*N))*v*Math.PI)*F[u][v];
                }
             }
             f[i][j]=Math.round(sum);
@@ -302,17 +302,19 @@ public class CompressedTexture implements Texture {
             for (int i = 0; i < block.getMatrixBlock().length; i++) {
                if (i == 0) {
                   float[][] data = PrecalculatedTables.LuminanceChannel;
-                  for (int r = 0; r < data.length; r++) {
-                     for (int c = 0; c < data[r].length; c++) {
-                        block.getMatrixBlock()[i].getData()[r][c] = block.getMatrixBlock()[i].getData()[r][c] * data[r][c];
+                  float[][] blockData = block.getMatrixBlock()[i].getData();
+                  for (int r = 0; r < blockData.length; r++) {
+                     for (int c = 0; c < blockData[r].length; c++) {
+                        blockData[r][c] = blockData[r][c] * data[r][c];
                      }
                   }
                }
                else {
                   float[][] data = PrecalculatedTables.ChrominanceChannel;
-                  for (int r = 0; r < data.length; r++) {
-                     for (int c = 0; c < data[r].length; c++) {
-                        block.getMatrixBlock()[i].getData()[r][c] = block.getMatrixBlock()[i].getData()[r][c] * data[r][c];
+                  float[][] blockData = block.getMatrixBlock()[i].getData();
+                  for (int r = 0; r < blockData.length; r++) {
+                     for (int c = 0; c < blockData[r].length; c++) {
+                        blockData[r][c] = blockData[r][c] * data[r][c];
                      }
                   }
                }
@@ -376,7 +378,9 @@ public class CompressedTexture implements Texture {
                String[] decode = huffmanTrees[i][x][c].getDecodedString().split(" ");
                float[] decodeFloat = new float[decode.length];
                for (int f = 0; f < decodeFloat.length; f++) {
-                  decodeFloat[f] = Float.parseFloat(decode[f]);
+                  String s = decode[f].replaceAll(" ", "");
+                  if (! s.isEmpty())
+                     decodeFloat[f] = Float.parseFloat(s);
                }
                matrixes[c] = ZigZagDecode(decodeFloat);
             }

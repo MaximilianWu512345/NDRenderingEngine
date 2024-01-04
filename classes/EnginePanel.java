@@ -61,6 +61,21 @@ public class EnginePanel extends JPanel {
       }
    }
    
+   public Component getPanelComponent(PanelType t) {
+      if (dictComponents.contains(t)) {
+         return dictComponents.get(t);
+      }
+      return null;
+   }
+   
+   public Color[][] getRenderImage() {
+      return ((RenderHelper)dictComponents.get(PanelType.RENDER)).getColors();
+   }
+   
+   public void clearRenderImage() {
+      ((RenderHelper)dictComponents.get(PanelType.RENDER)).clear();
+   }
+   
    public void renderImage(Object object) {
       if (object instanceof BufferedImage)
          ((RenderHelper)dictComponents.get(PanelType.RENDER)).setImage((BufferedImage)object);
@@ -135,6 +150,10 @@ public class EnginePanel extends JPanel {
       
       public Canvas getCanvas() {
          return imageObserver;
+      }
+      
+      public void clear() {
+         initialize(super.width, super.height);
       }
       
       public void setColors(Color[][] colors) {
@@ -228,6 +247,7 @@ public class EnginePanel extends JPanel {
       protected void paintComponent(Graphics g) {
          g.drawImage(renderedImage, x, y, imageObserver);
       }
+      
    }
    
 /** Container class to hold information about buttons. Might be obsolete, could remove later. */

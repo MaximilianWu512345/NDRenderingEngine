@@ -80,7 +80,7 @@ public class Engine extends JFrame {
       
       CreateEngine();
       CreateCamera();
-   /*
+      /*
       Simplex[] simplexes = new Simplex[100];
       for (int i = 0; i < 100; i++) {
          Point[] points = new Point[3];
@@ -96,9 +96,9 @@ public class Engine extends JFrame {
 
       }
       Instance.renderSimplex(simplexes[0], randomColor());
-      
+      */
       // Ask for img files to open and display until user clicks cancel.
-      boolean askForFiles = false;
+      boolean askForFiles = true;
       if (askForFiles) {
          try {
             JFileChooser fileChooser = new JFileChooser();
@@ -119,7 +119,11 @@ public class Engine extends JFrame {
             System.out.println(e);
          }
       }
-      */
+      CompressedTexture t = new CompressedTexture(Instance.panel.getRenderImage());
+      Color[][] de = t.decompress();
+      System.out.println("JPEG conversion completed!");
+      Instance.panel.clearRenderImage();
+      Instance.renderImage(de);
    }
    
    public static Color[] colors = { Color.RED, Color.BLUE, Color.BLACK, Color.WHITE, Color.GREEN, Color.YELLOW, Color.GRAY};
