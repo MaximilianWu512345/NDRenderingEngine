@@ -74,6 +74,7 @@ public class EnginePanel extends JPanel {
    
    public void clearRenderImage() {
       ((RenderHelper)dictComponents.get(PanelType.RENDER)).clear();
+      repaint();
    }
    
    public void renderImage(Object object) {

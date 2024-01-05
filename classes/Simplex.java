@@ -139,6 +139,10 @@ public class Simplex {
       this.t = t;
    }
    
+   public Plane getSurface() {
+      return surface;
+   }
+   
 /** Translates all Points in this Simplex with coords.
 * @param coords The float[] to translate Points in this Simplex with.
 */
@@ -243,7 +247,7 @@ public class Simplex {
          tabs += "\t";
          lastTab += "\t";
       }
-      String temp = lastTab + "Simplex (Point[] points, Plane surface, Color color): [\n" + tabs +"{";
+      String temp = lastTab + "Simplex (Point[] points, Plane surface, Color color): [\n" + tabs + "{";
       if (points != null && points.length > 0) {
          for (int i = 0; i < points.length - 1; i++) {
             temp += "\n\t" + tabs + points[i] + ", ";

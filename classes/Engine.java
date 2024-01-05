@@ -120,8 +120,9 @@ public class Engine extends JFrame {
          }
       }
       CompressedTexture t = new CompressedTexture(Instance.panel.getRenderImage());
+      System.out.println("JPEG compression completed!");
       Color[][] de = t.decompress();
-      System.out.println("JPEG conversion completed!");
+      System.out.println("JPEG decompression completed!");
       Instance.panel.clearRenderImage();
       Instance.renderImage(de);
    }
