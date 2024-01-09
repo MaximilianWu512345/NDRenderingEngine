@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.math.*;
 /**
 * a matrix from linear algebra
 */
@@ -297,11 +298,16 @@ public class Matrix{
 * @return String describing this Object.
 */
    public String toString(){
+   //https://stackoverflow.com/questions/41340566/java-include-decimal-and-preceding-digits-when-setting-length-of-double-to-be
       String result = "Matrix (int width, int height, float[][] data): [\n\t" + width + "\n\t" + height + "\n\t{\n";
       for(int i = 0; i<data.length; i++){
          result += "\t\t";
          for(int j = 0; j<data[i].length; j++){
-            result += data[i][j] + " ";
+            String val = (new BigDecimal(data[i][j]).setScale(6, BigDecimal.ROUND_HALF_UP)).toString();
+            if(val.charAt(0) != (int)('-')){
+               result += " ";
+            }
+            result +=  val + " ";
          }
          result += "\n";
       }
@@ -341,22 +347,18 @@ public class Matrix{
       Vector[] allEq = rref.toVectors();
       Vector result = null;
       //check for multiple or impossible
-      if(rref.height<rref.width){
+      if(rref.height<(rref.width-1)){
          return null;
       }
-      VectorLoop:for(int i = allEq.length-1;i<=0 ;i++){
-         Vector eq = allEq[i];
-         float[] coff = eq.getCoords();
-         for(int j = 0; j<coff.length-1; j++){
-            if(coff[j] != 0){
-               continue VectorLoop;
-            }
+      for(int i = 0; i<allEq.length; i++){
+         if(allEq[i].getCoords()[i] == 0){
+            return null;
          }
-         return null;
       }
       //actually solve
       float[] resultData = new float[rref.width];
-      for(int i = allEq.length-1; i>=1; i++){
+      for(int i = allEq.length-1; i>=1; i--){
+         float mult = 1/allEq[i].getCoords()[i];
          allEq[i] = allEq[i].scale(1/allEq[i].getCoords()[i]);
          allEq[i-1] = allEq[i-1].add(allEq[i].scale(-1*allEq[i-1].getCoords()[i]));
          resultData[i] = allEq[i].getCoords()[rref.width-1];

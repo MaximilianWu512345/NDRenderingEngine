@@ -32,7 +32,7 @@ public class CameraRastorizationV2 implements Camera{
       g = s.getPoints().length-1;
       ms = this.s.getSubSpace().getDir().length;
       n = c.length();
-      int numCol = 2*ms+2*g+3;
+      int numCol = 2*ms+2*g+2;
       int numRow = n+g+1;
       float[][] data = new float[numRow][numCol];
       int currentCol = 0;
@@ -75,13 +75,13 @@ public class CameraRastorizationV2 implements Camera{
          for(int i = 0; i<n; i++){
             data[i][currentCol] = v[currentCol-start].getCoords()[i];
          }
-         data[n+1][currentCol] = 1;
+         data[n+(currentCol-start)][currentCol] = 1;
          currentCol++;
       }
       //alpha restrict (in simplex)
       start = currentCol;
       while(currentCol-start<g){
-         data[n+1][currentCol] = -1;
+         data[n+(currentCol-start)][currentCol] = -1;
          currentCol++;
       }
       //const
@@ -94,9 +94,12 @@ public class CameraRastorizationV2 implements Camera{
       //remove reduntant bases later
       //generate solution
       float[] result = new float[numRow];
-      result[n+1] = 1;
+      for(int i = 0; i<g; i++){
+         result[n+i] = 1;
+      }
       result[numRow-1] = 1;
       sol = new Vector(result);
+      
    }
 
       
@@ -155,7 +158,7 @@ public class CameraRastorizationV2 implements Camera{
             //select ms+1 points to draw (triangles)
             int[] selectedPoints = new int[ms+1];
             int pointCount = current.getPoints().length;
-            for(int i = 0; i<pointCount; i++){
+            for(int i = 0; i<selectedPoints.length; i++){
                selectedPoints[i] = i;
             }
             boolean cont = true;
@@ -167,7 +170,7 @@ public class CameraRastorizationV2 implements Camera{
                   //has depth
                   neededPoints[i] = allPoints[selectedPoints[i]];
                   //check pos
-                  float[] pixCoords = new float[allPoints[0].getCoords().length];
+                  float[] pixCoords = new float[allPoints[0].getCoords().length-1];
                   for(int j = 0; j<pixCoords.length; j++){
                      pixCoords[j] = allPoints[selectedPoints[i]].getCoords()[j];
                   }
@@ -179,8 +182,8 @@ public class CameraRastorizationV2 implements Camera{
                float[] projBoundingBoxMax = new float[ms];
                float[] projBoundingBoxMin = new float[ms];
                for(int i = 0; i<bounds.length; i++){
-                  projBoundingBoxMax[i] = bounds[i];
-                  projBoundingBoxMin[i] = bounds[i];
+                  projBoundingBoxMax[i] = bounds[i]/2;
+                  projBoundingBoxMin[i] = -bounds[i]/2;
                }
                boolean hasPix = true;
                float[] pixPos = new float[ms];
@@ -193,6 +196,8 @@ public class CameraRastorizationV2 implements Camera{
                   Vector bary = flatCurrentPart.getBaryCentricCoords(pixPoint);
                   //is in triangle
                   if(bary == null){
+                     pixPos = incrementArray(pixPos, projBoundingBoxMax, projBoundingBoxMin, pixPos.length-1);
+                     hasPix = pixPos != null;
                      continue drawLoop;
                   }
                   for(int i = 0; i<bary.length(); i++){
@@ -211,11 +216,13 @@ public class CameraRastorizationV2 implements Camera{
                   zBuff.setColor(zbuffPoint, pixColor);
                   //next pixel
                   pixPos = incrementArray(pixPos, projBoundingBoxMax, projBoundingBoxMin, pixPos.length-1);
-                  hasPix = pixPos == null;
+                  hasPix = pixPos != null;
                }
                selectedPoints = shiftSelected(selectedPoints, pointCount, selectedPoints.length-1);
-               cont = selectedPoints == null;
+               cont = selectedPoints != null;
+               
             }
+            
          } else if (allPoints.length == 0){
             //no points to draw
             
@@ -246,8 +253,8 @@ public class CameraRastorizationV2 implements Camera{
             for(int i = 0; i<pixPos.length; i++){
                pixPos[i] = projBoundingBoxMin[i];
             }
+            Point pixPoint = new Point(pixPos);
             drawLoop:while(hasPix){
-               Point pixPoint = new Point(pixPos);
                   //draw pixel
                Vector bary = flatCurrentPart.getBaryCentricCoords(pixPoint);
                   //is in triangle
@@ -268,6 +275,8 @@ public class CameraRastorizationV2 implements Camera{
                }
                Point zbuffPoint = new Point(actualPoint.getCoords());
                zBuff.setColor(zbuffPoint, pixColor);
+               pixPos = incrementArray(pixPos, projBoundingBoxMax, projBoundingBoxMin, pixPos.length-1);
+               hasPix = pixPos != null;
             }
          }
       }
@@ -338,8 +347,8 @@ public class CameraRastorizationV2 implements Camera{
          //solve part
             Vector partSolution = currentEq.solve(sol);
             if(partSolution == null){
-               selectedCol = shiftSelected(selectedCol, maxUnknowns, selectedCol.length-1);
-               cont = selectedCol == null;     
+               selectedCol = shiftSelected(selectedCol, numUnknowns, selectedCol.length-1);
+               cont = selectedCol != null;     
                continue;
             }
          //get rest
@@ -349,13 +358,20 @@ public class CameraRastorizationV2 implements Camera{
             }
             Vector mixedSolution = new Vector(newPointData);
             float[] mixedSolData = mixedSolution.getCoords();
+            
          //fix format
             float[] fixedSolData = new float[ms+1];
             float[] corrispondVectors = new float[g];
          //camera vectors
             fixedSolData[ms] = mixedSolData[ms];
-            for(int i = 0; i<ms; i++){
-               fixedSolData[i] = (mixedSolData[i] + mixedSolData[i+ms+1])/mixedSolData[ms];
+            if(mixedSolData[ms] != 0){
+               for(int i = 0; i<ms; i++){
+                  fixedSolData[i] = (mixedSolData[i] + mixedSolData[i+ms+1])/mixedSolData[ms];
+               }
+            } else {
+               for(int i = 0; i<ms; i++){
+                  fixedSolData[i] = (mixedSolData[i] + mixedSolData[i+ms+1]);
+               }
             }
          //simplex vectors
             for(int i = 2*ms+1; i<2*ms+g+1; i++){
@@ -364,8 +380,8 @@ public class CameraRastorizationV2 implements Camera{
             newPoints.add(new Point(fixedSolData));
             corrispond.add(new Point(corrispondVectors));
          //change selection
-            selectedCol = shiftSelected(selectedCol, maxUnknowns, selectedCol.length-1);
-            cont = selectedCol == null;            
+            selectedCol = shiftSelected(selectedCol, numUnknowns, selectedCol.length-1);
+            cont = selectedCol != null;            
          }
       }
       Point[] tempPoints = new Point[newPoints.size()];
@@ -395,10 +411,12 @@ public class CameraRastorizationV2 implements Camera{
    protected int[] shiftSelected(int[] selected, int maximum, int index){
       selected[index]++;
       int len = selected.length;
-      if(selected[index] == (maximum-len+index)){
+      if(selected[index] == (maximum-len+index+1)){
          if(index != 0){
-            shiftSelected(selected, maximum, index-1);
-            selected[index] = selected[index-1]+1;
+            selected = shiftSelected(selected, maximum, index-1);
+            if(selected != null){
+               selected[index] = selected[index-1]+1;
+            }
          } else {
             return null;
          }

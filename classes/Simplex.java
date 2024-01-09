@@ -30,6 +30,11 @@ public class Simplex{
    public Simplex(Point[] vertex, Color c){
       setPoints(vertex);
       t = new ConstentTexture(c, new int[vertex.length]);
+      Point[] textPoints = new Point[vertex.length];
+      for(int i = 0; i<textPoints.length; i++){
+         textPoints[i] = new Point(new float[vertex[0].length()]);
+      }
+      setTexturePoints(textPoints);
    }
    
 /** Sets points to be vertex.
@@ -41,19 +46,28 @@ public class Simplex{
          surface = null;
          return;
       }
+      if(vertex.length > vertex[0].getCoords().length){
+         surface = null;
+         return;
+      }
       Vector[] temp = new Vector[vertex.length-1];
       for(int i = 1; i<vertex.length; i++){
          float[] temp2 = new float[vertex.length];
          for(int j = 0; j<vertex[0].length(); j++){
             temp2[j] = vertex[0].getCoords()[j];
          }
-         for(int j = 1; j < temp.length; j++){
-            temp2[j-1] -= vertex[i].getCoords()[j];
+         for(int j = 0; j < temp.length; j++){
+            temp2[j] -= vertex[i].getCoords()[j];
          }
          temp[i-1] = new Vector(temp2);
       }
       
       surface = new Plane(vertex[0], temp);
+      Point[] textPoints = new Point[vertex.length];
+      for(int i = 0; i<textPoints.length; i++){
+         textPoints[i] = new Point(new float[vertex[0].length()]);
+      }
+      setTexturePoints(textPoints);
    }
    
 /** Returns the points of this Simplex.
@@ -79,7 +93,7 @@ public class Simplex{
    public Vector getBaryCentricCoords(Point p){
       //set up matrix
       int datWidth = points.length;
-      int datHight = points[0].getCoords().length;
+      int datHight = points[0].getCoords().length+1;
       float[][] matData = new float[datWidth][datHight];
       for(int i = 0; i<points.length; i++){
          float[] currentPoint = points[i].getCoords();
@@ -87,12 +101,14 @@ public class Simplex{
             matData[i][j] = currentPoint[j];
          }
       }
+      matData[points.length-1][points[0].getCoords().length] = 1;
       Matrix m = new Matrix(matData);
       //set up solution
       float[] sol = new float[datHight];
       for(int i = 0; i<sol.length-1; i++){
          sol[i] = p.getCoords()[i];
       }
+      sol[sol.length-1] = 1;
       Vector solVec = new Vector(sol);
       Vector result = m.solve(solVec);
       return result;

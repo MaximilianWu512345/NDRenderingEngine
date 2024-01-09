@@ -111,6 +111,7 @@ public class Engine extends JFrame {
          Simplex[] tempSimplex = new Simplex[numTestSimplexes];
          for(int j = 0; j< numTestSimplexes; j++){
             tempSimplex[j] = generateRandomSimplex(dimention, 10);
+            System.out.println(tempSimplex[j]);
          }
          scene.add(new Mesh(tempSimplex, dimention));
       }
