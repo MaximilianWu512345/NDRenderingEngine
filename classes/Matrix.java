@@ -356,7 +356,7 @@ public class Matrix{
          }
       }
       //actually solve
-      float[] resultData = new float[rref.width];
+      float[] resultData = new float[rref.width-1];
       for(int i = allEq.length-1; i>=1; i--){
          float mult = 1/allEq[i].getCoords()[i];
          allEq[i] = allEq[i].scale(1/allEq[i].getCoords()[i]);

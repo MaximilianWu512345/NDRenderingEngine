@@ -32,8 +32,8 @@ public class CameraRastorizationV2 implements Camera{
       g = s.getPoints().length-1;
       ms = this.s.getSubSpace().getDir().length;
       n = c.length();
-      int numCol = 2*ms+2*g+2;
-      int numRow = n+g+1;
+      int numCol = 2*ms+g+2;
+      int numRow = n+2;
       float[][] data = new float[numRow][numCol];
       int currentCol = 0;
       Point[] newData = s.getPoints();
@@ -75,15 +75,10 @@ public class CameraRastorizationV2 implements Camera{
          for(int i = 0; i<n; i++){
             data[i][currentCol] = v[currentCol-start].getCoords()[i];
          }
-         data[n+(currentCol-start)][currentCol] = 1;
+         data[n][currentCol] = 1;
          currentCol++;
       }
       //alpha restrict (in simplex)
-      start = currentCol;
-      while(currentCol-start<g){
-         data[n+(currentCol-start)][currentCol] = -1;
-         currentCol++;
-      }
       //const
       for(int i = 0; i<n; i++){
          data[i][currentCol] = constShift.getCoords()[i];
@@ -94,10 +89,9 @@ public class CameraRastorizationV2 implements Camera{
       //remove reduntant bases later
       //generate solution
       float[] result = new float[numRow];
-      for(int i = 0; i<g; i++){
-         result[n+i] = 1;
-      }
+      
       result[numRow-1] = 1;
+      result[numRow-2] = 1;
       sol = new Vector(result);
       
    }
@@ -154,6 +148,7 @@ public class CameraRastorizationV2 implements Camera{
       zBufferArrayTexture zBuff = new zBufferArrayTexture(pix,bounds);
       for(Simplex current: projected){
          Point[] allPoints = current.getPoints();
+         System.out.println(current);
          if(allPoints.length>ms){
             //select ms+1 points to draw (triangles)
             int[] selectedPoints = new int[ms+1];
@@ -162,7 +157,9 @@ public class CameraRastorizationV2 implements Camera{
                selectedPoints[i] = i;
             }
             boolean cont = true;
+            System.out.println(current);
             while(cont){
+               System.out.println("drawing triangle");
                //put points in simplex
                Point[] neededPoints = new Point[ms+1];
                Point[] flatPoints = new Point[ms+1];
@@ -287,7 +284,8 @@ public class CameraRastorizationV2 implements Camera{
       ArrayList<Point> corrispond = new ArrayList<Point>();
       //get simplex slice
       reCalculateMatrix(s);
-   
+      System.out.println(m);
+      System.out.println(sol);
       //get basic fesable solution https://en.wikipedia.org/wiki/Basic_feasible_solution
       int numUnknowns = m.getWidth();
       int maxUnknowns = m.getHeight();
@@ -333,7 +331,7 @@ public class CameraRastorizationV2 implements Camera{
             selectedCol[i] = i;
          }
          boolean cont = true;
-         while(cont){
+         mainLoop:while(cont){
             float[][] selectedData = new float[selectedCol.length][selectedCol.length];
             for(int i = 0; i<maxUnknowns; i++){
                int col = selectedCol[i];
@@ -351,6 +349,7 @@ public class CameraRastorizationV2 implements Camera{
                cont = selectedCol != null;     
                continue;
             }
+            
          //get rest
             float[] newPointData = new float[numUnknowns];
             for(int i = 0; i<selectedCol.length; i++){
@@ -392,6 +391,7 @@ public class CameraRastorizationV2 implements Camera{
       } else {
          return null;
       }
+      System.out.println(resultSimplex);
       //set texture
       resultSimplex.setTexture(s.getTexture());
       LinkedList<Point> shiftedTexturePoints = new LinkedList<Point>();

@@ -103,7 +103,7 @@ public class Engine extends JFrame {
       //generate scene
       ArrayList<Mesh> scene = new ArrayList<Mesh>();
       //generate mesh
-      
+      /*
       int numTestSimplexes = 1;
       int numTestMeshes = 1;
       
@@ -115,19 +115,17 @@ public class Engine extends JFrame {
          }
          scene.add(new Mesh(tempSimplex, dimention));
       }
-      
+      */
       //manuel Input
-      /*
+      
       Simplex[] manSimplex = new Simplex[1];
       Point[] parr1 = new Point[dimention];
-      parr1[0] = new Point(new float[]{2,1,1,1,1});
-      parr1[1] = new Point(new float[]{2,2,1,5,1});
-      parr1[2] = new Point(new float[]{1,-1,-1,-1,-1});
-      parr1[3] = new Point(new float[]{1,-7,-1,-1,-1});
-      parr1[4] = new Point(new float[]{1,-7,-1,8,-1});
+      parr1[0] = new Point(new float[]{3,3,3});
+      parr1[1] = new Point(new float[]{7,0,4});
+      parr1[2] = new Point(new float[]{4,-3,-3});
       manSimplex[0] = new Simplex(parr1);
       scene.add(new Mesh(manSimplex, dimention));
-      */
+      
       //set up
       Mesh[] sceneArr = new Mesh[scene.size()];
       sceneArr = scene.toArray(sceneArr);

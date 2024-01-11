@@ -52,7 +52,7 @@ public class Simplex{
       }
       Vector[] temp = new Vector[vertex.length-1];
       for(int i = 1; i<vertex.length; i++){
-         float[] temp2 = new float[vertex.length];
+         float[] temp2 = new float[vertex[0].length()];
          for(int j = 0; j<vertex[0].length(); j++){
             temp2[j] = vertex[0].getCoords()[j];
          }
@@ -100,13 +100,18 @@ public class Simplex{
          for(int j = 0; j<currentPoint.length; j++){
             matData[i][j] = currentPoint[j];
          }
+         matData[i][currentPoint.length] = 1;
       }
       matData[points.length-1][points[0].getCoords().length] = 1;
       Matrix m = new Matrix(matData);
       //set up solution
       float[] sol = new float[datHight];
       for(int i = 0; i<sol.length-1; i++){
-         sol[i] = p.getCoords()[i];
+         if(i < p.length()){
+            sol[i] = p.getCoords()[i];
+         } else {
+            sol[i] = 0;
+         }
       }
       sol[sol.length-1] = 1;
       Vector solVec = new Vector(sol);
@@ -293,7 +298,11 @@ public class Simplex{
          }
          temp += "\n\t" + tabs + points[points.length - 1];
       }
-      temp += "\n" + tabs + "}\n" + surface.toString(1 + count) + "\n" + tabs + t + "\n" + lastTab + "]";
+      if(surface != null){
+         temp += "\n" + tabs + "}\n" + surface.toString(1 + count) + "\n" + tabs + t + "\n" + lastTab + "]";
+      } else {
+         temp += "\n" + tabs + "}\nnull\n" + tabs + t + "\n" + lastTab + "]";
+      }
       return temp;
    }
    
