@@ -360,8 +360,14 @@ public class Matrix{
       for(int i = allEq.length-1; i>=1; i--){
          float mult = 1/allEq[i].getCoords()[i];
          allEq[i] = allEq[i].scale(1/allEq[i].getCoords()[i]);
-         allEq[i-1] = allEq[i-1].add(allEq[i].scale(-1*allEq[i-1].getCoords()[i]));
          resultData[i] = allEq[i].getCoords()[rref.width-1];
+         //subtract from above vectors
+         for(int j = i-1; j>=0; j--){
+            if(allEq[j].getCoords()[i] != 0){
+               float scale = allEq[j].getCoords()[i]/allEq[i].getCoords()[i];
+               allEq[j] = allEq[j].add(allEq[i].scale(-1*scale));
+            }
+         }
       }
       allEq[0] = allEq[0].scale(1/allEq[0].getCoords()[0]);
       resultData[0] = allEq[0].getCoords()[rref.width-1];
