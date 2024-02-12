@@ -20,6 +20,14 @@ public class Simplex {
       t = new ConstentTexture(Color.RED, vertex.length-1);
    }
    
+   /** Creates a new Simplex with points of vertex.
+* @param vertex the Point[] vertex to set points to.
+*/
+   public Simplex(Point[] vertex, boolean doNotSetPoints){
+      points = vertex;
+      t = new ConstentTexture(Color.RED, vertex.length-1);
+   }
+   
 /** Creates a new Simplex with points of vertex.
 * @param vertex the Point[] vertex to set points to.
 * @param c the color to set points to.

@@ -98,6 +98,7 @@ public class Engine extends JFrame {
       Instance.renderSimplex(simplexes[0], randomColor());
       */
       // Ask for img files to open and display until user clicks cancel.
+      
       boolean askForFiles = true;
       if (askForFiles) {
          try {
@@ -119,12 +120,24 @@ public class Engine extends JFrame {
             System.out.println(e);
          }
       }
+      /*
       CompressedTexture t = new CompressedTexture(Instance.panel.getRenderImage());
       System.out.println("JPEG compression completed!");
       Color[][] de = t.decompress();
       System.out.println("JPEG decompression completed!");
       Instance.panel.clearRenderImage();
       Instance.renderImage(de);
+      */
+      float[] one = new float[10];
+      float[] two = new float[10];
+      float[] three = new float[10];
+      for (int i = 0; i < one.length; i++) {
+         one[i] = i;
+         two[i] = i - 3;
+      }
+      OpenCL.RunFile("AddSum.c", "sampleKernel", 10, new Object[] { one, two }, new Object[] { three });
+      for (float f : three)
+         System.out.println(f);
    }
    
    public static Color[] colors = { Color.RED, Color.BLUE, Color.BLACK, Color.WHITE, Color.GREEN, Color.YELLOW, Color.GRAY};

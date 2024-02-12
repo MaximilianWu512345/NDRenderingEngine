@@ -35,6 +35,10 @@ public class CompressedTexture implements Texture {
    public CompressedTexture(HuffmanTree[][][] tex) {
       textures = tex;
    }
+   
+   public HuffmanTree[][][] getTextures() {
+      return textures;
+   }
 
    public int[] getBounds() {
       return null;

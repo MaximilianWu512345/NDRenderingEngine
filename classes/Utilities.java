@@ -7,16 +7,12 @@ import java.awt.Color;
 
 public class Utilities {
 
-   public static void SaveMesh(String fileName, Mesh mesh) {
+   public static void SaveMesh(String fileName, Mesh mesh, boolean autoSaveTexture) {
       try {
          File file = new File("meshes/" + fileName);
          file.createNewFile();
          FileWriter writer = new FileWriter(file);
-         ArrayList<String> list = new ArrayList<String>();
-         Utilities.ConvertToFileFormat(list, mesh, "");
-         for (String s : list) {
-            writer.write(s + "\n");
-         }
+         writer.write(Utilities.MeshToFile(autoSaveTexture ? fileName : null, mesh));
          writer.close();
       }
       catch (Exception e) {
@@ -28,12 +24,12 @@ public class Utilities {
       try {
          File file = new File("meshes/" + fileName);
          Scanner reader = new Scanner(file);
-         ArrayList<String> list = new ArrayList<String>();
+         String text = "";
          while (reader.hasNextLine()) {
-            list.add(reader.nextLine());
+            text += reader.nextLine();
          }
          reader.close();
-         return Utilities.ConvertFromFileFormatMesh(list);
+         return FileToMesh(text);
       }
       catch (Exception e) {
          System.out.println(e);
@@ -46,11 +42,7 @@ public class Utilities {
          File file = new File("textures/" + fileName);
          file.createNewFile();
          FileWriter writer = new FileWriter(file);
-         ArrayList<String> list = new ArrayList<String>();
-         Utilities.ConvertToFileFormat(list, texture, "");
-         for (String s : list) {
-            writer.write(s + "\n");
-         }
+         writer.write(Utilities.TextureToFile(texture));
          writer.close();
       }
       catch (Exception e) {
@@ -62,12 +54,10 @@ public class Utilities {
       try {
          File file = new File("textures/" + fileName);
          Scanner reader = new Scanner(file);
-         ArrayList<String> list = new ArrayList<String>();
-         while (reader.hasNextLine()) {
-            list.add(reader.nextLine());
-         }
+         String text = "";
+         text += reader.nextLine();
          reader.close();
-         return Utilities.ConvertFromFileFormatTexture(list);
+         return Utilities.FileToTexture(text);
       }
       catch (Exception e) {
          System.out.println(e);
@@ -75,129 +65,114 @@ public class Utilities {
       return null;
    }
    
-   public static void ConvertToFileFormat(ArrayList<String> list, Object o, String offset) {
-      if (o instanceof Point) {
-         list.add(offset + "Point " + ((Point)o).length());
-         String temp = "";
-         for (float f : ((Point)o).getCoordinates())
-            temp += " " + f;
-         list.add(offset + temp);
+   public static String MeshToFile(String textureName, Mesh mesh) {
+      if (mesh == null) {
+         return "";
       }
-      else if (o instanceof Vector) {
-         list.add(offset + "Vector " + ((Vector)o).length());
-         String temp = "";
-         for (float f : ((Vector)o).getCoordinates())
-            temp += f + " ";
-         list.add(offset + temp);
-      }
-      else if (o instanceof Plane) {
-         list.add(offset + "Plane");
-         ConvertToFileFormat(list, ((Plane)o).getPos(), offset + " ");
-         ConvertToFileFormat(list, ((Plane)o).getNorm(), offset + " ");
-      }
-      else if (o instanceof Simplex) {
-         list.add(offset + "Simplex " + ((Simplex)o).getPoints().length);
-         for (Point p : ((Simplex)o).getPoints())
-            ConvertToFileFormat(list, p, offset + " ");
-      }
-      else if (o instanceof Mesh) {
-         list.add(offset + "Mesh " + ((Mesh)o).getDimention() + " " + ((Mesh)o).getFaces().length);
-         for (Simplex s : ((Mesh)o).getFaces())
-            ConvertToFileFormat(list, s, offset + " ");
-      }
-      else if (o instanceof ArrayTexture) {
-         list.add(offset + "ArrayTexture " + ((ArrayTexture)o).getDimention() + " " + ((ArrayTexture)o).getData().length);
-         String temp = "";
-         for (int i : ((ArrayTexture)o).getBounds())
-            temp += i + " ";
-         list.add(offset + temp);
-         for (Color c : ((ArrayTexture)o).getData())
-            ConvertToFileFormat(list, c, offset + " ");
-      }
-      else if (o instanceof Color) {
-         list.add(offset + "Color " + ((Color)o).getRed() + " " + ((Color)o).getGreen() + " " + ((Color)o).getBlue() + " " + ((Color)o).getAlpha());
-      }
-      else
-         list.add(offset + null);
-   }
-   
-   public static Mesh ConvertFromFileFormatMesh(ArrayList<String> list) {
-      return (Mesh)ConvertFromFileFormat(list);
-   }
-   
-   public static Object ConvertFromFileFormat(ArrayList<String> list) {
-      if (list.size() == 0)
-         return null;
-      String[] head = RemoveWhiteSpace(list.remove(0));
-      String[] components = head[0].split(" ");
-      if (components[0].equalsIgnoreCase("Mesh")) {
-         int dimension = (int)Float.parseFloat(components[1]);
-         Simplex[] temp = new Simplex[Integer.parseInt(components[2])];
-         for (int i = 0; i < temp.length; i++) {
-            temp[i] = (Simplex)ConvertFromFileFormat(GetFromFileFormat(list));
+      Simplex[] faces = mesh.getFaces();
+      String temp = (int)mesh.getDimention() + " " + faces.length;
+      for (int i = 0; i < faces.length; i++) {
+         if (textureName != null) {
+            SaveTexture(textureName + "$" + i, faces[i].getTexture());
+            temp += " \"" + textureName + "$" + i + "\"";
          }
-         return new Mesh(temp, dimension);
-      }
-      else if (components[0].equalsIgnoreCase("Simplex")) {
-         Point[] temp = new Point[Integer.parseInt(components[1])];
-         for (int i = 0; i < temp.length; i++) {
-            temp[i] = (Point)ConvertFromFileFormat(GetFromFileFormat(list));
+         else {
+            temp += " \"\"";
          }
-         return new Simplex(temp);
+         temp += " " + faces[i].getPoints().length;
       }
-      else if (components[0].equalsIgnoreCase("Plane")) {
-         Point pos = (Point)ConvertFromFileFormat(GetFromFileFormat(list));
-         Vector norm = (Vector)ConvertFromFileFormat(GetFromFileFormat(list));
-         return new Plane(pos, norm);
-      }
-      else if (components[0].equalsIgnoreCase("Point")) {
-         return new Point((float[])ConvertFromFileFormat(GetFromFileFormat(list)));
-      }
-      else {
-         try {
-            float[] temp = new float[components.length];
-            for (int i = 0; i < temp.length; i++) {
-               temp[i] = Float.parseFloat(components[i]);
-            }
-            return temp;
-         }
-         catch (Exception e) {
-         
+      for (int i = 0; i < faces.length; i++) {
+         for (int x = 0; x < faces[i].getPoints().length; x++) {
+            temp += " " + faces[i].getPoints()[x].getCoordinates().length;
          }
       }
-      return null;
-   }
-   
-   public static Texture ConvertFromFileFormatTexture(ArrayList<String> list) {
-      return null;
-   }
-   
-   public static ArrayList<String> GetFromFileFormat(ArrayList<String> list) {
-      ArrayList<String> temp = new ArrayList<String>();
-      if (list.size() == 0)
-         return temp;
-      String[] head = RemoveWhiteSpace(list.get(0));
-      temp.add(list.remove(0));
-      while (list.size() > 0 && ! RemoveWhiteSpace(list.get(0))[1].equals(head[1])) {
-         temp.add(list.remove(0));
+      for (int i = 0; i < faces.length; i++) {
+         for (int x = 0; x < faces[i].getPoints().length; x++) {
+            for (float f : faces[i].getPoints()[x].getCoordinates())
+               temp += " " + f;
+         }
       }
       return temp;
    }
    
-   public static String[] RemoveWhiteSpace(String s) {
-      int index = 0;
-      while (index < s.length() && s.substring(index, index + 1).equals(" ")) {
-         index++;
+   public static Mesh FileToMesh(String list) {
+      if (list == null) {
+         return null;
       }
-      s = s.substring(index);
-      return new String[] { s, "" + index };
+      String[] temp = list.split(" ");
+      Simplex[] simplexes = new Simplex[ToInt(temp[1])];
+      int index = 2;
+      for (int i = 0; i < simplexes.length; i++) {
+         Texture texture = LoadTexture(temp[index]);
+         simplexes[i] = new Simplex(new Point[ToInt(temp[index + 1])], true);
+         index += 2;
+      }
+      for (int i = 0; i < simplexes.length; i++) {
+         for (int x = 0; x < simplexes[i].getPoints().length; x++) {
+            simplexes[i].getPoints()[x] = new Point(new float[ToInt(temp[index])]);
+            index++;
+         }
+      }
+      for (int i = 0; i < simplexes.length; i++) {
+         for (int x = 0; x < simplexes[i].getPoints().length; x++) {
+            for (int c = 0; c < simplexes[i].getPoints()[x].getCoordinates().length; c++) {
+               simplexes[i].getPoints()[x].getCoordinates()[c] = ToFloat(temp[index]);
+               index++;
+            }
+         }
+         simplexes[i].setPoints(simplexes[i].getPoints());
+      }
+      return new Mesh(simplexes, ToInt(temp[0]));
+   }
+   
+   public static String TextureToFile(Texture texture) {
+      if (texture == null)
+         return "";
+      CompressedTexture compressedTexture = new CompressedTexture(TextureToColors(texture));
+      HuffmanTree[][][] d3 = compressedTexture.getTextures();
+      for (int i = 0; i < d3.length; i++) {
+         HuffmanTree[][] d2 = d3[i];
+         for (int x = 0; x < d2.length; x++) {
+            HuffmanTree[] d1 = d2[x];
+            for (int c = 0; c < d1.length; c++) {
+               HuffmanTree tree = d1[c];
+            }
+         }
+      }
+      String temp = "";
+      return temp;
+   }
+   
+   public static Texture FileToTexture(String list) {
+      return null;
+   }
+   
+   public static int ToInt(String text) {
+      return Integer.parseInt(text);
+   }
+   
+   public static float ToFloat(String text) {
+      return Float.parseFloat(text);
+   }
+   
+   public static Color[][] TextureToColors(Texture texture) {
+      Color[][] colors = new Color[texture.getBounds()[0]][texture.getBounds()[1]];
+      for (int i = 0; i < texture.getBounds()[0]; i++) {
+         for (int x = 0; x < texture.getBounds()[1]; x++) {
+            colors[i][x] = texture.getColor(new Point(new float[] { i, x } ));
+         }
+      }
+      return colors;
    }
    
    public static void main(String[] args) {
-      Simplex[] faces = new Simplex[] { new Simplex(new Point[] { new Point(new float[] { 1, 1 }) }) };
+      Simplex[] faces = new Simplex[] { new Simplex(new Point[] { new Point(new float[] { 1, 1 }) }),
+         new Simplex(new Point[] { new Point(new float[] { 1, 1 }) }),
+         new Simplex(new Point[] { new Point(new float[] { 1, 1 }) })
+         };
       Mesh mesh = new Mesh(faces, 3);
       System.out.println(mesh);
-      SaveMesh("Test", mesh);
+      SaveMesh("Test", mesh, true);
       mesh = LoadMesh("Test");
       System.out.println(mesh);
    }

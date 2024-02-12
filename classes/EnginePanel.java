@@ -1,3 +1,14 @@
+import static org.jocl.CL.*;
+
+import java.awt.*;
+import java.awt.image.*;
+import java.io.*;
+
+import javax.imageio.ImageIO;
+import javax.swing.*;
+
+import org.jocl.*;
+
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JComponent;
@@ -68,14 +79,19 @@ public class EnginePanel extends JPanel {
       return null;
    }
    
+   
    public Color[][] getRenderImage() {
       return ((RenderHelper)dictComponents.get(PanelType.RENDER)).getColors();
    }
+   
+   
    
    public void clearRenderImage() {
       ((RenderHelper)dictComponents.get(PanelType.RENDER)).clear();
       repaint();
    }
+   
+   
    
    public void renderImage(Object object) {
       if (object instanceof BufferedImage)
@@ -94,9 +110,8 @@ public class EnginePanel extends JPanel {
    }
    
    public void renderTriangle(Color c) {
-
-   }
    
+   }
 
 /** Paints EnginePanel and paints each component in dictComponents.
 * @param g the Graphics instance to use to paint the components.
@@ -129,12 +144,14 @@ public class EnginePanel extends JPanel {
          initialize(w, h);
       }
       
-      /**  */
+      /** */
       private void initialize(int w, int h) {
          renderedImage = new BufferedImage(w, h, BufferedImage.TYPE_4BYTE_ABGR);
          imageObserver = new Canvas();
       }
       
+      
+     
       public Color[][] getColors() {
          Color[][] colors = new Color[renderedImage.getWidth()][renderedImage.getHeight()];
          for (int i = 0; i < renderedImage.getWidth(); i++) {
@@ -167,13 +184,17 @@ public class EnginePanel extends JPanel {
          }
       }
       
+     
       public void setImage(BufferedImage image) {
+         System.out.println(System.currentTimeMillis());
          for (int i = 0; i < image.getWidth(); i++) {
             for (int x = 0; x < image.getHeight(); x++) {
                renderedImage.setRGB(i, x, image.getRGB(i, x));
             }
          }
+         System.out.println(System.currentTimeMillis());
       }
+      
       
       public void setPoint(Point point) {
          if (point == null || point.length() <= 0)
@@ -240,6 +261,7 @@ public class EnginePanel extends JPanel {
          for (Simplex s : mesh.getFaces())
             setSimplex(s);
       }
+      
       
       public void setCanvas(Canvas c) {
          imageObserver = c;
