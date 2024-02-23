@@ -1,4 +1,6 @@
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.HashSet;
 import java.math.*;
 /**
 * a matrix from linear algebra
@@ -373,5 +375,234 @@ public class Matrix{
       resultData[0] = allEq[0].getCoords()[rref.width-1];
       result = new Vector(resultData);
       return result;
+   }
+   /**
+   *  Uses simplex algorythem to get solution maximizing a col
+   *  uses this matrix as the equations with all as equal to equations
+   *  assumes this matrix is augmented
+   *  https://en.wikipedia.org/wiki/Simplex_algorithm#Implementation
+   *  I could list all the cites I looked at, but that would take too long
+   *  @param col the index of the colum to maximis
+   *  @return Vector the resulting maximum
+   */
+   public Vector[] LPMaximum(int[] col, Vector resource){
+      int tw = width*2+1;
+      int th = height+1;
+      float[][] table = new float[th][tw];
+      
+      //construct matrix
+      for(int i = 0; i<width-1; i++){
+         for(int j = 0; j<height; j++){
+            table[j][i] = data[j][i];
+         }
+      }
+      //add artifical
+      for(int i = 0; i<height-1; i++){
+         table[i][i+width] = 1;
+      }
+      //add const
+      for(int i = 0; i<height; i++){
+         table[i][tw-1] = Math.abs(resource.getCoords()[i]);
+      }
+      //objective functions
+      for(int i = 0; i<width; i++){//phase 1
+         float sum = 0;
+         for(int j = 0; j<height; j++){
+            sum += table[j][i];
+         }
+         table[th-1][i] = sum;
+      }
+      float sum = 0;
+      for(int j = 0; j<height; j++){
+         sum += table[j][tw-1];
+      }
+      table[th-1][tw-1] = sum;
+      //traverse
+      int objFuncIndex = th-1;
+      int currentIndex = pickPivot(table, objFuncIndex);
+      int[] basis = new int[height];
+      for(int i = 0; i<basis.length; i++){
+         basis[i] = i+width;
+      }
+      while(currentIndex != -1){
+         //pick row
+         float q = -1;
+         int remove = -1;
+         for(int i = 0; i<height; i++){
+            if(table[currentIndex][i] > 0){
+               if(remove == -1){
+                  q = table[tw-1][i]/table[currentIndex][i];
+                  remove = basis[i];
+               } else if (q>table[tw-1][i]/table[currentIndex][i]){
+                  q = table[tw-1][i]/table[currentIndex][i];
+                  remove = basis[i];
+               }
+            }
+         }
+         if(remove == -1){
+            System.out.println("uhhhh... you did something wrong");
+            return new Vector[0];
+         }
+         //set row number to 1
+         float mult = table[remove][currentIndex];
+         for(int i = 0; i<tw; i++){
+            table[remove][i] = table[remove][i]/mult;
+         }
+         table[remove][currentIndex] = 1;
+         //cancel
+         for(int i = 0; i<th; i++){
+            if(i != remove){
+               mult = table[i][currentIndex]/table[remove][currentIndex];
+               for(int j = 0; j<tw; j++){
+                  table[i][j] = table[i][j] - table[remove][j]*mult;
+               }
+            }
+         }
+         //basis changed
+         basis[remove] = currentIndex;
+         currentIndex = pickPivot(table, objFuncIndex);
+      }
+      
+      if(table[height][tw-1] != 0){
+         return new Vector[0];
+      }
+      int newSize = 0;
+      for(int i = 0; i<tw; i++){
+         if(table[th-1][i]>=0){
+            newSize++;
+         }
+      }
+      LinkedList<Vector> resHolder = new LinkedList<Vector>();
+      //phase 2
+      //drop non basic
+      float[][] temp = new float[th][newSize];
+      int addCol = 0;
+      for(int i = 0; i<tw; i++){
+         for(int j = 0; j<th; j++){
+            if(table[th-1][i]>=0){
+               temp[j][addCol] = table[j][i];
+               addCol++;
+            }
+         }
+      }
+      table = temp;
+      colLoop:for(int currentCol: col){
+      //objective fucntion
+         table[th] = new float[tw];
+         table[th][currentCol] = -1;
+         currentIndex = pickPivot(table, objFuncIndex);
+         while(currentIndex != -1){
+         //pick row
+            float q = -1;
+            int remove = -1;
+            for(int i = 0; i<height; i++){
+               if(table[currentIndex][i] > 0){
+                  if(remove == -1){
+                     q = table[tw-1][i]/table[currentIndex][i];
+                     remove = basis[i];
+                  } else if (q>table[tw-1][i]/table[currentIndex][i]){
+                     q = table[tw-1][i]/table[currentIndex][i];
+                     remove = basis[i];
+                  }
+               }
+            }
+            if(remove == -1){
+               System.out.println("uhhhh... you did something wrong");
+               continue colLoop;
+            }
+         //set row number to 1
+            float mult = table[remove][currentIndex];
+            for(int i = 0; i<tw; i++){
+               table[remove][i] = table[remove][i]/mult;
+            }
+            table[remove][currentIndex] = 1;
+         //cancel
+            for(int i = 0; i<th; i++){
+               if(i != remove){
+                  mult = table[i][currentIndex]/table[remove][currentIndex];
+                  for(int j = 0; j<tw; j++){
+                     table[i][j] = table[i][j] - table[remove][j]*mult;
+                  }
+               }
+            }
+         //basis changed
+            basis[remove] = currentIndex;
+            currentIndex = pickPivot(table, objFuncIndex);
+         }
+      
+      //found vector
+         float[] v = new float[width];
+         for(int i = 0; i<basis.length; i++){
+            v[basis[i]] = table[tw-1][i];
+         }
+         resHolder.add(new Vector(v));
+      //alternte Solutions
+         LinkedList<Integer> NBI = new LinkedList<Integer>();
+         basisLoop:for(int i = 0; i<tw; i++){
+            if(table[height][i] == 0){
+            //is a basis?
+               for(int j = 0; j<basis.length; i++){
+                  if(basis[j] == i){
+                     continue basisLoop;
+                  }
+               }
+               NBI.add(i);
+            }
+         }
+      //calculate alternitives
+         for(int k : NBI){
+            currentIndex = k;
+         //pivot
+         //pick row
+            float q = -1;
+            int remove = -1;
+            for(int i = 0; i<height; i++){
+               if(table[currentIndex][i] > 0){
+                  if(remove == -1){
+                     q = table[tw-1][i]/table[currentIndex][i];
+                     remove = basis[i];
+                  } else if (q>table[tw-1][i]/table[currentIndex][i]){
+                     q = table[tw-1][i]/table[currentIndex][i];
+                     remove = basis[i];
+                  }
+               }
+            }
+            if(remove == -1){
+               System.out.println("uhhhh... you did something wrong");
+               continue;
+            }
+         //set row number to 1
+            float mult = table[remove][currentIndex];
+            for(int i = 0; i<tw; i++){
+               table[remove][i] = table[remove][i]/mult;
+            }
+         //cancel
+            for(int i = 0; i<th-1; i++){
+               if(i != remove){
+                  mult = table[i][currentIndex]/table[remove][currentIndex];
+                  for(int j = 0; j<tw; j++){
+                     table[i][j] = table[i][j] - table[remove][j]*mult;
+                  }
+               }
+            }
+            v = new float[width];
+            for(int i = 0; i<basis.length; i++){
+               v[basis[i]] = table[tw-1][i];
+            }
+            resHolder.add(new Vector(v));
+         }
+      }
+      Vector[] result = new Vector[resHolder.size()];
+      result = resHolder.toArray(result);
+      return result;
+   }
+   private int pickPivot(float[][] t, int row){ // this is just for the LP solver
+      float min = 0;
+      for(int i = 0; i<t[row].length; i++){
+         if(t[row][i]<0){
+            return i;
+         }
+      }
+      return -1;
    }
 }
