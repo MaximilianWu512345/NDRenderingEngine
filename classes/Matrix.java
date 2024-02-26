@@ -385,7 +385,7 @@ public class Matrix{
    *  @param col the index of the colum to maximis
    *  @return Vector the resulting maximum
    */
-   public Vector[] LPMaximum(int[] col, Vector resource){
+   public Point[] LPMaximum(int[] col, Vector resource){
       int tw = width*2+1;
       int th = height+1;
       float[][] table = new float[th][tw];
@@ -463,16 +463,16 @@ public class Matrix{
          currentIndex = pickPivot(table, objFuncIndex);
       }
       
-      if(table[height][tw-1] != 0){
+      if(Float.compare(table[height][tw-1],0) != 0){
          return new Vector[0];
       }
       int newSize = 0;
       for(int i = 0; i<tw; i++){
-         if(table[th-1][i]>=0){
+         if(table[th-1][i]>=0f){
             newSize++;
          }
       }
-      LinkedList<Vector> resHolder = new LinkedList<Vector>();
+      LinkedList<Point> resHolder = new LinkedList<Point>();
       //phase 2
       //drop non basic
       float[][] temp = new float[th][newSize];
@@ -539,7 +539,7 @@ public class Matrix{
       //alternte Solutions
          LinkedList<Integer> NBI = new LinkedList<Integer>();
          basisLoop:for(int i = 0; i<tw; i++){
-            if(table[height][i] == 0){
+            if(Float.compare(table[height][i], 0) == 0){
             //is a basis?
                for(int j = 0; j<basis.length; i++){
                   if(basis[j] == i){
@@ -592,7 +592,7 @@ public class Matrix{
             resHolder.add(new Vector(v));
          }
       }
-      Vector[] result = new Vector[resHolder.size()];
+      Point[] result = new Point[resHolder.size()];
       result = resHolder.toArray(result);
       return result;
    }

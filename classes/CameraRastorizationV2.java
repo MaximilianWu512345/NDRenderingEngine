@@ -98,7 +98,7 @@ public class CameraRastorizationV2 implements Camera{
          temp[i] = exten.getCoords()[i];
       }
       for(int i = n+1; i<n+ms+1; i++){
-         temp[i] = -1*bounds[i]
+         temp[i] = -1*bounds[i];
       }
       exten = new Vector(temp);
       start = currentCol;
