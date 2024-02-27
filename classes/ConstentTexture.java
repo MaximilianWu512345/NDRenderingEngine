@@ -31,4 +31,7 @@ public class ConstentTexture implements Texture{
       }
       return result;
    }
+   public boolean placeMatters(){
+      return false;
+   }
 }

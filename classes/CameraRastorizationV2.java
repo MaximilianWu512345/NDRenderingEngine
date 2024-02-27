@@ -38,16 +38,15 @@ public class CameraRastorizationV2 implements Camera{
       ms = this.s.getSubSpace().getDir().length;
       n = c.length();
       int numCol = 2*ms+g+1;
-      int numRow = n+ms+1;
+      int numRow = n+1;
       float[][] data = new float[numRow][numCol];
       int currentCol = 0;
       Point[] newData = s.getPoints();
       v = new Vector[newData.length];
       u = this.s.getSubSpace().getDir();
       negu = new Vector[u.length];
-      Point p = newData[0];
-      exten = new Vector(c, this.s.getPoint());
-      constShift = new Vector(p.getCoords());
+      exten = new Vector(this.s.getPoint(), c);
+      constShift = new Vector(c.getCoords());
       for(int i = 0; i<newData.length; i++){
          v[i] = new Vector(newData[i].getCoords());
       }
@@ -73,7 +72,7 @@ public class CameraRastorizationV2 implements Camera{
          //add current vector
          temp = new float[numRow];
          for(int i = 0; i<n; i++){
-            data[i][currentCol] = u[currentCol-start].getCoords()[i];
+            data[i][currentCol] = -1*u[currentCol-start].getCoords()[i];
             temp[i] = u[currentCol-start].getCoords()[i];
          }
          u[currentCol-start] = new Vector(temp);
@@ -85,7 +84,7 @@ public class CameraRastorizationV2 implements Camera{
          //add current vector
          temp = new float[numRow];
          for(int i = 0; i<n; i++){
-            data[i][currentCol] = -1*u[currentCol-start].getCoords()[i];
+            data[i][currentCol] = u[currentCol-start].getCoords()[i];
             temp[i] = -1*u[currentCol-start].getCoords()[i];
          }
          negu[currentCol-start] = new Vector(temp);
@@ -97,22 +96,7 @@ public class CameraRastorizationV2 implements Camera{
          data[i][currentCol] = exten.getCoords()[i];
          temp[i] = exten.getCoords()[i];
       }
-      for(int i = n+1; i<n+ms+1; i++){
-         temp[i] = -1*bounds[i];
-      }
       exten = new Vector(temp);
-      start = currentCol;
-      while(currentCol-start < ms){
-         //add current vector
-         temp = new float[numRow];
-         for(int i = 0; i<n; i++){
-            data[i][currentCol] = -1*u[currentCol-start].getCoords()[i];
-            temp[i] = -1*u[currentCol-start].getCoords()[i];
-         }
-         negu[currentCol-start] = new Vector(temp);
-         currentCol++;
-      }
-      currentCol++;
       m = new Matrix(data);
       //remove reduntant bases later
       //generate solution
@@ -120,7 +104,7 @@ public class CameraRastorizationV2 implements Camera{
       
       result[numRow-1] = 1;
       for(int i = 0; i<constShift.length(); i++){
-         result[i] = -1*constShift.get(i);
+         result[i] = -1*constShift.getCoords()[i];
       }
       sol = new Vector(result);
       
@@ -306,6 +290,7 @@ public class CameraRastorizationV2 implements Camera{
             }
          }
       }
+      System.out.println("drawing done");
       return zBuff.getArrayTexture();
    }
    protected Simplex projectSimplex(Simplex s){
@@ -324,11 +309,21 @@ public class CameraRastorizationV2 implements Camera{
          return null;
       }
       //getPoints
-      for(int i = 0; i<s.getPoints().length; i++){
-         
-      } 
-      Point[] tempPoints = new Point[newPoints.size()];
-      tempPoints = newPoints.toArray(tempPoints);
+      int[] col = new int[g];
+      for(int i = 0; i<g; i++){
+         col[i] = i;
+      }
+      //reformat
+      Point[] rawPoints = m.LPMaximum(col, sol);
+      Point[] tempPoints = new Point[rawPoints.length];
+      for(int i = 0; i<rawPoints.length; i++){
+         float[] data = new float[ms+1];
+         for(int j = 0; j<ms; j++){
+            data[j] = rawPoints[i].getCoords()[g+i] - rawPoints[i].getCoords()[g+i+ms];
+         }
+         data[ms] = rawPoints[i].getCoords()[2*ms+g];
+         tempPoints[i] = new Point(data);
+      }
       Simplex resultSimplex;
       if(tempPoints.length>0){
          resultSimplex = new Simplex(tempPoints);
@@ -338,16 +333,16 @@ public class CameraRastorizationV2 implements Camera{
       System.out.println(resultSimplex);
       //set texture
       resultSimplex.setTexture(s.getTexture());
-      if(s.getTexture() instanceof ConstentTexture){
+      if(!s.getTexture().placeMatters()){
          resultSimplex.setTexturePoints(tempPoints);
          return resultSimplex;
       }
       Point[] texturePoints = new Point[tempPoints.length];
       Point[] oldTextPoints = s.getTexturePoints();
       for(int i = 0; i<tempPoints.length; i++){
-         Vector newPos = new Vector(new float[oldTextPoints[0].size()]);
-         for(int j = u.length+1; j<texturePoints[i].length();j++){
-            newPos.add(oldTextPoints[j-u.length-1]);
+         Vector newPos = new Vector(new float[oldTextPoints[0].length()]);
+         for(int j = 0; j<g; j++){
+            newPos = newPos.add((new Vector(oldTextPoints[j].getCoords()).scale(rawPoints[i].getCoords()[j])));
          }
       }
       resultSimplex.setTexturePoints(texturePoints);
