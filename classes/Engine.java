@@ -8,7 +8,6 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.io.File;
 import java.io.*;
-import com.aparapi.Kernel;
 /** JFrame engine that creates a graphical application. */
 public class Engine extends JFrame {
 
@@ -69,14 +68,7 @@ public class Engine extends JFrame {
       Instance.renderImage(camera.Project(listObj, c, null));
    }
    
-   public static class Squarer extends Kernel{
-      int[] in;
-      int[] out;
-      @Override public void run(){
-         int gid = getGlobalId(0);
-         out[gid] = in[gid] * in[gid];
-      }
-   }
+   
 
 /** Placeholder method to run TestDriver.
 * @param args default args for main method.

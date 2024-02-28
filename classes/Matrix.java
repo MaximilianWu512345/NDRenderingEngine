@@ -441,7 +441,7 @@ public class Matrix{
          }
          if(remove == -1){
             System.out.println("uhhhh... you did something wrong");
-            return new Vector[0];
+            return new Point[0];
          }
          //set row number to 1
          float mult = table[remove][currentIndex];
@@ -464,7 +464,7 @@ public class Matrix{
       }
       
       if(Float.compare(table[height][tw-1],0) != 0){
-         return new Vector[0];
+         return new Point[0];
       }
       int newSize = 0;
       for(int i = 0; i<tw; i++){
@@ -535,7 +535,7 @@ public class Matrix{
          for(int i = 0; i<basis.length; i++){
             v[basis[i]] = table[tw-1][i];
          }
-         resHolder.add(new Vector(v));
+         resHolder.add(new Point(v));
       //alternte Solutions
          LinkedList<Integer> NBI = new LinkedList<Integer>();
          basisLoop:for(int i = 0; i<tw; i++){
@@ -589,7 +589,7 @@ public class Matrix{
             for(int i = 0; i<basis.length; i++){
                v[basis[i]] = table[tw-1][i];
             }
-            resHolder.add(new Vector(v));
+            resHolder.add(new Point(v));
          }
       }
       Point[] result = new Point[resHolder.size()];
