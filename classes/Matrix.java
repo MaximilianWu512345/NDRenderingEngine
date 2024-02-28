@@ -386,18 +386,20 @@ public class Matrix{
    *  @return Vector the resulting maximum
    */
    public Point[] LPMaximum(int[] col, Vector resource){
-      int tw = width*2+1;
+      System.out.println(this);
+      System.out.println(resource);
+      int tw = width+height+1;
       int th = height+1;
       float[][] table = new float[th][tw];
       
       //construct matrix
-      for(int i = 0; i<width-1; i++){
+      for(int i = 0; i<width; i++){
          for(int j = 0; j<height; j++){
             table[j][i] = data[j][i];
          }
       }
       //add artifical
-      for(int i = 0; i<height-1; i++){
+      for(int i = 0; i<height; i++){
          table[i][i+width] = 1;
       }
       //add const
@@ -412,6 +414,7 @@ public class Matrix{
          }
          table[th-1][i] = sum;
       }
+      System.out.println(new Matrix(table));
       float sum = 0;
       for(int j = 0; j<height; j++){
          sum += table[j][tw-1];
@@ -422,25 +425,40 @@ public class Matrix{
       int currentIndex = pickPivot(table, objFuncIndex);
       int[] basis = new int[height];
       for(int i = 0; i<basis.length; i++){
-         basis[i] = i+width;
+         basis[i] = i+tw-height;
       }
+      System.out.println(new Matrix(table));
+      System.out.print("basis:");
+      for(int i = 0; i<basis.length; i++){
+         System.out.print(basis[i] + ", ");
+      }
+      System.out.println("");
+      int numPivots = 0;
       while(currentIndex != -1){
          //pick row
          float q = -1;
          int remove = -1;
          for(int i = 0; i<height; i++){
-            if(table[currentIndex][i] > 0){
+            if(table[i][currentIndex] > 0){
+               System.out.println("row " + i + " q:" + table[i][tw-1]/table[i][currentIndex]);
                if(remove == -1){
-                  q = table[tw-1][i]/table[currentIndex][i];
-                  remove = basis[i];
-               } else if (q>table[tw-1][i]/table[currentIndex][i]){
-                  q = table[tw-1][i]/table[currentIndex][i];
-                  remove = basis[i];
+                  q = table[i][tw-1]/table[i][currentIndex];
+                  remove = i;
+               } else if (q>table[i][tw-1]/table[i][currentIndex]){
+                  q = table[i][tw-1]/table[i][currentIndex];
+                  remove = i;
                }
             }
          }
          if(remove == -1){
             System.out.println("uhhhh... you did something wrong");
+            System.out.println("Pivot " + numPivots);
+            System.out.println(new Matrix(table));
+            System.out.print("basis:");
+            for(int i = 0; i<basis.length; i++){
+               System.out.print(basis[i] + ", ");
+            }
+            System.out.println("");
             return new Point[0];
          }
          //set row number to 1
@@ -458,6 +476,14 @@ public class Matrix{
                }
             }
          }
+         System.out.println("Pivot " + numPivots);
+         System.out.println(new Matrix(table));
+         System.out.print("basis:");
+         for(int i = 0; i<basis.length; i++){
+            System.out.print(basis[i] + ", ");
+         }
+         System.out.println("");
+         numPivots++;
          //basis changed
          basis[remove] = currentIndex;
          currentIndex = pickPivot(table, objFuncIndex);
@@ -491,6 +517,8 @@ public class Matrix{
          table[th] = new float[tw];
          table[th][currentCol] = -1;
          currentIndex = pickPivot(table, objFuncIndex);
+         System.out.println("col:" + currentCol);
+         numPivots = 0;
          while(currentIndex != -1){
          //pick row
             float q = -1;
@@ -525,6 +553,14 @@ public class Matrix{
                   }
                }
             }
+            System.out.println("Pivot " + numPivots);
+            System.out.println(new Matrix(table));
+            System.out.print("basis:");
+            for(int i = 0; i<basis.length; i++){
+               System.out.print(basis[i] + ", ");
+            }
+            System.out.println("");
+            numPivots++;
          //basis changed
             basis[remove] = currentIndex;
             currentIndex = pickPivot(table, objFuncIndex);

@@ -1,4 +1,5 @@
 /** Mesh class */
+import java.util.LinkedList;
 public class Mesh{
 /** Direction of this Camera */
    public Simplex[] faces;
@@ -62,18 +63,12 @@ public class Mesh{
          faces = new Simplex[]{new Simplex(new Point[]{new Point(v[0].getCoords())})};
          return;
       }
-      dimention = d;
       faces = quickHull(v, d);   
    }
    protected Simplex[] quickHull(Vector[] v, int d){
       LinkedList<Simplex> hull = new LinkedList<Simplex>();
       //get inital dividing simplex
-      float[] max = new float[d];
-      float[] min = new float[d];
-      Vector v[] = new Vector[d];
-      for(int i = 0; i<v[0].length; i++){
       
-      }
       Simplex[] result = new Simplex[hull.size()];
       result = hull.toArray(result);
       return result;

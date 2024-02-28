@@ -6,4 +6,7 @@ public interface Texture{
    public default boolean setColor(Point p, Color c){
       return false;
    }
+   public default boolean placeMatters(){
+      return true;
+   }
 }
