@@ -6,6 +6,8 @@ import java.util.Hashtable;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.util.ArrayList;
 
 /** JFrame engine that creates a graphical application. */
 public class Engine extends JFrame {
@@ -93,7 +95,7 @@ public class Engine extends JFrame {
          Simplex s = new Simplex(points);
          simplexes[i] = s;
          Instance.renderSimplex(s, randomColor());
-
+   
       }
       Instance.renderSimplex(simplexes[0], randomColor());
       */
@@ -115,19 +117,52 @@ public class Engine extends JFrame {
                   }
                }
             }
+            
          }
          catch (Exception e) {
             System.out.println(e);
          }
       }
       /*
-      CompressedTexture t = new CompressedTexture(Instance.panel.getRenderImage());
-      System.out.println("JPEG compression completed!");
-      Color[][] de = t.decompress();
+      ArrayTexture t = new ArrayTexture(Utilities.TrimArray(Instance.panel.getRenderImage()));
+      Utilities.SaveTexture("Test.png", t);
+      */
+      /*
+      try {
+         File file = new File("meshes/TESTS");
+         file.createNewFile();
+         FileOutputStream stream = new FileOutputStream(file);
+         byte[] bytes = t.getTextures().encodedBytes;
+         ArrayList<Byte> array = new ArrayList<Byte>();
+         for (int i = 0; i < bytes.length; i++) {
+            if (i > 0) {
+               int add = 0;
+               while (i + add < bytes.length - 1 && bytes[i - 1] == bytes[i + add])
+                  add++;
+               i += add;
+            }
+            array.add(bytes[i]);
+         }
+         System.out.println(array.size());
+         byte[] compressed = new byte[array.size()];
+         System.out.println(compressed.length);
+         for (int i = 0; i < array.size(); i++) {
+            compressed[i] = array.get(i);
+         }
+         stream.write(compressed);
+      } catch (Exception e) {
+         System.out.println(e);
+      }
+      */
+      
+      /*
+      Color[][] de = t.decompress(true);
       System.out.println("JPEG decompression completed!");
       Instance.panel.clearRenderImage();
       Instance.renderImage(de);
       */
+      /*
+      System.out.println(t.getEncodedLength());
       float[] one = new float[10];
       float[] two = new float[10];
       float[] three = new float[10];
@@ -138,6 +173,7 @@ public class Engine extends JFrame {
       OpenCL.RunFile("AddSum.c", "sampleKernel", 10, new Object[] { one, two }, new Object[] { three });
       for (float f : three)
          System.out.println(f);
+      */
    }
    
    public static Color[] colors = { Color.RED, Color.BLUE, Color.BLACK, Color.WHITE, Color.GREEN, Color.YELLOW, Color.GRAY};

@@ -148,6 +148,12 @@ public class EnginePanel extends JPanel {
       private void initialize(int w, int h) {
          renderedImage = new BufferedImage(w, h, BufferedImage.TYPE_4BYTE_ABGR);
          imageObserver = new Canvas();
+         Color clear = new Color(0, 0, 0, 0);
+         for (int i = 0; i < renderedImage.getWidth(); i++) {
+            for (int x = 0; x < renderedImage.getHeight(); x++) {
+               renderedImage.setRGB(i, x, clear.getRGB());
+            }
+         }
       }
       
       
@@ -156,7 +162,7 @@ public class EnginePanel extends JPanel {
          Color[][] colors = new Color[renderedImage.getWidth()][renderedImage.getHeight()];
          for (int i = 0; i < renderedImage.getWidth(); i++) {
             for (int x = 0; x < renderedImage.getHeight(); x++) {
-               colors[i][x] = new Color(renderedImage.getRGB(i, x));
+               colors[i][x] = new Color(renderedImage.getRGB(i, x), true);
             }
          }
          return colors;
@@ -186,13 +192,11 @@ public class EnginePanel extends JPanel {
       
      
       public void setImage(BufferedImage image) {
-         System.out.println(System.currentTimeMillis());
          for (int i = 0; i < image.getWidth(); i++) {
             for (int x = 0; x < image.getHeight(); x++) {
                renderedImage.setRGB(i, x, image.getRGB(i, x));
             }
          }
-         System.out.println(System.currentTimeMillis());
       }
       
       

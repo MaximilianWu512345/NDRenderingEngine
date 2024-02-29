@@ -7,6 +7,7 @@ public class ArrayTexture implements Texture{
       this.data = data;
    }
    public ArrayTexture(Color[][] data){
+      
       bounds = new int[2];
       bounds[0] = data[0].length;
       bounds[1] = data.length;

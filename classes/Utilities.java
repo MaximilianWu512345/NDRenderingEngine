@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.awt.Color;
+import java.io.FileOutputStream;
+import java.awt.image.BufferedImage;
+import javax.imageio.ImageIO;
 
 public class Utilities {
 
@@ -41,9 +44,16 @@ public class Utilities {
       try {
          File file = new File("textures/" + fileName);
          file.createNewFile();
-         FileWriter writer = new FileWriter(file);
-         writer.write(Utilities.TextureToFile(texture));
-         writer.close();
+         Color[][] colors = TextureToColors(texture);
+         BufferedImage temp = new BufferedImage(colors.length, colors[0].length, BufferedImage.TYPE_4BYTE_ABGR);
+         for (int i = 0; i < colors.length && i < temp.getWidth(); i++) {
+            for (int x = 0; x < colors[i].length && x < temp.getHeight(); x++) {
+               if (colors[i][x] != null) {
+                  temp.setRGB(i, x, colors[i][x].getRGB());
+               }
+            }
+         }
+         ImageIO.write(temp, "png", file);
       }
       catch (Exception e) {
          System.out.println(e);
@@ -53,11 +63,18 @@ public class Utilities {
    public static Texture LoadTexture(String fileName) {
       try {
          File file = new File("textures/" + fileName);
-         Scanner reader = new Scanner(file);
-         String text = "";
-         text += reader.nextLine();
-         reader.close();
-         return Utilities.FileToTexture(text);
+         if (file != null) {
+            BufferedImage renderedImage = ImageIO.read(file);
+            Color[][] colors = new Color[renderedImage.getWidth()][renderedImage.getHeight()];
+            for (int i = 0; i < colors.length && i < renderedImage.getWidth(); i++) {
+               for (int x = 0; x < colors[i].length && x < renderedImage.getHeight(); x++) {
+                  if (colors[i][x] != null) {
+                     renderedImage.setRGB(i, x, colors[i][x].getRGB());
+                  }
+               }
+            }
+            return new ArrayTexture(colors);
+         }
       }
       catch (Exception e) {
          System.out.println(e);
@@ -73,8 +90,8 @@ public class Utilities {
       String temp = (int)mesh.getDimention() + " " + faces.length;
       for (int i = 0; i < faces.length; i++) {
          if (textureName != null) {
-            SaveTexture(textureName + "$" + i, faces[i].getTexture());
-            temp += " \"" + textureName + "$" + i + "\"";
+            SaveTexture(textureName + "$" + i + ".png", faces[i].getTexture());
+            temp += " \"" + textureName + "$" + i + ".png\"";
          }
          else {
             temp += " \"\"";
@@ -103,8 +120,8 @@ public class Utilities {
       Simplex[] simplexes = new Simplex[ToInt(temp[1])];
       int index = 2;
       for (int i = 0; i < simplexes.length; i++) {
-         Texture texture = LoadTexture(temp[index]);
          simplexes[i] = new Simplex(new Point[ToInt(temp[index + 1])], true);
+         simplexes[i].setTexture(LoadTexture(temp[index].replaceAll("\"", "")));
          index += 2;
       }
       for (int i = 0; i < simplexes.length; i++) {
@@ -125,28 +142,6 @@ public class Utilities {
       return new Mesh(simplexes, ToInt(temp[0]));
    }
    
-   public static String TextureToFile(Texture texture) {
-      if (texture == null)
-         return "";
-      CompressedTexture compressedTexture = new CompressedTexture(TextureToColors(texture));
-      HuffmanTree[][][] d3 = compressedTexture.getTextures();
-      for (int i = 0; i < d3.length; i++) {
-         HuffmanTree[][] d2 = d3[i];
-         for (int x = 0; x < d2.length; x++) {
-            HuffmanTree[] d1 = d2[x];
-            for (int c = 0; c < d1.length; c++) {
-               HuffmanTree tree = d1[c];
-            }
-         }
-      }
-      String temp = "";
-      return temp;
-   }
-   
-   public static Texture FileToTexture(String list) {
-      return null;
-   }
-   
    public static int ToInt(String text) {
       return Integer.parseInt(text);
    }
@@ -163,6 +158,28 @@ public class Utilities {
          }
       }
       return colors;
+   }
+      
+   public static Color[][] TrimArray(Color[][] object) {
+      ArrayList<ArrayList<Color>> array = new ArrayList<ArrayList<Color>>();
+      Color clear = new Color(0, 0, 0, 0);
+      for (int i = 0; i < object.length; i++) {
+         for (int x = 0; x < object[i].length; x++) {
+            if (object[i][x] != null && ! object[i][x].equals(clear)) {
+               if (i >= array.size())
+                  array.add(new ArrayList<Color>());
+               array.get(i).add(object[i][x]);
+            }
+         }
+      }
+      Color[][] temp = new Color[array.size()][];
+      for (int i = 0; i < array.size(); i++) {
+         temp[i] = new Color[array.get(i).size()];
+         for (int x = 0; x < array.get(i).size(); x++) {
+            temp[i][x] = array.get(i).get(x);
+         }
+      }
+      return temp;
    }
    
    public static void main(String[] args) {
