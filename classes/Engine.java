@@ -1,6 +1,5 @@
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.JFileChooser;
 import javax.imageio.ImageIO;
 import java.util.Hashtable;
 import java.awt.Color;
@@ -8,6 +7,7 @@ import java.awt.Graphics;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
+import javax.swing.JMenuBar;
 
 /** JFrame engine that creates a graphical application. */
 public class Engine extends JFrame {
@@ -43,6 +43,7 @@ public class Engine extends JFrame {
    private void initialize(int width, int height) {
       Instance = this;
       add(panel = new EnginePanel(width, height));
+      this.setJMenuBar(panel.getMenuBar());
    }
    
    // Convenience method to render, currently takes Color[][], BufferedImage, Point, Vector, and Line.
@@ -50,11 +51,7 @@ public class Engine extends JFrame {
       panel.renderImage(object);
       panel.repaint();
    }
-   
-   // For future implementation.
-   public void renderTriangle(Color c) {
-      panel.renderTriangle(c);
-   }
+  
    
    public void renderSimplex(Simplex s, Color c) {
       Simplex[] faces = new Simplex[] { s };
@@ -99,30 +96,6 @@ public class Engine extends JFrame {
       }
       Instance.renderSimplex(simplexes[0], randomColor());
       */
-      // Ask for img files to open and display until user clicks cancel.
-      
-      boolean askForFiles = true;
-      if (askForFiles) {
-         try {
-            JFileChooser fileChooser = new JFileChooser();
-            File file = pickFile(fileChooser);
-            if (file != null) {
-               Instance.renderImage(ImageIO.read(file));
-               Instance.repaint();
-               while (file != null) {
-                  file = pickFile(fileChooser);
-                  if (file != null) {
-                     Instance.renderImage(ImageIO.read(file));
-                     Instance.repaint();
-                  }
-               }
-            }
-            
-         }
-         catch (Exception e) {
-            System.out.println(e);
-         }
-      }
       /*
       ArrayTexture t = new ArrayTexture(Utilities.TrimArray(Instance.panel.getRenderImage()));
       Utilities.SaveTexture("Test.png", t);
@@ -190,19 +163,4 @@ public class Engine extends JFrame {
       return Camera = new CameraRastorizationV1(new Point(/*camPos*/new float[3]), /*camDirection*/new Vector(new float[] {1,0,0}), 900, 900);
    }
    
-   public static File pickFile(JFileChooser fileChooser)
-   {
-      File file = new File("images/PlaceImagesHere.txt");
-      JFrame frame = new JFrame();
-    // get the return value from choosing a file
-      fileChooser.setCurrentDirectory(file);
-      int returnVal = fileChooser.showOpenDialog(frame);
-    
-    // if the return value says the user picked a file 
-      if (returnVal == JFileChooser.APPROVE_OPTION)
-         file = fileChooser.getSelectedFile();
-      else
-         file = null;
-      return file;
-   }
 }

@@ -18,6 +18,14 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Canvas;
 import java.awt.image.BufferedImage;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JMenu;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.filechooser.FileFilter;
 
 /** JPanel holding all Components */
 public class EnginePanel extends JPanel {
@@ -30,7 +38,17 @@ public class EnginePanel extends JPanel {
       /** Indexes ButtonHelper */
       BUTTON,
       /** Indexes RenderHelper */
-      RENDER
+      RENDER,
+      /** Indexes MenuHelper */
+      MENU
+   }
+   
+   public enum FileType {
+      ANY,
+      IMAGE,
+      MESHANDTEXTURE,
+      MESH,
+      TEXTURE
    }
 
 /** Hashtable dictionary containing all components, indexed with PanelType. Might be redundant, could remove later. */
@@ -60,6 +78,7 @@ public class EnginePanel extends JPanel {
 * @param height the height to be used for adding components.
 */
    private void addComponents(int width, int height) {
+      dictComponents.put(PanelType.MENU, new MenuHelper(0, 0, 0, 0));
       dictComponents.put(PanelType.RENDER, new RenderHelper(OFFSET, 0, width, height));
       dictComponents.put(PanelType.BUTTON, new ButtonHelper(OFFSET, height * 9 / 10, width, height / 10));
       for (Component c : dictComponents.values()) {
@@ -84,6 +103,10 @@ public class EnginePanel extends JPanel {
       return ((RenderHelper)dictComponents.get(PanelType.RENDER)).getColors();
    }
    
+   public JMenuBar getMenuBar() {
+      return ((MenuHelper)dictComponents.get(PanelType.MENU)).getMenuBar();
+   }
+   
    
    
    public void clearRenderImage() {
@@ -91,7 +114,66 @@ public class EnginePanel extends JPanel {
       repaint();
    }
    
+   public File askForFile(FileType type) {
+      boolean askForFiles = true;
+      if (askForFiles) {
+         try {
+            JFileChooser fileChooser = new JFileChooser();
+            String directory = "target.txt";
+            FileFilter filter = null;
+            switch (type) {
+               case IMAGE:
+                  directory = "images/PlaceImagesHere.txt";
+                  break;
+               case MESHANDTEXTURE:
+               case MESH:
+                  directory = "meshes/PlaceMeshesHere.txt";
+                  filter = 
+                     new FileFilter()
+                     {
+                        public boolean accept(File f) { 
+                           return f.getName().indexOf(".") == -1; }
+                        public String getDescription() { 
+                           return "Meshes"; }
+                     };
+                  break;
+               case TEXTURE:
+                  directory = "textures/PlaceTexturesHere.txt";
+                  break;
+            }
+            File file = pickFile(fileChooser, directory, filter);
+            if (file != null) {
+               renderImage(ImageIO.read(file));
+               repaint();
+            }
+            
+         }
+         catch (Exception e) {
+            System.out.println(e);
+         }
+      }
+      return null;
+   }
    
+      
+   public static File pickFile(JFileChooser fileChooser, String directory, FileFilter filter)
+   {
+      File file = new File(directory);
+      JFrame frame = new JFrame();
+    // get the return value from choosing a file
+      fileChooser.setCurrentDirectory(file);
+      if (file != null) {
+         fileChooser.setFileFilter(filter);
+      }
+      int returnVal = fileChooser.showOpenDialog(frame);
+    
+    // if the return value says the user picked a file 
+      if (returnVal == JFileChooser.APPROVE_OPTION)
+         file = fileChooser.getSelectedFile();
+      else
+         file = null;
+      return file;
+   }
    
    public void renderImage(Object object) {
       if (object instanceof BufferedImage)
@@ -107,10 +189,6 @@ public class EnginePanel extends JPanel {
       else if (object instanceof Mesh) {
          ((RenderHelper)dictComponents.get(PanelType.RENDER)).setMesh((Mesh)object);
       }
-   }
-   
-   public void renderTriangle(Color c) {
-   
    }
 
 /** Paints EnginePanel and paints each component in dictComponents.
@@ -273,6 +351,128 @@ public class EnginePanel extends JPanel {
       
       protected void paintComponent(Graphics g) {
          g.drawImage(renderedImage, x, y, imageObserver);
+      }
+      
+   }
+   
+
+/** Container class to hold information about buttons. Might be obsolete, could remove later. */
+   protected class MenuHelper extends Component {
+      
+      protected JMenuBar menuBar;
+      
+      protected JMenu menuFile;
+      protected JMenu menuMesh;
+      protected JMenu menuTexture;
+      
+      protected JMenuItem menuItemSaveFile;
+      protected JMenuItem menuItemSaveMesh;
+      protected JMenuItem menuItemSaveTexture;
+      protected JMenuItem menuItemLoadFile;
+      protected JMenuItem menuItemLoadMesh;
+      protected JMenuItem menuItemLoadTexture;
+      /** Creates new MenuHelper with location (x, y) and size (w, h).
+      * @param x the x-coord of the location.
+      * @param y the y-coord of the location.
+      * @param w the width of the location.
+      * @param h the height of the location.
+      */
+      public MenuHelper(int x, int y, int w, int h) {
+         super(x, y, w, h);
+         initialize();
+      }
+      
+      /** Initializes the dictButtons hashtable */
+      private void initialize() {
+         menuBar = new JMenuBar();
+         menuFile = new JMenu("File");
+         menuMesh = new JMenu("Mesh");
+         menuTexture = new JMenu("Texture");
+         menuBar.add(menuFile);
+         menuBar.add(menuMesh);
+         menuBar.add(menuTexture);
+         menuItemSaveFile = new JMenuItem("Save Mesh & Texture");
+         menuItemSaveMesh = new JMenuItem("Save Mesh");
+         menuItemSaveTexture = new JMenuItem("Save Texture");
+         menuItemLoadFile = new JMenuItem("Load File");
+         menuItemLoadMesh = new JMenuItem("Load Mesh");
+         menuItemLoadTexture = new JMenuItem("Load Texture");
+         menuFile.add(menuItemSaveFile);
+         menuFile.add(menuItemLoadFile);
+         menuMesh.add(menuItemSaveMesh);
+         menuMesh.add(menuItemLoadMesh);
+         menuTexture.add(menuItemSaveTexture);
+         menuTexture.add(menuItemLoadTexture);
+         menuItemSaveFile.addActionListener(new Listener_SaveFile());
+         menuItemSaveMesh.addActionListener(new Listener_SaveMesh());
+         menuItemSaveTexture.addActionListener(new Listener_SaveTexture());
+         menuItemLoadFile.addActionListener(new Listener_LoadFile());
+         menuItemLoadMesh.addActionListener(new Listener_LoadMesh());
+         menuItemLoadTexture.addActionListener(new Listener_LoadTexture());
+      }
+   
+      public JMenuBar getMenuBar() {
+         return menuBar;
+      }
+      
+      protected class Listener_LoadFile implements ActionListener
+      {	      
+         public void actionPerformed(ActionEvent e)
+         {
+            askForFile(FileType.ANY);
+         }
+      }
+      
+      protected class Listener_LoadMesh implements ActionListener
+      {	      
+         public void actionPerformed(ActionEvent e)
+         {
+            askForFile(FileType.MESH);
+         }
+      }
+      
+      protected class Listener_LoadTexture implements ActionListener
+      {	      
+         public void actionPerformed(ActionEvent e)
+         {
+            askForFile(FileType.TEXTURE);
+         }
+      }
+      
+      protected class Listener_SaveFile implements ActionListener
+      {
+         public void actionPerformed(ActionEvent e)
+         {
+            String s = JOptionPane.showInputDialog("Name of File?");
+            if(s!=null)
+            {
+               Utilities.SaveMesh(s, null, true);
+            }
+         }
+      }
+      
+      protected class Listener_SaveMesh implements ActionListener
+      {	      
+         public void actionPerformed(ActionEvent e)
+         {
+            String s = JOptionPane.showInputDialog("Name of File?");
+            if(s!=null)
+            {
+               Utilities.SaveMesh(s, null, false);
+            }
+         }
+      }
+      
+      protected class Listener_SaveTexture implements ActionListener
+      {	      
+         public void actionPerformed(ActionEvent e)
+         {
+            String s = JOptionPane.showInputDialog("Name of File?");
+            if(s!=null)
+            {
+               Utilities.SaveTexture(s, new ArrayTexture(getRenderImage()));
+            }
+         }
       }
       
    }
