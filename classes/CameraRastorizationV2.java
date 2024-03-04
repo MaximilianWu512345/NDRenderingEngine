@@ -158,6 +158,10 @@ public class CameraRastorizationV2 implements Camera{
             projected.add(tempFace); 
          }
       }
+      System.out.println("resulting " + projected.size() + " simplexes:");
+      for(Simplex current: projected){
+         System.out.println(current);
+      }
       //z-buffering and painting
       zBufferArrayTexture zBuff = new zBufferArrayTexture(pix,bounds);
       for(Simplex current: projected){
