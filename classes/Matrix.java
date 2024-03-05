@@ -306,8 +306,11 @@ public class Matrix{
          result += "\t\t";
          for(int j = 0; j<data[i].length; j++){
             String val = (new BigDecimal(data[i][j]).setScale(6, BigDecimal.ROUND_HALF_UP)).toString();
-            if(val.charAt(0) != (int)('-')){
-               result += " ";
+            while(val.length()<6){
+               val = val + "0";
+            }
+            if(val.length() > 6){
+               val = val.substring(0, 6);
             }
             result +=  val + " ";
          }
@@ -410,7 +413,7 @@ public class Matrix{
       for(int i = 0; i<width; i++){//phase 1
          float sum = 0;
          for(int j = 0; j<height; j++){
-            sum += table[j][i];
+            sum -= table[j][i];
          }
          table[th-1][i] = sum;
       }
@@ -424,8 +427,12 @@ public class Matrix{
       int objFuncIndex = th-1;
       int currentIndex = pickPivot(table, objFuncIndex);
       int[] basis = new int[height];
+      float[] objFuncOrig = new float[tw];
       for(int i = 0; i<basis.length; i++){
          basis[i] = i+tw-height;
+      }
+      for(int index:basis){
+         objFuncOrig[index] = -1;
       }
       System.out.println(new Matrix(table));
       System.out.print("basis:");
@@ -439,14 +446,18 @@ public class Matrix{
          float q = -1;
          int remove = -1;
          for(int i = 0; i<height; i++){
-            if(table[i][currentIndex] > 0){
+            if(Float.compare(table[i][currentIndex],0) > 0){
                System.out.println("row " + i + " q:" + table[i][tw-1]/table[i][currentIndex]);
-               if(remove == -1 && Float.compare(table[i][tw-1]/table[i][currentIndex], 0) != 0){
-                  q = table[i][tw-1]/table[i][currentIndex];
-                  remove = i;
-               } else if (q>table[i][tw-1]/table[i][currentIndex]){
-                  q = table[i][tw-1]/table[i][currentIndex];
-                  remove = i;
+               if(remove == -1 || Float.compare(q, table[i][tw-1]/table[i][currentIndex]) >= 0){
+                  if(Float.compare(q, table[i][tw-1]/table[i][currentIndex]) == 0){
+                     if(objFuncOrig[basis[remove]]>objFuncOrig[basis[i]]){
+                        q = table[i][tw-1]/table[i][currentIndex];
+                        remove = i;
+                     }
+                  } else {
+                     q = table[i][tw-1]/table[i][currentIndex];
+                     remove = i;
+                  }
                }
             }
          }
@@ -501,6 +512,7 @@ public class Matrix{
       LinkedList<Point> resHolder = new LinkedList<Point>();
       //phase 2
       //drop non basic
+      System.out.println("phase 2");
       float[][] temp = new float[th][newSize];
       int addCol = 0;
       for(int i = 0; i<tw; i++){
@@ -514,6 +526,8 @@ public class Matrix{
       table = temp;
       colLoop:for(int currentCol: col){
       //objective fucntion
+         objFuncOrig = new float[tw];
+         objFuncOrig[currentCol] = 1;
          table[th] = new float[tw];
          table[th][currentCol] = -1;
          currentIndex = pickPivot(table, objFuncIndex);
@@ -524,15 +538,21 @@ public class Matrix{
             float q = -1;
             int remove = -1;
             for(int i = 0; i<height; i++){
-               if(table[currentIndex][i] > 0){
-                  if(remove == -1){
-                     q = table[tw-1][i]/table[currentIndex][i];
-                     remove = basis[i];
-                  } else if (q>table[tw-1][i]/table[currentIndex][i]){
-                     q = table[tw-1][i]/table[currentIndex][i];
-                     remove = basis[i];
+               if(Float.compare(table[i][currentIndex],0) > 0){
+                  System.out.println("row " + i + " q:" + table[i][tw-1]/table[i][currentIndex]);
+                  if(remove == -1 || Float.compare(q, table[i][tw-1]/table[i][currentIndex]) >= 0){
+                     if(Float.compare(q, table[i][tw-1]/table[i][currentIndex]) == 0){
+                        if(objFuncOrig[basis[remove]]>objFuncOrig[basis[i]]){
+                           q = table[i][tw-1]/table[i][currentIndex];
+                           remove = i;
+                        }
+                     } else {
+                        q = table[i][tw-1]/table[i][currentIndex];
+                        remove = i;
+                     }
                   }
                }
+            
             }
             if(remove == -1){
                System.out.println("uhhhh... you did something wrong");
@@ -633,12 +653,14 @@ public class Matrix{
       return result;
    }
    private int pickPivot(float[][] t, int row){ // this is just for the LP solver
-      float min = 0;
+      int min = -1;
       for(int i = 0; i<t[row].length; i++){
          if(t[row][i]<0){
-            return i;
+            if(min == -1 || t[row][i]<t[row][min]){
+               min = i;
+            }
          }
       }
-      return -1;
+      return min;
    }
 }
