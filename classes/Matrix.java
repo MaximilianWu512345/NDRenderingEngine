@@ -441,7 +441,7 @@ public class Matrix{
          for(int i = 0; i<height; i++){
             if(table[i][currentIndex] > 0){
                System.out.println("row " + i + " q:" + table[i][tw-1]/table[i][currentIndex]);
-               if(remove == -1){
+               if(remove == -1 && Float.compare(table[i][tw-1]/table[i][currentIndex], 0) != 0){
                   q = table[i][tw-1]/table[i][currentIndex];
                   remove = i;
                } else if (q>table[i][tw-1]/table[i][currentIndex]){
