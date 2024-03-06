@@ -418,11 +418,13 @@ public class Matrix{
          table[th-1][i] = sum;
       }
       System.out.println(new Matrix(table));
+      /*
       float sum = 0;
       for(int j = 0; j<height; j++){
          sum += table[j][tw-1];
       }
       table[th-1][tw-1] = sum;
+      */
       //traverse
       int objFuncIndex = th-1;
       int currentIndex = pickPivot(table, objFuncIndex);
@@ -498,41 +500,67 @@ public class Matrix{
          //basis changed
          basis[remove] = currentIndex;
          currentIndex = pickPivot(table, objFuncIndex);
+         //check if can end early
+         
       }
-      
+      /*
       if(Float.compare(table[height][tw-1],0) != 0){
+         System.out.println("umm...")
          return new Point[0];
       }
+      */
+      table[th-1][tw-1] = 0f;
       int newSize = 0;
+      float epsilon = 0.00001f;
       for(int i = 0; i<tw; i++){
-         if(table[th-1][i]>=0f){
+         if(Float.compare(table[th-1][i], epsilon)<0){
             newSize++;
          }
       }
+      
       LinkedList<Point> resHolder = new LinkedList<Point>();
       //phase 2
       //drop non basic
       System.out.println("phase 2");
+      int[] basicTemp = new int[newSize];
+      int count = 0;
+      for(int i = 0; i<tw; i++){
+         if(Float.compare(table[th-1][i], epsilon)>0){
+            count++;
+         }
+         for(int j = 0; j<basis.length; j++){
+            if(i == basis[j]){
+               basis[j] -= count;
+               break;
+            }
+         }
+      }
       float[][] temp = new float[th][newSize];
       int addCol = 0;
       for(int i = 0; i<tw; i++){
+         addCol = 0;
          for(int j = 0; j<th; j++){
-            if(table[th-1][i]>=0){
+            if(Float.compare(table[th-1][i], epsilon)<0){
                temp[j][addCol] = table[j][i];
                addCol++;
+            } else {
+               break;
             }
          }
       }
       table = temp;
+      th = table.length;
+      tw = table[0].length;
       colLoop:for(int currentCol: col){
       //objective fucntion
          objFuncOrig = new float[tw];
          objFuncOrig[currentCol] = 1;
-         table[th] = new float[tw];
-         table[th][currentCol] = -1;
+         table[th-1] = new float[tw];
+         table[th-1][currentCol] = -1;
          currentIndex = pickPivot(table, objFuncIndex);
          System.out.println("col:" + currentCol);
          numPivots = 0;
+         
          while(currentIndex != -1){
          //pick row
             float q = -1;
@@ -587,7 +615,7 @@ public class Matrix{
          }
       
       //found vector
-         float[] v = new float[width];
+         float[] v = new float[tw-1];
          for(int i = 0; i<basis.length; i++){
             v[basis[i]] = table[tw-1][i];
          }
