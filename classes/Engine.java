@@ -143,9 +143,45 @@ public class Engine extends JFrame {
          one[i] = i;
          two[i] = i - 3;
       }
-      OpenCL.RunFile("AddSum.c", "sampleKernel", 10, new Object[] { one, two }, new Object[] { three });
-      for (float f : three)
-         System.out.println(f);
+      */
+      int size = 600;
+      float[][] matrixOne = new float[size][size];
+      float[][] matrixTwo = new float[size][size];
+      for (int i = 0; i < matrixOne.length; i++) {
+         for (int x = 0; x < matrixOne[i].length; x++) {
+            matrixOne[i][x] = size * size - i * size - x;
+            matrixTwo[i][x] = i * size + x;
+         }
+      }
+      Matrix one = new Matrix(matrixOne);
+      Matrix two = new Matrix(matrixTwo);
+      System.out.println("Size: " + size * size);
+      long time = System.currentTimeMillis();
+      one.mult(two);
+      System.out.println("CPU TIME: " + (System.currentTimeMillis() - time));
+      time = System.currentTimeMillis();
+      one.multGPU(two);
+      System.out.println("GPU TIME: " + (System.currentTimeMillis() - time));
+      
+      
+      
+      /*
+      float[] dataOne = new float[matrixOne.length * matrixOne[0].length];
+      float[] dataTwo = new float[matrixOne.length * matrixOne[0].length];
+      for (int i = 0; i < matrixOne.length; i++) {
+         for (int x = 0; x < matrixOne[i].length; x++) {
+            int index = i * matrixOne[i].length + x;
+            dataOne[index] = matrixOne[i][x];
+            dataTwo[index] = matrixTwo[i][x];
+         }
+      }
+      float[] data = new float[matrixOne.length * matrixOne[0].length];
+      time = System.currentTimeMillis();
+      OpenCL.RunFile("TestSum.c", "sampleKernel", data.length, new Object[] { dataOne, dataTwo, new int[] { size } }, new Object[] { data });
+      System.out.println("GPU Time: " + (System.currentTimeMillis() - time));
+      for (float f : data) {
+         System.out.print(f + " ");
+      }
       */
    }
    

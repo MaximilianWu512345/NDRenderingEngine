@@ -62,8 +62,12 @@ public class Matrix{
    * @param m must be multipliable with this matrix
    * @return a Matrix or null when multiplication fails
    */
-   // aparapi
    public Matrix mult(Matrix m){
+      /* int sizeGPU = 600; */
+      /* If same size and total size >= sizeGPU * sizeGPU, then GPU is faster */
+      /*if (width == height && m.width == width && m.height == height && width >= sizeGPU && height >= sizeGPU)
+         return multGPU(m);
+         */
       int nWidth = m.width;
       int nHeight = height;
       if(m.height == width){
@@ -82,6 +86,34 @@ public class Matrix{
       }
       return null;
    }
+   
+      /**
+   * Multiplys this matrix with m
+   * @param m must be multipliable with this matrix
+   * @return a Matrix or null when multiplication fails
+   */
+   // ASSUME BOTH ARE SAME SIZE
+   public Matrix multGPU(Matrix m){
+      float[] dataOne = new float[data.length * data[0].length];
+      float[] dataTwo = new float[data.length * data[0].length];
+      for (int i = 0; i < data.length; i++) {
+         for (int x = 0; x < data[i].length; x++) {
+            int index = i * data[i].length + x;
+            dataOne[index] = data[i][x];
+            dataTwo[index] = m.data[i][x];
+         }
+      }
+      float[] array = new float[dataOne.length];
+      OpenCL.RunFile("TestSum.c", "sampleKernel", array.length, new Object[] { dataOne, dataTwo, new int[] { data.length } }, new Object[] { array });
+      float[][] matrixArray = new float[data.length][data[0].length];
+      for (int i = 0; i < data.length; i++) {
+         for (int x = 0; x < data[i].length; x++) {
+            matrixArray[i][x] = array[i * data[i].length + x];
+         }
+      }
+      return new Matrix(matrixArray);
+   }
+   
    /**
    * Divides this matrix by m
    * @param m must be dividable with this matrix

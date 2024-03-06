@@ -80,7 +80,7 @@ public class EnginePanel extends JPanel {
    private void addComponents(int width, int height) {
       dictComponents.put(PanelType.MENU, new MenuHelper(0, 0, 0, 0));
       dictComponents.put(PanelType.RENDER, new RenderHelper(OFFSET, 0, width, height));
-      dictComponents.put(PanelType.BUTTON, new ButtonHelper(OFFSET, height * 9 / 10, width, height / 10));
+      //dictComponents.put(PanelType.BUTTON, new ButtonHelper(OFFSET, height * 9 / 10, width, height / 10));
       for (Component c : dictComponents.values()) {
          JComponent[] array = c.getComponents();
          if (array != null) {
