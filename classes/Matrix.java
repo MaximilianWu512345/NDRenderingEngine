@@ -524,9 +524,17 @@ public class Matrix{
       System.out.println("phase 2");
       int[] basicTemp = new int[newSize];
       int count = 0;
+      int[] variableShift = new int[newSize];
+      int[] antiVariableShift = new int[tw];
+      int currVariable = 0;
       for(int i = 0; i<tw; i++){
          if(Float.compare(table[th-1][i], epsilon)>0){
             count++;
+            antiVariableShift[i] = -1;
+         } else {
+            variableShift[currVariable] = i;
+            antiVariableShift[i] = currVariable;
+            currVariable++;
          }
          for(int j = 0; j<basis.length; j++){
             if(i == basis[j]){
@@ -538,29 +546,50 @@ public class Matrix{
       float[][] temp = new float[th][newSize];
       int addCol = 0;
       for(int i = 0; i<tw; i++){
-         addCol = 0;
-         for(int j = 0; j<th; j++){
-            if(Float.compare(table[th-1][i], epsilon)<0){
+         if(Float.compare(table[th-1][i], epsilon)<0){
+            for(int j = 0; j<th; j++){
                temp[j][addCol] = table[j][i];
-               addCol++;
-            } else {
+            }
+            addCol++;
+         }
+      }
+      System.out.print("columns in:");
+      for(int i = 0; i<variableShift.length; i++){
+         System.out.print(variableShift[i] + ", ");
+      }
+      System.out.println("initial table");
+      System.out.println(new Matrix(temp));
+      colLoop:for(int currentCol: col){
+      //objective fucntion
+         table = new float[th][newSize];
+         for(int i = 0; i<table.length; i++){
+            for(int j = 0; j<table[i].length; j++){
+               table[i][j] = temp[i][j];
+            }
+         }
+         th = table.length;
+         tw = table[0].length;
+         objFuncOrig = new float[tw];
+         objFuncOrig[antiVariableShift[currentCol]] = 1;
+         int newTargetIndex = 0;
+         for(int i = 0; i<th; i++){
+            if(Float.compare(table[i][antiVariableShift[currentCol]], 0) != 0){
+               newTargetIndex = i;
                break;
             }
          }
-      }
-      table = temp;
-      th = table.length;
-      tw = table[0].length;
-      colLoop:for(int currentCol: col){
-      //objective fucntion
-         objFuncOrig = new float[tw];
-         objFuncOrig[currentCol] = 1;
-         table[th-1] = new float[tw];
-         table[th-1][currentCol] = -1;
+         float objMult = 1/(table[newTargetIndex][antiVariableShift[currentCol]]);
+         for(int j = 0; j<tw; j++){
+            System.out.println("tw:" + tw);
+            System.out.println("j:" + j);
+            System.out.println("newTargetIndex:" + newTargetIndex);
+            table[th-1][j] = objMult*table[newTargetIndex][j];
+         }
          currentIndex = pickPivot(table, objFuncIndex);
          System.out.println("col:" + currentCol);
          numPivots = 0;
-         
+         System.out.println("current table:");
+         System.out.println(new Matrix(table));
          while(currentIndex != -1){
          //pick row
             float q = -1;
@@ -614,10 +643,11 @@ public class Matrix{
             currentIndex = pickPivot(table, objFuncIndex);
          }
       
+         System.out.println(new Matrix(table));
       //found vector
-         float[] v = new float[tw-1];
+         float[] v = new float[width];
          for(int i = 0; i<basis.length; i++){
-            v[basis[i]] = table[tw-1][i];
+            v[variableShift[basis[i]]] = table[i][tw-1];
          }
          resHolder.add(new Point(v));
       //alternte Solutions
@@ -625,7 +655,7 @@ public class Matrix{
          basisLoop:for(int i = 0; i<tw; i++){
             if(Float.compare(table[height][i], 0) == 0){
             //is a basis?
-               for(int j = 0; j<basis.length; i++){
+               for(int j = 0; j<basis.length; j++){
                   if(basis[j] == i){
                      continue basisLoop;
                   }
@@ -634,6 +664,7 @@ public class Matrix{
             }
          }
       //calculate alternitives
+      /*
          for(int k : NBI){
             currentIndex = k;
          //pivot
@@ -671,19 +702,22 @@ public class Matrix{
             }
             v = new float[width];
             for(int i = 0; i<basis.length; i++){
-               v[basis[i]] = table[tw-1][i];
+               v[variableShift[basis[i]]] = table[i][tw-1];
             }
             resHolder.add(new Point(v));
          }
+         */
       }
+      
       Point[] result = new Point[resHolder.size()];
       result = resHolder.toArray(result);
       return result;
    }
    private int pickPivot(float[][] t, int row){ // this is just for the LP solver
       int min = -1;
+      float epsillon = -0.000001f;
       for(int i = 0; i<t[row].length; i++){
-         if(t[row][i]<0){
+         if(t[row][i]<epsillon){
             if(min == -1 || t[row][i]<t[row][min]){
                min = i;
             }
