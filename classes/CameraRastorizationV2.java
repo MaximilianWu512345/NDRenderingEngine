@@ -187,7 +187,7 @@ public class CameraRastorizationV2 implements Camera{
                   //check pos
                   float[] pixCoords = new float[allPoints[0].getCoords().length-1];
                   for(int j = 0; j<pixCoords.length; j++){
-                     pixCoords[j] = allPoints[selectedPoints[i]].getCoords()[j];
+                     pixCoords[j] = allPoints[selectedPoints[i]].getCoords()[j]/allPoints[selectedPoints[i]].getCoords()[pixCoords.length] ;
                   }
                   flatPoints[i] = new Point(pixCoords);
                }
@@ -197,7 +197,8 @@ public class CameraRastorizationV2 implements Camera{
                float[] projBoundingBoxMax = new float[ms];
                float[] projBoundingBoxMin = new float[ms];
                for(int i = 0; i<bounds.length; i++){
-                  projBoundingBoxMax[i] = bounds[i];
+                  projBoundingBoxMax[i] = bounds[i]/2;
+                  projBoundingBoxMin[i] = -bounds[i]/2;
                }
                boolean hasPix = true;
                float[] pixPos = new float[ms];
@@ -216,11 +217,18 @@ public class CameraRastorizationV2 implements Camera{
                   }
                   for(int i = 0; i<bary.length(); i++){
                      if(bary.getCoords()[i] < 0 || bary.getCoords()[i] > 1){
+                        pixPos = incrementArray(pixPos, projBoundingBoxMax, projBoundingBoxMin, pixPos.length-1);
+                        hasPix = pixPos != null;
                         continue drawLoop;
                      }
                   }
                   //get color
+                  
                   Color pixColor = currentPart.getColor(bary.getCoords());
+                  if (pixColor == null){
+                     pixColor = triangleC;
+                  }
+                  System.out.println("drawing pixel " + pixPoint + " color " + pixColor.toString());
                   //get depth
                   Vector actualPoint = new Vector(new float[bary.length()]);
                   for(int i = 0; i<currentPart.getPoints().length; i++){
@@ -323,7 +331,7 @@ public class CameraRastorizationV2 implements Camera{
       for(int i = 0; i<rawPoints.length; i++){
          float[] data = new float[ms+1];
          for(int j = 0; j<ms; j++){
-            data[j] = rawPoints[i].getCoords()[g+i] - rawPoints[i].getCoords()[g+i+ms];
+            data[j] = rawPoints[i].getCoords()[g+j] - rawPoints[i].getCoords()[g+j+ms];
          }
          data[ms] = rawPoints[i].getCoords()[2*ms+g];
          tempPoints[i] = new Point(data);

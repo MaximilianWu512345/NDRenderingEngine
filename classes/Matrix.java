@@ -522,7 +522,6 @@ public class Matrix{
       //phase 2
       //drop non basic
       System.out.println("phase 2");
-      int[] basicTemp = new int[newSize];
       int count = 0;
       int[] variableShift = new int[newSize];
       int[] antiVariableShift = new int[tw];
@@ -553,6 +552,7 @@ public class Matrix{
             addCol++;
          }
       }
+      int[] origBasisTemp = basis;
       System.out.print("columns in:");
       for(int i = 0; i<variableShift.length; i++){
          System.out.print(variableShift[i] + ", ");
@@ -566,6 +566,10 @@ public class Matrix{
             for(int j = 0; j<table[i].length; j++){
                table[i][j] = temp[i][j];
             }
+         }
+         basis = new int[origBasisTemp.length];
+         for(int i = 0; i<basis.length; i++){
+            basis[i] = origBasisTemp[i];
          }
          th = table.length;
          tw = table[0].length;

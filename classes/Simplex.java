@@ -200,6 +200,9 @@ public class Simplex{
    *@return Color The color at the location, return null if outside of texture bounds
    */
    public Color getColor(float[] v){
+      if(!t.placeMatters()){
+         return t.getColor(null);
+      }
       int[] texBound = t.getBounds();
       Vector texLoc = new Vector(new float[texBound.length]);
       for(int i = 0; i<v.length; i++){

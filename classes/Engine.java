@@ -117,7 +117,7 @@ public class Engine extends JFrame {
       parr1[2] = new Point(new float[]{4,-3,-3});
       manSimplex[0] = new Simplex(parr1);
       scene.add(new Mesh(manSimplex, dimention));
-      
+      /*
       //set up
       Mesh[] sceneArr = new Mesh[scene.size()];
       sceneArr = scene.toArray(sceneArr);
@@ -134,6 +134,16 @@ public class Engine extends JFrame {
          }
       }
       Instance.renderImage(pixelArray);
+      */
+      //barrycetnric coorditate test
+      Point[] barryPoint = new Point[3];
+      barryPoint[0] = new Point(new float[]{3,3});
+      barryPoint[1] = new Point(new float[]{7,0});
+      barryPoint[2] = new Point(new float[]{4,-3});
+      Simplex baryTest = new Simplex(barryPoint);
+      Point testPoint = new Point(new float[]{1, 2});
+      Vector bary = baryTest.getBaryCentricCoords(testPoint);
+      System.out.println(bary);
    }
    
    public static Color[] colors = { Color.RED, Color.BLUE, Color.BLACK, Color.WHITE, Color.GREEN, Color.YELLOW, Color.GRAY};

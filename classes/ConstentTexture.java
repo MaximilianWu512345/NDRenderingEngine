@@ -10,9 +10,6 @@ public class ConstentTexture implements Texture{
       return bounds;
    }
    public Color getColor(Point p){
-      if(getIndex(p) == -1){
-         return null;
-      }
       return data;
    }
    public void setBounds(int[] b){
