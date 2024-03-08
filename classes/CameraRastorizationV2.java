@@ -208,7 +208,7 @@ public class CameraRastorizationV2 implements Camera{
                drawLoop:while(hasPix){
                   Point pixPoint = new Point(pixPos);
                   //draw pixel
-                  Vector bary = flatCurrentPart.getBaryCentricCoords(pixPoint);
+                  Vector bary = flatCurrentPart.getBarycentricCoords(pixPoint);
                   //is in triangle
                   if(bary == null){
                      pixPos = incrementArray(pixPos, projBoundingBoxMax, projBoundingBoxMin, pixPos.length-1);
@@ -278,7 +278,7 @@ public class CameraRastorizationV2 implements Camera{
             Point pixPoint = new Point(pixPos);
             drawLoop:while(hasPix){
                   //draw pixel
-               Vector bary = flatCurrentPart.getBaryCentricCoords(pixPoint);
+               Vector bary = flatCurrentPart.getBarycentricCoords(pixPoint);
                   //is in triangle
                if(bary == null){
                   continue drawLoop;

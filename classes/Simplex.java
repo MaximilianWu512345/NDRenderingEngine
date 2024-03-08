@@ -85,12 +85,36 @@ public class Simplex{
    public void setTexturePoints(Point[] texturePoints){
       this.texturePoints = texturePoints;
    }
+   private Matrix lBaryMatrix;
+   private Matrix pBaryMatrix;
+   private Matrix uBaryMatrix;
+   private Vector shift;
+   /** sets up Simplex for barycentric corodinate calculations
+   */
+   public void initBaryCalc(){
+      if(points.length != (points[0].length()+1)){
+         return;
+      }
+      shift = new Vector(points[0].getCoords());
+      float[][] mdata = new float[points.length-1][points.length-1];
+      for(int i = 0; i<mdata.length; i++){
+         for(int j = 0; j<mdata[i].length; j++){
+            mdata[i][j] = points[j+1].getCoords()[i]-points[0].getCoords()[i];
+         }
+      }
+      //lpu decomp
+      Matrix m = new Matrix(mdata);
+      Matrix[] decomp = m.LPUDecomp();
+      lBaryMatrix = decomp[0];
+      pBaryMatrix = decomp[1];
+      uBaryMatrix = decomp[2];
+   }
 /** Returns whether or not Point p is within this Simplex.
 * Algorithm from https://stackoverflow.com/questions/21819132/how-do-i-check-if-a-simplex-contains-the-origin by ellisbben
 * @param p The point to check.
 * @return boolean of whether the point is within this Simplex.
 */
-   public Vector getBaryCentricCoords(Point p){
+   public Vector getBarycentricCoords(Point p){
       //set up matrix
       int datWidth = points.length;
       int datHight = points[0].getCoords().length+1;

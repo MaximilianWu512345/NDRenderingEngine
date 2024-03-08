@@ -668,7 +668,7 @@ public class Matrix{
             }
          }
       //calculate alternitives
-      /*
+      
          for(int k : NBI){
             currentIndex = k;
          //pivot
@@ -676,20 +676,27 @@ public class Matrix{
             float q = -1;
             int remove = -1;
             for(int i = 0; i<height; i++){
-               if(table[currentIndex][i] > 0){
-                  if(remove == -1){
-                     q = table[tw-1][i]/table[currentIndex][i];
-                     remove = basis[i];
-                  } else if (q>table[tw-1][i]/table[currentIndex][i]){
-                     q = table[tw-1][i]/table[currentIndex][i];
-                     remove = basis[i];
+               if(Float.compare(table[i][currentIndex],0) > 0){
+                  System.out.println("row " + i + " q:" + table[i][tw-1]/table[i][currentIndex]);
+                  if(remove == -1 || Float.compare(q, table[i][tw-1]/table[i][currentIndex]) >= 0){
+                     if(Float.compare(q, table[i][tw-1]/table[i][currentIndex]) == 0){
+                        if(objFuncOrig[basis[remove]]>objFuncOrig[basis[i]]){
+                           q = table[i][tw-1]/table[i][currentIndex];
+                           remove = i;
+                        }
+                     } else {
+                        q = table[i][tw-1]/table[i][currentIndex];
+                        remove = i;
+                     }
                   }
                }
+            
             }
             if(remove == -1){
                System.out.println("uhhhh... you did something wrong");
                continue;
             }
+         
          //set row number to 1
             float mult = table[remove][currentIndex];
             for(int i = 0; i<tw; i++){
@@ -710,7 +717,7 @@ public class Matrix{
             }
             resHolder.add(new Point(v));
          }
-         */
+         
       }
       
       Point[] result = new Point[resHolder.size()];
@@ -728,5 +735,99 @@ public class Matrix{
          }
       }
       return min;
+   }
+   /** decomposed the matrix into LPU matrices
+   * This matrix must be a square matrix
+   * @return a Matrix array of length 3 with the first being the L matrix, second the P matrix and third the U matrix, matrixes are null if no matrix found
+   */
+   public Matrix[] LPUDecomp(){
+      //set up
+      Matrix[] result = new Matrix[3];
+      float[][] pData = new float[height][width];
+      for(int i = 0; i<height; i++){
+         pData[i][i] = 1;
+      }
+      float[][] uData= new float[height][width];
+      for(int i = 0; i<height; i++){
+         for(int j = 0; j<width; j++){
+            uData[i][j] = data[i][j];
+         }
+      }
+      float[][] lData = new float[height][width];
+      System.out.println("initial");
+      System.out.println("L");
+      System.out.println(new Matrix(lData));
+      System.out.println("P");
+      System.out.println(new Matrix(pData));
+      System.out.println("U");
+      System.out.println(new Matrix(uData));
+      //gauss elimination
+      for(int i = 0; i<height; i++){
+         //pivot
+         System.out.println("before pivot");
+         System.out.println("L");
+         System.out.println(new Matrix(lData));
+         System.out.println("P");
+         System.out.println(new Matrix(pData));
+         System.out.println("U");
+         System.out.println(new Matrix(uData));
+         float val = Math.abs(uData[i][i]);
+         int targetIndex = i;
+         for(int j = i+1; j<height; j++){
+            if(Math.abs(uData[j][i])>val){
+               val = Math.abs(uData[j][i]);
+               targetIndex = j;
+            }
+         }
+         //no pivot found
+         if(Float.compare(val, 0) == 0){
+            return result;
+         }
+         float[] temp = uData[targetIndex];
+         uData[targetIndex] = uData[i];
+         uData[i] = temp;
+         temp = pData[targetIndex];
+         pData[targetIndex] = pData[i];
+         pData[i] = temp;
+         temp = lData[targetIndex];
+         lData[targetIndex] = lData[i];
+         lData[i] = temp;
+         //set l
+         for(int j = i; j<height; j++){
+            lData[j][i] = uData[j][i];
+         }
+         System.out.println("after pivot");
+         System.out.println("L");
+         System.out.println(new Matrix(lData));
+         System.out.println("P");
+         System.out.println(new Matrix(pData));
+         System.out.println("U");
+         System.out.println(new Matrix(uData));
+         //eliminate
+         for(int j = i+1; j<height; j++){
+            float mult = uData[j][i]/uData[i][i];
+            for(int k = 0; k<width; k++){
+               uData[j][k] = uData[j][k]-(uData[i][k]*mult);
+            }
+         }
+         System.out.println("after elimination");
+         System.out.println("L");
+         System.out.println(new Matrix(lData));
+         System.out.println("P");
+         System.out.println(new Matrix(pData));
+         System.out.println("U");
+         System.out.println(new Matrix(uData));
+      }
+      for(int i = 0; i<width; i++){
+         float mult = 1/lData[i][i];
+         lData[i][i] = 1;
+         for(int j = i+1; j<height; j++){
+            lData[j][i] = lData[j][i]*mult;
+         }
+      }
+      result[0] = new Matrix(lData);
+      result[1] = new Matrix(pData);
+      result[2] = new Matrix(uData);
+      return result;
    }
 }

@@ -135,6 +135,16 @@ public class Engine extends JFrame {
       }
       Instance.renderImage(pixelArray);
       */
+      //LPU decomp test
+      Matrix m = new Matrix(new float[][]{new float[]{0, 5, (22f/3f)}, new float[]{4, 2, 1}, new float[]{2, 7, 9}});
+      System.out.println(m);
+      Matrix[] lpu = m.LPUDecomp();
+      System.out.println(lpu[0]);
+      System.out.println(lpu[1]);
+      System.out.println(lpu[2]);
+      
+      System.out.println(lpu[0].mult(lpu[1]).mult(lpu[2]));
+      /*
       //barrycetnric coorditate test
       Point[] barryPoint = new Point[3];
       barryPoint[0] = new Point(new float[]{3,3});
@@ -142,8 +152,9 @@ public class Engine extends JFrame {
       barryPoint[2] = new Point(new float[]{4,-3});
       Simplex baryTest = new Simplex(barryPoint);
       Point testPoint = new Point(new float[]{1, 2});
-      Vector bary = baryTest.getBaryCentricCoords(testPoint);
+      Vector bary = baryTest.getBarycentricCoords(testPoint);
       System.out.println(bary);
+      */
    }
    
    public static Color[] colors = { Color.RED, Color.BLUE, Color.BLACK, Color.WHITE, Color.GREEN, Color.YELLOW, Color.GRAY};
