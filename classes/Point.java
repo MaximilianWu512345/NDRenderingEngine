@@ -18,6 +18,14 @@ public class Point {
       return coordinates.length;
    }
    
+   public Matrix toMatrix() {
+      float[][] array = new float[coordinates.length][];
+      for (int i = 0; i < coordinates.length; i++) {
+         array[i] = new float[] { coordinates[i] };
+      }
+      return new Matrix(array);
+   }
+   
 /** Returns a float of the distance between this Point and point.
 * @param point the point to check.
 * @return the distance between this Point and point.

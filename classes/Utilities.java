@@ -183,14 +183,23 @@ public class Utilities {
    }
    
    public static void main(String[] args) {
-      Simplex[] faces = new Simplex[] { new Simplex(new Point[] { new Point(new float[] { 1, 1 }) }),
+      Simplex[] faces = new Simplex[] {
+         new Simplex(new Point[] { new Point(new float[] { 1, 1 }) }),
          new Simplex(new Point[] { new Point(new float[] { 1, 1 }) }),
          new Simplex(new Point[] { new Point(new float[] { 1, 1 }) })
          };
       Mesh mesh = new Mesh(faces, 3);
+      /*
       System.out.println(mesh);
       SaveMesh("Test", mesh, true);
       mesh = LoadMesh("Test");
+      */
+      float[][] data = new float[2][2];
+      data[0][0] = 3;
+      data[1][0] = 2;
+      Matrix m = new Matrix(data);
+      System.out.println(mesh);
+      mesh.transform(m);
       System.out.println(mesh);
    }
    

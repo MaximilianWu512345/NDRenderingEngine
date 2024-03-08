@@ -1,4 +1,4 @@
-__kernel void sampleKernel(
+__kernel void matrixMultiplyKernel(
 __global const float *data,
 __global const float *otherData,
 __global const int *width,

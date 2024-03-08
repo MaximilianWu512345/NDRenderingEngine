@@ -25,6 +25,21 @@ public class Mesh{
       return faces;
    }
    
+   // Matrix m must be multipliable with each Simplex in faces, width must equal m.height
+   public void transform(Matrix m) {
+      for (Simplex s : faces) {
+         Point[] points = s.getPoints();
+         for (int i = 0; i < points.length; i++) {
+            Matrix temp = m.mult(points[i].toMatrix());
+            if (temp != null)
+               points[i] = temp.toPoint();
+            else
+               System.out.println("Matrix Multiplication Failed: Mesh.transform(Matrix m): temp == null");
+         }
+         s.setPoints(points);
+      }
+   }
+   
 /** Generic toString() method.
 * @return String describing this Object.
 */
