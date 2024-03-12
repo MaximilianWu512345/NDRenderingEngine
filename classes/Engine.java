@@ -8,6 +8,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.io.File;
 import java.io.*;
+
 /** JFrame engine that creates a graphical application. */
 public class Engine extends JFrame {
 
@@ -67,14 +68,14 @@ public class Engine extends JFrame {
       Mesh[] listObj = new Mesh[] { obj1 };
       Instance.renderImage(camera.Project(listObj, c, null));
    }
-   
-   
+
 
 /** Placeholder method to run TestDriver.
 * @param args default args for main method.
 */
    public static void main(String[] args) {
       // Create the engine and camera, start the program.
+  /* max test code
       int dimention = 3;
       CreateEngine();
       Point screenPos = new Point(new float[dimention]);
@@ -117,6 +118,27 @@ public class Engine extends JFrame {
       parr1[2] = new Point(new float[]{4,-3,-3});
       manSimplex[0] = new Simplex(parr1);
       scene.add(new Mesh(manSimplex, dimention));
+     */
+   /*
+      // Create the engine, start the program.
+      
+      CreateEngine();
+      CreateCamera();
+      Simplex[] simplexes = new Simplex[100];
+      for (int i = 0; i < 100; i++) {
+         Point[] points = new Point[3];
+         for (int x = 0; x < 3; x++) {
+            int z = (int)(Math.random() * 2) + 1;
+            int ex = (int)(Math.random() * 1000);
+            int y = (int)(Math.random() * 1000);
+            points[x] = new Point(new float[] {z, ex, y});
+         }
+         Simplex s = new Simplex(points);
+         simplexes[i] = s;
+         Instance.renderSimplex(s, randomColor());
+
+      }
+      Instance.renderSimplex(simplexes[0], randomColor());
       
       //set up
       Mesh[] sceneArr = new Mesh[scene.size()];
@@ -133,37 +155,10 @@ public class Engine extends JFrame {
             pixelArray[i][j] = realPixels.getColor(new Point(new float[]{i, j}));
          }
       }
+
       Instance.renderImage(pixelArray);
       
-      //LPU decomp test
-      /*
-      System.out.println("LPU decomp");
-      Matrix m = new Matrix(new float[][]{new float[]{0, 5, (22f/3f)}, new float[]{4, 2, 1}, new float[]{2, 7, 9}});
-      System.out.println(m);
-      Matrix[] lpu = m.LPUDecomp();
-      System.out.println(lpu[0]);
-      System.out.println(lpu[1]);
-      System.out.println(lpu[2]);
-      
-      System.out.println(lpu[0].mult(lpu[1]).mult(lpu[2]));
-      */
-      
-      //barrycetnric coorditate test
-      /*
-      System.out.println("Bary test");
-      Point[] barryPoint = new Point[3];
-      barryPoint[0] = new Point(new float[]{3,3});
-      barryPoint[1] = new Point(new float[]{7,0});
-      barryPoint[2] = new Point(new float[]{4,-3});
-      Simplex baryTest = new Simplex(barryPoint);
-      Point testPoint = new Point(new float[]{1, 2});
-      Vector bary = baryTest.getBarycentricCoords(testPoint);
-      Vector reassemble = new Vector(new float[2]);
-      for(int i = 0; i<bary.length(); i++){
-         reassemble = reassemble.add((new Vector(barryPoint[i].getCoords())).scale(bary.getCoords()[i]));   
-      }
-      System.out.println(reassemble);
-      System.out.println(bary);
+
       */
    }
    
@@ -178,8 +173,8 @@ public class Engine extends JFrame {
    }
    
    public static Camera CreateCamera() {
-      //return Camera = new CameraRastorizationV2(new Point(/*camPos*/new float[3]), /*camDirection*/new Vector(new float[] {1,0,0}), 900, 900);
-      return null;
+      return Camera = new CameraRastorizationV2(new Point(/*camPos*/new float[3]), /*camDirection*/new Vector(new float[] {1,0,0}), 900, 900);
+
    }
    public static Simplex generateRandomSimplex(int dimention, float bounds){
       Point[] data = new Point[dimention];

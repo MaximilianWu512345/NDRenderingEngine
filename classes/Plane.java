@@ -1,6 +1,7 @@
 /** Plane class */
 import java.util.*;
 public class Plane extends AffineSubspace{
+
 /** The position of this Plane. */
 /** The norm of this Plane. */
    public Vector norm;
@@ -8,6 +9,27 @@ public class Plane extends AffineSubspace{
 * @param p The position of the Plane.
 * @param norm The norm of the Plane.
 */
+
+   public Plane(Point p, Vector norm){
+      this.p = p;
+      this.norm = norm;
+      int d = p.length();
+      int pointer = 0;
+      ArrayList<Vector> temp = new ArrayList<Vector>();
+      for(int i = 0; i<d; i++){
+         for(int j = 0; j<d; j++){
+            if(i != j){
+               Matrix rot = Matrix.GivensRot(d, 90, i, j);
+               Vector res = norm.rotBy(rot);
+               if(!res.equals(norm)){
+                  temp.add(res);
+               }
+            }
+         }
+      }
+      dir = new Vector[temp.size()];
+      dir = temp.toArray(dir);
+   }
    public Plane(Point p, Vector[] dir){
       super(new SubSpace(dir),p);
    }

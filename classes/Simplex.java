@@ -21,6 +21,7 @@ public class Simplex{
    public Simplex(Point[] vertex){
       setPoints(vertex);
       t = new ConstentTexture(Color.RED, new int[vertex.length]);
+
    }
    
 /** Creates a new Simplex with points of vertex.
@@ -35,6 +36,7 @@ public class Simplex{
          textPoints[i] = new Point(new float[vertex[0].length()]);
       }
       setTexturePoints(textPoints);
+
    }
    
 /** Sets points to be vertex.
@@ -203,7 +205,7 @@ public class Simplex{
       }
       argVal[argVal.length-1] = 1;
       Matrix aug = M.AugmentedMatrix(new Vector(argVal));
-      Matrix rref = aug.getRREF();
+      Matrix rref = aug.getRREF().getMatrix();
       Vector[] d = rref.toVectors();
       int[] var = new int[0];
       float[] value = new float[0];
@@ -359,6 +361,7 @@ public class Simplex{
       } else {
          temp += "\n" + tabs + "}\nnull\n" + tabs + t + "\n" + lastTab + "]";
       }
+
       return temp;
    }
    

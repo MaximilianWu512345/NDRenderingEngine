@@ -1,5 +1,5 @@
 /** Line class */
-public class Line {
+public class Line{
 
 /** Position of the line. */
    private Point position;

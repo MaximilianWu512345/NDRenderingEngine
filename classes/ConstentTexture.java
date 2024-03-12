@@ -1,5 +1,6 @@
 import java.awt.Color;
 public class ConstentTexture implements Texture{
+
    private Color data;
    private int[] bounds;
    public ConstentTexture(Color data, int[] bounds){
@@ -30,5 +31,6 @@ public class ConstentTexture implements Texture{
    }
    public boolean placeMatters(){
       return false;
+
    }
 }

@@ -38,7 +38,7 @@ public class SubSpace{
          }
       }
       Matrix aug = M.AugmentedMatrix(new Vector(adjtarg));
-      Matrix rref = aug.getRREF();
+      Matrix rref = aug.getRREF().getMatrix();
       Vector[] eq = rref.toVectors();
       for(Vector c:eq){
          if(c.getCoords()[c.length()] != 0){
