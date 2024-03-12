@@ -436,12 +436,7 @@ public class Matrix{
       for(int index:basis){
          objFuncOrig[index] = -1;
       }
-      System.out.println(new Matrix(table));
-      System.out.print("basis:");
-      for(int i = 0; i<basis.length; i++){
-         System.out.print(basis[i] + ", ");
-      }
-      System.out.println("");
+      
       int numPivots = 0;
       while(currentIndex != -1){
          //pick row
@@ -449,7 +444,6 @@ public class Matrix{
          int remove = -1;
          for(int i = 0; i<height; i++){
             if(Float.compare(table[i][currentIndex],0) > 0){
-               System.out.println("row " + i + " q:" + table[i][tw-1]/table[i][currentIndex]);
                if(remove == -1 || Float.compare(q, table[i][tw-1]/table[i][currentIndex]) >= 0){
                   if(Float.compare(q, table[i][tw-1]/table[i][currentIndex]) == 0){
                      if(objFuncOrig[basis[remove]]>objFuncOrig[basis[i]]){
@@ -464,14 +458,6 @@ public class Matrix{
             }
          }
          if(remove == -1){
-            System.out.println("uhhhh... you did something wrong");
-            System.out.println("Pivot " + numPivots);
-            System.out.println(new Matrix(table));
-            System.out.print("basis:");
-            for(int i = 0; i<basis.length; i++){
-               System.out.print(basis[i] + ", ");
-            }
-            System.out.println("");
             return new Point[0];
          }
          //set row number to 1
@@ -489,13 +475,7 @@ public class Matrix{
                }
             }
          }
-         System.out.println("Pivot " + numPivots);
-         System.out.println(new Matrix(table));
-         System.out.print("basis:");
-         for(int i = 0; i<basis.length; i++){
-            System.out.print(basis[i] + ", ");
-         }
-         System.out.println("");
+         
          numPivots++;
          //basis changed
          basis[remove] = currentIndex;
@@ -503,12 +483,7 @@ public class Matrix{
          //check if can end early
          
       }
-      /*
-      if(Float.compare(table[height][tw-1],0) != 0){
-         System.out.println("umm...")
-         return new Point[0];
-      }
-      */
+      
       table[th-1][tw-1] = 0f;
       int newSize = 0;
       float epsilon = 0.00001f;
@@ -521,7 +496,6 @@ public class Matrix{
       LinkedList<Point> resHolder = new LinkedList<Point>();
       //phase 2
       //drop non basic
-      System.out.println("phase 2");
       int count = 0;
       int[] variableShift = new int[newSize];
       int[] antiVariableShift = new int[tw];
@@ -553,12 +527,7 @@ public class Matrix{
          }
       }
       int[] origBasisTemp = basis;
-      System.out.print("columns in:");
-      for(int i = 0; i<variableShift.length; i++){
-         System.out.print(variableShift[i] + ", ");
-      }
-      System.out.println("initial table");
-      System.out.println(new Matrix(temp));
+      
       colLoop:for(int currentCol: col){
       //objective fucntion
          table = new float[th][newSize];
@@ -584,15 +553,10 @@ public class Matrix{
          }
          float objMult = 1/(table[newTargetIndex][antiVariableShift[currentCol]]);
          for(int j = 0; j<tw; j++){
-            System.out.println("tw:" + tw);
-            System.out.println("j:" + j);
-            System.out.println("newTargetIndex:" + newTargetIndex);
             table[th-1][j] = objMult*table[newTargetIndex][j];
          }
          currentIndex = pickPivot(table, objFuncIndex);
-         System.out.println("col:" + currentCol);
          numPivots = 0;
-         System.out.println("current table:");
          System.out.println(new Matrix(table));
          while(currentIndex != -1){
          //pick row
@@ -600,7 +564,6 @@ public class Matrix{
             int remove = -1;
             for(int i = 0; i<height; i++){
                if(Float.compare(table[i][currentIndex],0) > 0){
-                  System.out.println("row " + i + " q:" + table[i][tw-1]/table[i][currentIndex]);
                   if(remove == -1 || Float.compare(q, table[i][tw-1]/table[i][currentIndex]) >= 0){
                      if(Float.compare(q, table[i][tw-1]/table[i][currentIndex]) == 0){
                         if(objFuncOrig[basis[remove]]>objFuncOrig[basis[i]]){
@@ -616,7 +579,6 @@ public class Matrix{
             
             }
             if(remove == -1){
-               System.out.println("uhhhh... you did something wrong");
                continue colLoop;
             }
          //set row number to 1
@@ -634,13 +596,7 @@ public class Matrix{
                   }
                }
             }
-            System.out.println("Pivot " + numPivots);
-            System.out.println(new Matrix(table));
-            System.out.print("basis:");
-            for(int i = 0; i<basis.length; i++){
-               System.out.print(basis[i] + ", ");
-            }
-            System.out.println("");
+            
             numPivots++;
          //basis changed
             basis[remove] = currentIndex;
@@ -677,7 +633,6 @@ public class Matrix{
             int remove = -1;
             for(int i = 0; i<height; i++){
                if(Float.compare(table[i][currentIndex],0) > 0){
-                  System.out.println("row " + i + " q:" + table[i][tw-1]/table[i][currentIndex]);
                   if(remove == -1 || Float.compare(q, table[i][tw-1]/table[i][currentIndex]) >= 0){
                      if(Float.compare(q, table[i][tw-1]/table[i][currentIndex]) == 0){
                         if(objFuncOrig[basis[remove]]>objFuncOrig[basis[i]]){
@@ -693,7 +648,6 @@ public class Matrix{
             
             }
             if(remove == -1){
-               System.out.println("uhhhh... you did something wrong");
                continue;
             }
          
@@ -754,18 +708,18 @@ public class Matrix{
          }
       }
       float[][] lData = new float[height][width];
-      
+      for(int i = 0; i<height; i++){
+         lData[i][i] = 1;
+      }
       //gauss elimination
       for(int i = 0; i<height; i++){
          //pivot
          
          float val = Math.abs(uData[i][i]);
          int targetIndex = i;
-         for(int j = i+1; j<height; j++){
-            if(Math.abs(uData[j][i])>val){
-               val = Math.abs(uData[j][i]);
-               targetIndex = j;
-            }
+         for(int j = i+1; (j<height)&&(Float.compare(val,0) == 0); j++){
+            val = uData[j][i];
+            targetIndex = j;
          }
          //no pivot found
          if(Float.compare(val, 0) == 0){
@@ -777,29 +731,22 @@ public class Matrix{
          temp = pData[targetIndex];
          pData[targetIndex] = pData[i];
          pData[i] = temp;
+         lData[targetIndex][targetIndex] = 0;
+         lData[i][i] = 0;
          temp = lData[targetIndex];
          lData[targetIndex] = lData[i];
          lData[i] = temp;
-         //set l
-         for(int j = i; j<height; j++){
-            lData[j][i] = uData[j][i];
-         }
-         
+         lData[targetIndex][targetIndex] = 1;
+         lData[i][i] = 1;
          //eliminate
          for(int j = i+1; j<height; j++){
             float mult = uData[j][i]/uData[i][i];
             for(int k = 0; k<width; k++){
                uData[j][k] = uData[j][k]-(uData[i][k]*mult);
             }
+            lData[j][i] = mult;
          }
          
-      }
-      for(int i = 0; i<width; i++){
-         float mult = 1/lData[i][i];
-         lData[i][i] = 1;
-         for(int j = i+1; j<height; j++){
-            lData[j][i] = lData[j][i]*mult;
-         }
       }
       result[0] = new Matrix(lData);
       result[1] = new Matrix(pData);

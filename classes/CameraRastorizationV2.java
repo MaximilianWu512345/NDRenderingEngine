@@ -228,13 +228,18 @@ public class CameraRastorizationV2 implements Camera{
                   if (pixColor == null){
                      pixColor = triangleC;
                   }
-                  System.out.println("drawing pixel " + pixPoint + " color " + pixColor.toString());
                   //get depth
-                  Vector actualPoint = new Vector(new float[bary.length()]);
-                  for(int i = 0; i<currentPart.getPoints().length; i++){
-                     actualPoint.add((new Vector(currentPart.getPoints()[i].getCoords())).scale(bary.getCoords()[i]));
+                  float[] actualPointDat = new float[bary.length()];
+                  for(int i = 0; i<actualPointDat.length-1; i++){
+                     actualPointDat[i] = -1*projBoundingBoxMin[i];
                   }
+                  Vector actualPoint = new Vector(actualPointDat);
+                  for(int i = 0; i<currentPart.getPoints().length; i++){
+                     actualPoint = actualPoint.add((new Vector(currentPart.getPoints()[i].getCoords())).scale(bary.getCoords()[i]));
+                  }
+                  
                   Point zbuffPoint = new Point(actualPoint.getCoords());
+                  System.out.println("drawing pixel " + zbuffPoint.toString() + " color " + pixColor.toString());
                   zBuff.setColor(zbuffPoint, pixColor);
                   //next pixel
                   pixPos = incrementArray(pixPos, projBoundingBoxMax, projBoundingBoxMin, pixPos.length-1);

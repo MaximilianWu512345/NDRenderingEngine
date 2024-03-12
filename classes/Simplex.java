@@ -104,8 +104,6 @@ public class Simplex{
       }
       //lpu decomp
       Matrix m = new Matrix(mdata);
-      System.out.println("m:");
-      System.out.println(m);
       Matrix[] decomp = m.LPUDecomp();
       lBaryMatrix = decomp[0];
       pBaryMatrix = decomp[1];
@@ -120,21 +118,11 @@ public class Simplex{
       if(lBaryMatrix == null){
          initBaryCalc();
       }
-      System.out.println("L:");
-      System.out.println(lBaryMatrix);
-      System.out.println("U:");
-      System.out.println(uBaryMatrix);
-      System.out.println("P:");
-      System.out.println(pBaryMatrix);
-      System.out.println("shift");
-      System.out.println(shift);
       if(points.length != (points[0].length()+1)){
          return new Vector(new float[points.length]);
       }
       //set up solution
       float[] dat = new Vector(points[points.length-1], p).getCoords();
-      System.out.println("dat");
-      System.out.println(new Vector(dat));
       float[] sol = new float[points.length];
       //p
       for(int i = 0; i<sol.length-1; i++){
@@ -148,8 +136,6 @@ public class Simplex{
       dat = sol;
       sol = new float[points.length];
       //L
-      System.out.println(lBaryMatrix);
-      System.out.println(new Vector(dat));
       for(int i = 0; i<lBaryMatrix.getHeight(); i++){
          sol[i] = dat[i];
          float sum = 0;
@@ -166,7 +152,7 @@ public class Simplex{
          sol[i] = dat[i];
          float sum = 0;
          for(int j = i+1; j<uBaryMatrix.getWidth(); j++){
-            sum += lBaryMatrix.getData()[i][j]*sol[j];
+            sum += uBaryMatrix.getData()[i][j]*sol[j];
          }
          sol[i] -= sum;
          sol[i] /= uBaryMatrix.getData()[i][i];

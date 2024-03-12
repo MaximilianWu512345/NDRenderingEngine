@@ -82,8 +82,8 @@ public class Engine extends JFrame {
       Vector[] axis = new Vector[2];
       float[] axis1 = new float[dimention];
       float[] axis2 = new float[dimention];
-      axis1[1] = 3f/900f;
-      axis2[2] = 2f/900f;
+      axis1[1] = 15f/900f;
+      axis2[2] = 10f/900f;
       axis[0] = new Vector(axis1);
       axis[1] = new Vector(axis2);
       SubSpace screenDir = new SubSpace(axis);
@@ -117,7 +117,7 @@ public class Engine extends JFrame {
       parr1[2] = new Point(new float[]{4,-3,-3});
       manSimplex[0] = new Simplex(parr1);
       scene.add(new Mesh(manSimplex, dimention));
-      /*
+      
       //set up
       Mesh[] sceneArr = new Mesh[scene.size()];
       sceneArr = scene.toArray(sceneArr);
@@ -134,9 +134,10 @@ public class Engine extends JFrame {
          }
       }
       Instance.renderImage(pixelArray);
-      */
+      
       //LPU decomp test
       /*
+      System.out.println("LPU decomp");
       Matrix m = new Matrix(new float[][]{new float[]{0, 5, (22f/3f)}, new float[]{4, 2, 1}, new float[]{2, 7, 9}});
       System.out.println(m);
       Matrix[] lpu = m.LPUDecomp();
@@ -148,6 +149,8 @@ public class Engine extends JFrame {
       */
       
       //barrycetnric coorditate test
+      /*
+      System.out.println("Bary test");
       Point[] barryPoint = new Point[3];
       barryPoint[0] = new Point(new float[]{3,3});
       barryPoint[1] = new Point(new float[]{7,0});
@@ -161,7 +164,7 @@ public class Engine extends JFrame {
       }
       System.out.println(reassemble);
       System.out.println(bary);
-      
+      */
    }
    
    public static Color[] colors = { Color.RED, Color.BLUE, Color.BLACK, Color.WHITE, Color.GREEN, Color.YELLOW, Color.GRAY};

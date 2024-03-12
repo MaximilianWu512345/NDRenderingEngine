@@ -24,7 +24,11 @@ public class zBufferArrayTexture implements Texture{
    }
    public boolean setColor(Point p, Color c){
       int index = getIndex(p);
-      if(index == -1){
+      if(index> data.length){
+         System.out.println(getIndex(p));
+         return false;
+      }
+      if(index < 0){
          return false;
       }
       if(data[index].z == -1 || data[index].z > p.getCoords()[p.length()-1]){
@@ -38,7 +42,7 @@ public class zBufferArrayTexture implements Texture{
       int result = 0;
       for(int i = 0; i<p.length()-1; i++){
          int val = (int)p.getCoords()[i];
-         if(val>bounds[i]){
+         if(val>=bounds[i]){
             return -1;
          }
          result += mult*val;
