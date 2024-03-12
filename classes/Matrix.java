@@ -754,23 +754,11 @@ public class Matrix{
          }
       }
       float[][] lData = new float[height][width];
-      System.out.println("initial");
-      System.out.println("L");
-      System.out.println(new Matrix(lData));
-      System.out.println("P");
-      System.out.println(new Matrix(pData));
-      System.out.println("U");
-      System.out.println(new Matrix(uData));
+      
       //gauss elimination
       for(int i = 0; i<height; i++){
          //pivot
-         System.out.println("before pivot");
-         System.out.println("L");
-         System.out.println(new Matrix(lData));
-         System.out.println("P");
-         System.out.println(new Matrix(pData));
-         System.out.println("U");
-         System.out.println(new Matrix(uData));
+         
          float val = Math.abs(uData[i][i]);
          int targetIndex = i;
          for(int j = i+1; j<height; j++){
@@ -796,13 +784,7 @@ public class Matrix{
          for(int j = i; j<height; j++){
             lData[j][i] = uData[j][i];
          }
-         System.out.println("after pivot");
-         System.out.println("L");
-         System.out.println(new Matrix(lData));
-         System.out.println("P");
-         System.out.println(new Matrix(pData));
-         System.out.println("U");
-         System.out.println(new Matrix(uData));
+         
          //eliminate
          for(int j = i+1; j<height; j++){
             float mult = uData[j][i]/uData[i][i];
@@ -810,13 +792,7 @@ public class Matrix{
                uData[j][k] = uData[j][k]-(uData[i][k]*mult);
             }
          }
-         System.out.println("after elimination");
-         System.out.println("L");
-         System.out.println(new Matrix(lData));
-         System.out.println("P");
-         System.out.println(new Matrix(pData));
-         System.out.println("U");
-         System.out.println(new Matrix(uData));
+         
       }
       for(int i = 0; i<width; i++){
          float mult = 1/lData[i][i];

@@ -95,53 +95,96 @@ public class Simplex{
       if(points.length != (points[0].length()+1)){
          return;
       }
-      shift = new Vector(points[0].getCoords());
+      shift = new Vector(points[points.length-1].getCoords());
       float[][] mdata = new float[points.length-1][points.length-1];
       for(int i = 0; i<mdata.length; i++){
          for(int j = 0; j<mdata[i].length; j++){
-            mdata[i][j] = points[j+1].getCoords()[i]-points[0].getCoords()[i];
+            mdata[i][j] = points[j].getCoords()[i]-points[points.length-1].getCoords()[i];
          }
       }
       //lpu decomp
       Matrix m = new Matrix(mdata);
+      System.out.println("m:");
+      System.out.println(m);
       Matrix[] decomp = m.LPUDecomp();
       lBaryMatrix = decomp[0];
       pBaryMatrix = decomp[1];
       uBaryMatrix = decomp[2];
    }
-/** Returns whether or not Point p is within this Simplex.
+   /** gets the point in barycentric coordinates
+   *  @param p the Point to translate
+   *  @return a vector of the amount of each point of this simplex, filled with zeros if not possible
+   */
+   public Vector getBarycentricCoords(Point p){
+      //set up matrix
+      if(lBaryMatrix == null){
+         initBaryCalc();
+      }
+      System.out.println("L:");
+      System.out.println(lBaryMatrix);
+      System.out.println("U:");
+      System.out.println(uBaryMatrix);
+      System.out.println("P:");
+      System.out.println(pBaryMatrix);
+      System.out.println("shift");
+      System.out.println(shift);
+      if(points.length != (points[0].length()+1)){
+         return new Vector(new float[points.length]);
+      }
+      //set up solution
+      float[] dat = new Vector(points[points.length-1], p).getCoords();
+      System.out.println("dat");
+      System.out.println(new Vector(dat));
+      float[] sol = new float[points.length];
+      //p
+      for(int i = 0; i<sol.length-1; i++){
+         for(int j = 0; j<dat.length; j++){
+            if(Float.compare(pBaryMatrix.getData()[i][j], 1) == 0){
+               sol[i] = dat[j];
+               break;
+            }
+         }
+      }
+      dat = sol;
+      sol = new float[points.length];
+      //L
+      System.out.println(lBaryMatrix);
+      System.out.println(new Vector(dat));
+      for(int i = 0; i<lBaryMatrix.getHeight(); i++){
+         sol[i] = dat[i];
+         float sum = 0;
+         for(int j = 0; j<i; j++){
+            sum += lBaryMatrix.getData()[i][j]*sol[j];
+         }
+         sol[i] -= sum;
+         sol[i] /= lBaryMatrix.getData()[i][i];
+      }
+      dat = sol;
+      sol = new float[points.length];
+      //U
+      for(int i = uBaryMatrix.getHeight()-1; i>=0; i--){
+         sol[i] = dat[i];
+         float sum = 0;
+         for(int j = i+1; j<uBaryMatrix.getWidth(); j++){
+            sum += lBaryMatrix.getData()[i][j]*sol[j];
+         }
+         sol[i] -= sum;
+         sol[i] /= uBaryMatrix.getData()[i][i];
+      }
+      sol[sol.length-1] = 1;
+      float sum = 0;
+      for(int i = 0; i<sol.length-1; i++){
+         sum += sol[i];
+      }
+      sol[sol.length-1] -= sum;
+      Vector solVec = new Vector(sol);
+      return solVec;
+   }
+   /** Returns whether or not Point p is within this Simplex.
 * Algorithm from https://stackoverflow.com/questions/21819132/how-do-i-check-if-a-simplex-contains-the-origin by ellisbben
 * @param p The point to check.
 * @return boolean of whether the point is within this Simplex.
 */
-   public Vector getBarycentricCoords(Point p){
-      //set up matrix
-      int datWidth = points.length;
-      int datHight = points[0].getCoords().length+1;
-      float[][] matData = new float[datWidth][datHight];
-      for(int i = 0; i<points.length; i++){
-         float[] currentPoint = points[i].getCoords();
-         for(int j = 0; j<currentPoint.length; j++){
-            matData[i][j] = currentPoint[j];
-         }
-         matData[i][currentPoint.length] = 1;
-      }
-      matData[points.length-1][points[0].getCoords().length] = 1;
-      Matrix m = new Matrix(matData);
-      //set up solution
-      float[] sol = new float[datHight];
-      for(int i = 0; i<sol.length-1; i++){
-         if(i < p.length()){
-            sol[i] = p.getCoords()[i];
-         } else {
-            sol[i] = 0;
-         }
-      }
-      sol[sol.length-1] = 1;
-      Vector solVec = new Vector(sol);
-      Vector result = m.solve(solVec);
-      return result;
-   }
    public boolean isWithin(Point p){
       //shift points
       Point[] ps = new Point[points.length];
