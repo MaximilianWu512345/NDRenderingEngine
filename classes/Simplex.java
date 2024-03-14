@@ -6,6 +6,9 @@ public class Simplex {
 /** Points in this Simplex */
    private Point[] points;
    
+/** Corrisponding points on texture **/
+   private Point[] texturePoints;
+   
 /** Plane in this Simplex */
    private Plane surface;
    
@@ -17,7 +20,8 @@ public class Simplex {
 */
    public Simplex(Point[] vertex){
       setPoints(vertex);
-      t = new ConstentTexture(Color.RED, vertex.length-1);
+      t = new ConstentTexture(Color.RED, new int[vertex.length]);
+
    }
    
    /** Creates a new Simplex with points of vertex.
@@ -34,7 +38,13 @@ public class Simplex {
 */
    public Simplex(Point[] vertex, Color c){
       setPoints(vertex);
-      t = new ConstentTexture(c, vertex.length-1);
+      t = new ConstentTexture(c, new int[vertex.length]);
+      Point[] textPoints = new Point[vertex.length];
+      for(int i = 0; i<textPoints.length; i++){
+         textPoints[i] = new Point(new float[vertex[0].length()]);
+      }
+      setTexturePoints(textPoints);
+
    }
    
 /** Sets points to be vertex.
@@ -42,9 +52,17 @@ public class Simplex {
 */
    public void setPoints(Point[] vertex){
       points = vertex;
+      if(vertex.length == 0){
+         surface = null;
+         return;
+      }
+      if(vertex.length > vertex[0].getCoords().length){
+         surface = null;
+         return;
+      }
       Vector[] temp = new Vector[vertex.length-1];
       for(int i = 1; i<vertex.length; i++){
-         float[] temp2 = new float[vertex.length];
+         float[] temp2 = new float[vertex[0].length()];
          for(int j = 0; j<vertex[0].length(); j++){
             temp2[j] = vertex[0].getCoords()[j];
          }
@@ -55,6 +73,11 @@ public class Simplex {
       }
       
       surface = new Plane(vertex[0], temp);
+      Point[] textPoints = new Point[vertex.length];
+      for(int i = 0; i<textPoints.length; i++){
+         textPoints[i] = new Point(new float[vertex[0].length()]);
+      }
+      setTexturePoints(textPoints);
    }
    
 /** Returns the points of this Simplex.
@@ -63,8 +86,97 @@ public class Simplex {
    public Point[] getPoints(){
       return points;
    }
-   
-/** Returns whether or not Point p is within this Simplex.
+   /** Returns the texture points of this simplex
+   *@return Point[] of the texture poitns of this simplex
+   */
+   public Point[] getTexturePoints(){
+      return texturePoints;
+   }
+   public void setTexturePoints(Point[] texturePoints){
+      this.texturePoints = texturePoints;
+   }
+   private Matrix lBaryMatrix;
+   private Matrix pBaryMatrix;
+   private Matrix uBaryMatrix;
+   private Vector shift;
+   /** sets up Simplex for barycentric corodinate calculations
+   */
+   public void initBaryCalc(){
+      if(points.length != (points[0].length()+1)){
+         return;
+      }
+      shift = new Vector(points[points.length-1].getCoords());
+      float[][] mdata = new float[points.length-1][points.length-1];
+      for(int i = 0; i<mdata.length; i++){
+         for(int j = 0; j<mdata[i].length; j++){
+            mdata[i][j] = points[j].getCoords()[i]-points[points.length-1].getCoords()[i];
+         }
+      }
+      //lpu decomp
+      Matrix m = new Matrix(mdata);
+      Matrix[] decomp = m.LPUDecomp();
+      lBaryMatrix = decomp[0];
+      pBaryMatrix = decomp[1];
+      uBaryMatrix = decomp[2];
+   }
+   /** gets the point in barycentric coordinates
+   *  @param p the Point to translate
+   *  @return a vector of the amount of each point of this simplex, filled with zeros if not possible
+   */
+   public Vector getBarycentricCoords(Point p){
+      //set up matrix
+      if(lBaryMatrix == null){
+         initBaryCalc();
+      }
+      if(points.length != (points[0].length()+1)){
+         return new Vector(new float[points.length]);
+      }
+      //set up solution
+      float[] dat = new Vector(points[points.length-1], p).getCoords();
+      float[] sol = new float[points.length];
+      //p
+      for(int i = 0; i<sol.length-1; i++){
+         for(int j = 0; j<dat.length; j++){
+            if(Float.compare(pBaryMatrix.getData()[i][j], 1) == 0){
+               sol[i] = dat[j];
+               break;
+            }
+         }
+      }
+      dat = sol;
+      sol = new float[points.length];
+      //L
+      for(int i = 0; i<lBaryMatrix.getHeight(); i++){
+         sol[i] = dat[i];
+         float sum = 0;
+         for(int j = 0; j<i; j++){
+            sum += lBaryMatrix.getData()[i][j]*sol[j];
+         }
+         sol[i] -= sum;
+         sol[i] /= lBaryMatrix.getData()[i][i];
+      }
+      dat = sol;
+      sol = new float[points.length];
+      //U
+      for(int i = uBaryMatrix.getHeight()-1; i>=0; i--){
+         sol[i] = dat[i];
+         float sum = 0;
+         for(int j = i+1; j<uBaryMatrix.getWidth(); j++){
+            sum += uBaryMatrix.getData()[i][j]*sol[j];
+         }
+         sol[i] -= sum;
+         sol[i] /= uBaryMatrix.getData()[i][i];
+      }
+      sol[sol.length-1] = 1;
+      float sum = 0;
+      for(int i = 0; i<sol.length-1; i++){
+         sum += sol[i];
+      }
+      sol[sol.length-1] -= sum;
+      Vector solVec = new Vector(sol);
+      return solVec;
+   }
+   /** Returns whether or not Point p is within this Simplex.
 * Algorithm from https://stackoverflow.com/questions/21819132/how-do-i-check-if-a-simplex-contains-the-origin by ellisbben
 * @param p The point to check.
 * @return boolean of whether the point is within this Simplex.
@@ -133,15 +245,15 @@ public class Simplex {
       return true;
    }
    
-/** Returns the Color of this Simplex.
-* @return Color of this Simplex.
+/** Returns the Texture of this Simplex.
+* @return Texture of this Simplex.
 */
    public Texture getTexture(){
       return t;
    }
    
-/** Sets the Color of this Simplex.
-* @param c The color to set.
+/** Sets the Texture of this Simplex.
+* @param t The texture to set.
 */
    public void setTexture(Texture t){
       this.t = t;
@@ -151,6 +263,26 @@ public class Simplex {
       return surface;
    }
    
+   /** gets color of this simplex at specifyed location definde by points of simplex
+   *@param v The location to look at in terms of how much of each vertex, values between 1 and 0, must have length equal to the number of vertexes
+   *@return Color The color at the location, return null if outside of texture bounds
+   */
+   public Color getColor(float[] v){
+      if(!t.placeMatters()){
+         return t.getColor(null);
+      }
+      int[] texBound = t.getBounds();
+      Vector texLoc = new Vector(new float[texBound.length]);
+      for(int i = 0; i<v.length; i++){
+         texLoc.add(new Vector(texturePoints[i].getCoords()).scale(v[i]));
+      }
+      for(int i = 0; i<texLoc.length(); i++){
+         if(texLoc.getCoords()[i] <= texBound[i]){
+            return null;
+         }
+      }
+      return t.getColor(new Point(texLoc.getCoords()));
+   }
 /** Translates all Points in this Simplex with coords.
 * @param coords The float[] to translate Points in this Simplex with.
 */
@@ -263,6 +395,12 @@ public class Simplex {
          temp += "\n\t" + tabs + points[points.length - 1];
       }
       temp += "\n" + tabs + "}\n" + (surface == null ? tabs + null : surface.toString(1 + count)) + "\n" + tabs + t + "\n" + lastTab + "]";
+      if(surface != null){
+         temp += "\n" + tabs + "}\n" + surface.toString(1 + count) + "\n" + tabs + t + "\n" + lastTab + "]";
+      } else {
+         temp += "\n" + tabs + "}\nnull\n" + tabs + t + "\n" + lastTab + "]";
+      }
+
       return temp;
    }
    

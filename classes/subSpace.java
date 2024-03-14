@@ -1,8 +1,6 @@
 public class subSpace{
    protected Vector[] dir;
-   protected Point p;
-   public subSpace(Point p, Vector[] dir){
-      this.p = p;
+   public subSpace(Vector[] dir){
       this.dir = dir;
    }
    public subSpace(){
@@ -34,7 +32,7 @@ public class subSpace{
       float[] adjtarg = new float[size];
       for(int i = 0; i<size; i++){
          if(i<target.length()){
-            adjtarg[i] = target.getCoords()[i] - p.getCoords()[i];
+            adjtarg[i] = target.getCoords()[i];
          } else {
             break;
          }
@@ -60,9 +58,6 @@ public class subSpace{
    }
    public subSpace intersect(subSpace s){
       return null;
-   }
-   public Point getPos(){
-      return p;
    }
    public Vector[] getDir(){
       return dir;
