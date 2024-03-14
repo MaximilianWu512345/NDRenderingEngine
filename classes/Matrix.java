@@ -334,7 +334,7 @@ public class Matrix{
    //returns null if there is no solution or infitite solutions
    public Vector solve(Vector v){
       Matrix aug = AugmentedMatrix(v);
-      Matrix rref = aug.getRREF();
+      Matrix rref = aug.getRREF().getMatrix();
       Vector[] allEq = rref.toVectors();
       Vector result = null;
       //check for multiple or impossible
@@ -543,7 +543,7 @@ public class Matrix{
          }
          currentIndex = pickPivot(table, objFuncIndex);
          numPivots = 0;
-         System.out.println(new Matrix(table));
+         //System.out.println(new Matrix(table));
          while(currentIndex != -1){
          //pick row
             float q = -1;

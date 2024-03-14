@@ -1,9 +1,9 @@
-public class SubSpace{
+public class subSpace{
    protected Vector[] dir;
-   public SubSpace(Vector[] dir){
+   public subSpace(Vector[] dir){
       this.dir = dir;
    }
-   public SubSpace(){
+   public subSpace(){
    
    }
    public boolean isOnSubspace(Point target){
@@ -56,7 +56,7 @@ public class SubSpace{
       }
       return true;
    }
-   public SubSpace intersect(SubSpace s){
+   public subSpace intersect(subSpace s){
       return null;
    }
    public Vector[] getDir(){

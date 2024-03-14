@@ -75,7 +75,7 @@ public class Engine extends JFrame {
 */
    public static void main(String[] args) {
       // Create the engine and camera, start the program.
-  /* max test code
+  /* max test code*/
       int dimention = 3;
       CreateEngine();
       Point screenPos = new Point(new float[dimention]);
@@ -87,8 +87,8 @@ public class Engine extends JFrame {
       axis2[2] = 10f/900f;
       axis[0] = new Vector(axis1);
       axis[1] = new Vector(axis2);
-      SubSpace screenDir = new SubSpace(axis);
-      AffineSubspace screen = new AffineSubspace(screenDir, screenPos);
+      subSpace screenDir = new subSpace(axis);
+      AffineSubSpace screen = new AffineSubSpace(screenDir, screenPos);
       Point camPos = new Point(new float[dimention]);
       int[] pixBounds = new int[]{900, 900};
       camera = new CameraRastorizationV2(camPos, screen, pixBounds);
@@ -110,7 +110,6 @@ public class Engine extends JFrame {
       }
       */
       //manuel Input
-      
       Simplex[] manSimplex = new Simplex[1];
       Point[] parr1 = new Point[dimention];
       parr1[0] = new Point(new float[]{3,3,3});
@@ -118,10 +117,10 @@ public class Engine extends JFrame {
       parr1[2] = new Point(new float[]{4,-3,-3});
       manSimplex[0] = new Simplex(parr1);
       scene.add(new Mesh(manSimplex, dimention));
-     */
-   /*
+     
+   
       // Create the engine, start the program.
-      
+      /*
       CreateEngine();
       CreateCamera();
       Simplex[] simplexes = new Simplex[100];
@@ -139,7 +138,7 @@ public class Engine extends JFrame {
 
       }
       Instance.renderSimplex(simplexes[0], randomColor());
-      
+      */
       //set up
       Mesh[] sceneArr = new Mesh[scene.size()];
       sceneArr = scene.toArray(sceneArr);
@@ -159,7 +158,7 @@ public class Engine extends JFrame {
       Instance.renderImage(pixelArray);
       
 
-      */
+      
    }
    
    public static Color[] colors = { Color.RED, Color.BLUE, Color.BLACK, Color.WHITE, Color.GREEN, Color.YELLOW, Color.GRAY};
@@ -173,7 +172,8 @@ public class Engine extends JFrame {
    }
    
    public static Camera CreateCamera() {
-      return Camera = new CameraRastorizationV2(new Point(/*camPos*/new float[3]), /*camDirection*/new Vector(new float[] {1,0,0}), 900, 900);
+      //return new CameraRastorizationV2(new Point(/*camPos*/new float[3]), /*camDirection*/new Vector(new float[] {1,0,0}), 900, 900);
+      return null;
 
    }
    public static Simplex generateRandomSimplex(int dimention, float bounds){

@@ -3,7 +3,7 @@ import java.util.*;
 import java.lang.*;
 public class CameraRastorizationV2 implements Camera{
    protected Point c;
-   protected AffineSubspace s;
+   protected AffineSubSpace s;
    protected Matrix m;
    Vector[] v; //could be removeable
    Vector[] u;//could be removeable
@@ -16,7 +16,7 @@ public class CameraRastorizationV2 implements Camera{
    protected int g = 0;
    protected int ms = 0;
    protected int n = 0;
-   public CameraRastorizationV2 (Point c, AffineSubspace s, int[] bounds){
+   public CameraRastorizationV2 (Point c, AffineSubSpace s, int[] bounds){
       this.s = s;
       this.c = c;
       this.bounds = bounds;
@@ -29,9 +29,13 @@ public class CameraRastorizationV2 implements Camera{
 * @param w the new width of the camera.
 * @param h the new height of the camera.
 */
-   public void setData(Point position, AffineSubspace s){
+   public void setData(Point position, AffineSubSpace s){
       c = position;
       this.s = s;
+   }
+   /*implement later*/
+   public void setData(Point position, Vector V, int width, int height){
+   
    }
    public void reCalculateMatrix(Simplex s){
       g = s.getPoints().length;
