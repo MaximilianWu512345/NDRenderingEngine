@@ -26,6 +26,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.JComboBox;
 
 /** JPanel holding all Components */
 public class EnginePanel extends JPanel {
@@ -80,7 +81,7 @@ public class EnginePanel extends JPanel {
    private void addComponents(int width, int height) {
       dictComponents.put(PanelType.MENU, new MenuHelper(0, 0, 0, 0));
       dictComponents.put(PanelType.RENDER, new RenderHelper(OFFSET, 0, width, height));
-      //dictComponents.put(PanelType.BUTTON, new ButtonHelper(OFFSET, height * 9 / 10, width, height / 10));
+      dictComponents.put(PanelType.BUTTON, new ButtonHelper(OFFSET, height * 9 / 10, width, height / 10));
       for (Component c : dictComponents.values()) {
          JComponent[] array = c.getComponents();
          if (array != null) {
@@ -106,8 +107,6 @@ public class EnginePanel extends JPanel {
    public JMenuBar getMenuBar() {
       return ((MenuHelper)dictComponents.get(PanelType.MENU)).getMenuBar();
    }
-   
-   
    
    public void clearRenderImage() {
       ((RenderHelper)dictComponents.get(PanelType.RENDER)).clear();
@@ -222,7 +221,6 @@ public class EnginePanel extends JPanel {
          initialize(w, h);
       }
       
-      /** */
       private void initialize(int w, int h) {
          renderedImage = new BufferedImage(w, h, BufferedImage.TYPE_4BYTE_ABGR);
          imageObserver = new Canvas();
@@ -233,9 +231,7 @@ public class EnginePanel extends JPanel {
             }
          }
       }
-      
-      
-     
+   
       public Color[][] getColors() {
          Color[][] colors = new Color[renderedImage.getWidth()][renderedImage.getHeight()];
          for (int i = 0; i < renderedImage.getWidth(); i++) {
@@ -480,16 +476,7 @@ public class EnginePanel extends JPanel {
 /** Container class to hold information about buttons. Might be obsolete, could remove later. */
    protected class ButtonHelper extends Component {
    
-      /** Enum of ButtonTypes to index the dictButtons Hashtable. */
-      public enum ButtonType {
-         /** Indexes the left Button */
-         LEFT,
-         /** Indexes the right Button */
-         RIGHT
-      }
-      
-      /** Hashtable dictionary of Buttons, indexed with ButtonType. */
-      protected Hashtable<ButtonType, Button> dictButtons;
+      protected JComboBox meshes;
    
       /** Creates new ButtonHelper with location (x, y) and size (w, h).
       * @param x the x-coord of the location.
@@ -500,35 +487,32 @@ public class EnginePanel extends JPanel {
       public ButtonHelper(int x, int y, int w, int h) {
          super(x, y, w, h);
          initialize();
-         addButtons(width, height);
       }
       
       /** Initializes the dictButtons hashtable */
       private void initialize() {
-         dictButtons = new Hashtable<ButtonType, Button>();
-      }
-      
-      /** Adds and initializes Buttons to the dictButtons hashtable.
-      * @param width the width to be used for adding Buttons.
-      * @param height the height to be used for adding Buttons.
-      */
-      private void addButtons(int width, int height) {
-         dictButtons.put(ButtonType.LEFT, new Button(x, y, width / 2, height, Color.red, "-"));
-         dictButtons.put(ButtonType.RIGHT, new Button(x + width / 2, y, width / 2, height, Color.green, "+"));
+         String[] meshStrings = new String[] { "Meshes", "Hypercube", "Hypersphere" };
+         meshes = new JComboBox(meshStrings);
+         meshes.addActionListener(new Listener_Meshes());
+         meshes.setLocation(this.getX(), this.getY());
+         meshes.setSize(this.getWidth() / 10, this.getHeight() / 5);
       }
       
       /** Returns an array of every Button in dictButtons.
       * @return an array containing every Button in dictButtons.
       */
-      public Button[] getComponents() {
-         return dictButtons.values().toArray(new Button[dictButtons.values().size()]);
+      public JComponent[] getComponents() {
+         return new JComponent[] { meshes };
       }
       
-      /** Returns dictButtons.
-      * @return the hashtable of buttons, to be indexed with ButtonType.
-      */
-      public Hashtable<ButtonType, Button> getDictionary() {
-         return dictButtons;
+      protected class Listener_Meshes implements ActionListener
+      {	      
+         public void actionPerformed(ActionEvent e)
+         {
+            String actionName = (String)((JComboBox)e.getSource()).getSelectedItem();
+            System.out.println(actionName);
+         }
       }
+   
    }
 }
