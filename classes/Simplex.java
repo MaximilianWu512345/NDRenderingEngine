@@ -1,7 +1,7 @@
 import java.awt.Color;
 
 /** Simplex class */
-public class Simplex{
+public class Simplex {
 
 /** Points in this Simplex */
    private Point[] points;
@@ -22,6 +22,14 @@ public class Simplex{
       setPoints(vertex);
       t = new ConstentTexture(Color.RED, new int[vertex.length]);
 
+   }
+   
+   /** Creates a new Simplex with points of vertex.
+* @param vertex the Point[] vertex to set points to.
+*/
+   public Simplex(Point[] vertex, boolean doNotSetPoints){
+      points = vertex;
+      t = new ConstentTexture(Color.RED, vertex.length-1);
    }
    
 /** Creates a new Simplex with points of vertex.
@@ -58,8 +66,8 @@ public class Simplex{
          for(int j = 0; j<vertex[0].length(); j++){
             temp2[j] = vertex[0].getCoords()[j];
          }
-         for(int j = 0; j < temp.length; j++){
-            temp2[j] -= vertex[i].getCoords()[j];
+         for(int j = 1; j < temp.length; j++){
+            temp2[j - 1] -= vertex[i].getCoords()[j-1];
          }
          temp[i-1] = new Vector(temp2);
       }
@@ -250,6 +258,11 @@ public class Simplex{
    public void setTexture(Texture t){
       this.t = t;
    }
+   
+   public Plane getSurface() {
+      return surface;
+   }
+   
    /** gets color of this simplex at specifyed location definde by points of simplex
    *@param v The location to look at in terms of how much of each vertex, values between 1 and 0, must have length equal to the number of vertexes
    *@return Color The color at the location, return null if outside of texture bounds
@@ -295,6 +308,7 @@ public class Simplex{
          p.rotate(degrees, origin);
       setPoints(points);
    }
+   
    public float BoundingBoxDistance(){
       float[] max = new float[points[0].length()];
       float[] min = new float[points[0].length()];
@@ -329,6 +343,30 @@ public class Simplex{
       }
       return (float) Math.sqrt(sum);
    }
+   
+      // min = [0], max = [1];
+      public Point[] BoundingBox(){
+      float[] max = new float[points[0].length()];
+      float[] min = new float[points[0].length()];
+      for(int i = 0; i<max.length; i++){
+         max[i] = points[0].getCoords()[i];
+         min[i] = points[0].getCoords()[i];
+      }
+      for(int i = 1; i<points.length; i++){
+         Point p = points[i];
+         for(int j = 0; j<max.length; j++){
+            if(p.getCoords()[j]>max[j]){
+               max[j] = p.getCoords()[j];
+            } else if (p.getCoords()[j]<min[j]){
+               min[j] = p.getCoords()[j];
+            }
+         }
+      }
+      Point[] box = new Point[2];
+      box[0] = new Point(min);
+      box[1] = new Point(max);
+      return box;
+   }
 /** Generic toString() method.
 * @return String describing this Object.
 */
@@ -349,13 +387,14 @@ public class Simplex{
          tabs += "\t";
          lastTab += "\t";
       }
-      String temp = lastTab + "Simplex (Point[] points, Plane surface, Color color): [\n" + tabs +"{";
+      String temp = lastTab + "Simplex (Point[] points, Plane surface, Color color): [\n" + tabs + "{";
       if (points != null && points.length > 0) {
          for (int i = 0; i < points.length - 1; i++) {
             temp += "\n\t" + tabs + points[i] + ", ";
          }
          temp += "\n\t" + tabs + points[points.length - 1];
       }
+      temp += "\n" + tabs + "}\n" + (surface == null ? tabs + null : surface.toString(1 + count)) + "\n" + tabs + t + "\n" + lastTab + "]";
       if(surface != null){
          temp += "\n" + tabs + "}\n" + surface.toString(1 + count) + "\n" + tabs + t + "\n" + lastTab + "]";
       } else {

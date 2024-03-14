@@ -80,8 +80,12 @@ public class Matrix{
    * @param m must be multipliable with this matrix
    * @return a Matrix or null when multiplication fails
    */
-   // aparapi
    public Matrix mult(Matrix m){
+      /* int sizeGPU = 600; */
+      /* If same size and total size >= sizeGPU * sizeGPU, then GPU is faster */
+      /*if (width == height && m.width == width && m.height == height && width >= sizeGPU && height >= sizeGPU)
+         return multGPU(m);
+         */
       int nWidth = m.width;
       int nHeight = height;
       if(m.height == width){
@@ -100,11 +104,28 @@ public class Matrix{
       }
       return null;
    }
+   
+      /**
+   * Multiplys this matrix with m
+   * @param m must be multipliable with this matrix
+   * @return a Matrix or null when multiplication fails
+   */
+   // ASSUME BOTH ARE SAME SIZE
+   public Matrix multGPU(Matrix m){
+      float[] dataOne = this.toArray();
+      float[] dataTwo = m.toArray();
+      float[] array = new float[dataOne.length];
+      OpenCL.RunFile("MatrixMultiplication.c", "matrixMultiplyKernel", array.length, new Object[] { dataOne, dataTwo, new int[] { data.length } }, new Object[] { array });
+      float[][] matrixArray = Matrix.toArrays(array, data.length, data[0].length);
+      return new Matrix(matrixArray);
+   }
+   
    /**
    * Divides this matrix by m
    * @param m must be dividable with this matrix
    * @return a Matrix
    */
+   // GPU tested, CPU does better in all cases no matter what size
    public Matrix div(float m){
       float[][] newData = new float[width][height];
       for(int i = 0; i<height; i++){
@@ -114,6 +135,7 @@ public class Matrix{
       }
       return new Matrix(newData);
    }
+   
    /**
    * genrates a array of vectors with a vector for each row of the matrix
    * @return a vector[]
@@ -282,6 +304,17 @@ public class Matrix{
       return temp;
    }
    
+   // assume each matrix width/height is equal
+   public Point toPoint() {
+      float[] coords = new float[data.length * data[0].length];
+      for (int i = 0; i < data.length; i++) {
+         for (int x = 0; x < data[0].length; x++) {
+            coords[i * data[0].length + x] = data[i][x];
+         }
+      }
+      return new Point(coords);
+   }
+   
 /** Generic toString() method.
 * @return String describing this Object.
 */
@@ -322,6 +355,29 @@ public class Matrix{
       rotData[axis2][axis1] = (-1f)*(float) Math.sin(theta);
       return new Matrix(rotData);
    }
+   public float[] toArray() {
+      return Matrix.toArray(this.data);
+   }
+   
+   public static float[] toArray(float[][] data) {
+      float[] temp = new float[data.length * data[0].length];
+      for (int i = 0; i < data.length; i++) {
+         for (int x = 0; x < data[i].length; x++) {
+            int index = i * data[i].length + x;
+            temp[index] = data[i][x];
+         }
+      }
+      return temp;
+   }
+   
+   public static float[][] toArrays(float[] data, int width, int height) {
+      float[][] matrixArray = new float[width][height];
+      for (int i = 0; i < matrixArray.length; i++) {
+         for (int x = 0; x < matrixArray[i].length; x++) {
+            matrixArray[x][i] = data[i * matrixArray[i].length + x];
+         }
+      }
+      return matrixArray;
    public Matrix transpose(){
       float[][] temp = new float[height][width];
       for(int i = 0; i<width; i++){
