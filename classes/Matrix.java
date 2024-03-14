@@ -378,6 +378,7 @@ public class Matrix{
          }
       }
       return matrixArray;
+   }
    public Matrix transpose(){
       float[][] temp = new float[height][width];
       for(int i = 0; i<width; i++){

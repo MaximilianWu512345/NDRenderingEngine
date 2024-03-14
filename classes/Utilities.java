@@ -120,7 +120,7 @@ public class Utilities {
       Simplex[] simplexes = new Simplex[ToInt(temp[1])];
       int index = 2;
       for (int i = 0; i < simplexes.length; i++) {
-         simplexes[i] = new Simplex(new Point[ToInt(temp[index + 1])], true);
+         simplexes[i] = new Simplex(new Point[ToInt(temp[index + 1])]);
          simplexes[i].setTexture(LoadTexture(temp[index].replaceAll("\"", "")));
          index += 2;
       }

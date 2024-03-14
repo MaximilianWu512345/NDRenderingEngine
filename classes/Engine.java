@@ -1,6 +1,7 @@
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import java.awt.Color;
+import java.util.ArrayList;
 
 /** JFrame engine that creates a graphical application. */
 public class Engine {
@@ -34,6 +35,7 @@ public class Engine {
       AffineSubSpace screen = new AffineSubSpace(screenDir, screenPos);
       Point camPos = new Point(new float[dimention]);
       int[] pixBounds = new int[]{900, 900};
+      Camera camera;
       camera = new CameraRastorizationV2(camPos, screen, pixBounds);
       
       //generate scene
