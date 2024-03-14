@@ -34,7 +34,7 @@ public class Plane extends AffineSubSpace{
       s = new subSpace(dir);
    }
    public Plane(Point p, Vector[] dir){
-      super(new subSpace(dir),p);
+      super(p, new subSpace(dir));
    }
 /** Returns the Point position of this Plane.
 * @return the position of this Plane.

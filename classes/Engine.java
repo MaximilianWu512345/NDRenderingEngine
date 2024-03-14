@@ -81,6 +81,8 @@ public class Engine {
       }
 
       panel.renderImage(pixelArray);
+      frame.revalidate();
+      frame.repaint();
    }
    
    public static Color[] colors = { Color.RED, Color.BLUE, Color.BLACK, Color.WHITE, Color.GREEN, Color.YELLOW, Color.GRAY};

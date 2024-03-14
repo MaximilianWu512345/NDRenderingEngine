@@ -4,7 +4,7 @@ public class AffineSubSpace{
    public AffineSubSpace(subSpace s, Point p){
       this.s = s;
       this.p = p;
-   }
+   }   
    public Point getPoint(){
       return p;
    }
