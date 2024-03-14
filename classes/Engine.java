@@ -28,7 +28,7 @@ public class Engine {
       float[] axis1 = new float[dimention];
       float[] axis2 = new float[dimention];
       axis1[1] = 15f/900f;
-      axis2[2] = 10f/900f;
+      axis2[2] = 2f/900f;
       axis[0] = new Vector(axis1);
       axis[1] = new Vector(axis2);
       subSpace screenDir = new subSpace(axis);
@@ -57,8 +57,8 @@ public class Engine {
       //manuel Input
       Simplex[] manSimplex = new Simplex[1];
       Point[] parr1 = new Point[dimention];
-      parr1[0] = new Point(new float[]{3,3,3});
-      parr1[1] = new Point(new float[]{7,0,4});
+      parr1[0] = new Point(new float[]{3,3,-3});
+      parr1[1] = new Point(new float[]{0,0,0});
       parr1[2] = new Point(new float[]{4,-3,-3});
       manSimplex[0] = new Simplex(parr1);
       scene.add(new Mesh(manSimplex, dimention));

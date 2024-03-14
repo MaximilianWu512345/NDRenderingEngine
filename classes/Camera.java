@@ -32,5 +32,5 @@ public interface Camera{
 */
    public Texture Project(Mesh[] o, Color triangleC, Color backgroundC);
 
-
+   
 }
