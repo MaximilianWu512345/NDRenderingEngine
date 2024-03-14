@@ -1,4 +1,5 @@
 /** Mesh class */
+import java.util.LinkedList;
 public class Mesh{
 /** Direction of this Camera */
    public Simplex[] faces;
@@ -37,5 +38,39 @@ public class Mesh{
          temp += faces[faces.length - 1].toString(1) + "\n";
       }
       return temp + "]";
+   }
+   
+   //conves hull generator
+   public Mesh(Point[] p){
+      setConvexHull(toVectors(p));
+   }
+   public Mesh(Vector[] v){
+      setConvexHull(v);
+   }
+   protected Vector[] toVectors(Point[] p){
+      Vector[] v = new Vector[p.length];
+      for(int i = 0; i<p.length; i++){
+         v[i] = new Vector(p[i].getCoords());
+      }
+      return v;
+   }
+   protected void setConvexHull(Vector[] v){
+      if(v.length == 0){
+         return;
+      }
+      int d = v[0].length();
+      if(v.length == 1){
+         faces = new Simplex[]{new Simplex(new Point[]{new Point(v[0].getCoords())})};
+         return;
+      }
+      faces = quickHull(v, d);   
+   }
+   protected Simplex[] quickHull(Vector[] v, int d){
+      LinkedList<Simplex> hull = new LinkedList<Simplex>();
+      //get inital dividing simplex
+      
+      Simplex[] result = new Simplex[hull.size()];
+      result = hull.toArray(result);
+      return result;
    }
 }

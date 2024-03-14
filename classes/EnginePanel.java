@@ -7,6 +7,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Canvas;
 import java.awt.image.BufferedImage;
+import java.awt.*;
 
 /** JPanel holding all Components */
 public class EnginePanel extends JPanel {

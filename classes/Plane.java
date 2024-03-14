@@ -1,6 +1,7 @@
 /** Plane class */
 import java.util.*;
-public class Plane extends AffineSubSpace{
+public class Plane extends AffineSubspace{
+
 /** The position of this Plane. */
 /** The norm of this Plane. */
    public Vector norm;
@@ -8,6 +9,7 @@ public class Plane extends AffineSubSpace{
 * @param p The position of the Plane.
 * @param norm The norm of the Plane.
 */
+
    public Plane(Point p, Vector norm){
       this.p = p;
       this.norm = norm;
@@ -29,7 +31,7 @@ public class Plane extends AffineSubSpace{
       dir = temp.toArray(dir);
    }
    public Plane(Point p, Vector[] dir){
-      super(p, dir);
+      super(new SubSpace(dir),p);
    }
 /** Returns the Point position of this Plane.
 * @return the position of this Plane.
@@ -37,7 +39,7 @@ public class Plane extends AffineSubSpace{
    public Point getPosition(){
       return p;
    }
-/** Returns the Vector norm of this Plane.
+/** Returns the Vector norm of this Plane.s
 * @return the norm of this Plane.
 */
    public Vector getNorm(){

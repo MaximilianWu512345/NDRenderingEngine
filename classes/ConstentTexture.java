@@ -1,29 +1,36 @@
 import java.awt.Color;
 public class ConstentTexture implements Texture{
-   private Color c;
-   private int d = 0;
-   public ConstentTexture(Color c, int d){
-      this.c = c;
-      this.d = d;
-   }
-   public int getDimention(){
-      return d;
+
+   private Color data;
+   private int[] bounds;
+   public ConstentTexture(Color data, int[] bounds){
+      this.data = data;
+      this.bounds = bounds;
    }
    public int[] getBounds(){
-      int[] bounds = new int[d];
-      for(int i = 0; i<bounds.length; i++){
-         bounds[i] = 2147483647;
-      }
       return bounds;
    }
    public Color getColor(Point p){
-      return c;
+      return data;
    }
-   public boolean setColor(Point p, Color c){
-      this.c = c;
-      return true;       
+   public void setBounds(int[] b){
+      bounds = b;
    }
-   public String toString(){
-      return c.toString();
+   private int getIndex(Point p){
+      int mult = 1;
+      int result = 0;
+      for(int i = 0; i<p.length(); i++){
+         int val = (int)p.getCoords()[i];
+         if(val>bounds[i]){
+            return -1;
+         }
+         result += mult*val;
+         mult *= bounds[i];
+      }
+      return result;
+   }
+   public boolean placeMatters(){
+      return false;
+
    }
 }
