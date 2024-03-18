@@ -31,10 +31,10 @@ public class Plane extends AffineSubSpace{
       
       Vector[] dir = new Vector[temp.size()];
       dir = temp.toArray(dir);
-      s = new subSpace(dir);
+      s = new SubSpace(dir);
    }
    public Plane(Point p, Vector[] dir){
-      super(new subSpace(dir),p);
+      super(new SubSpace(dir),p);
    }
 /** Returns the Point position of this Plane.
 * @return the position of this Plane.
