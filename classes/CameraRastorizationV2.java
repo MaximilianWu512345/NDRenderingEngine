@@ -235,15 +235,14 @@ public class CameraRastorizationV2 implements Camera{
                   //get depth
                   float[] actualPointDat = new float[bary.length()];
                   for(int i = 0; i<actualPointDat.length-1; i++){
-                     actualPointDat[i] = -1*projBoundingBoxMin[i];
+                     actualPointDat[i] = pixPos[i]-projBoundingBoxMin[i];
                   }
-                  Vector actualPoint = new Vector(actualPointDat);
                   for(int i = 0; i<currentPart.getPoints().length; i++){
-                     actualPoint = actualPoint.add((new Vector(currentPart.getPoints()[i].getCoords())).scale(bary.getCoords()[i]));
+                     actualPointDat[actualPointDat.length-1] += currentPart.getPoints()[i].getCoords()[actualPointDat.length-1]*bary.getCoords()[i];
                   }
                   
-                  Point zbuffPoint = new Point(actualPoint.getCoords());
-                  System.out.println("drawing pixel " + zbuffPoint.toString() + " color " + pixColor.toString());
+                  Point zbuffPoint = new Point(actualPointDat);
+                  //System.out.println("drawing pixel " + zbuffPoint.toString() + "pix Point" + (new Point(pixPos)).toString() + " color " + pixColor.toString());
                   zBuff.setColor(zbuffPoint, pixColor);
                   //next pixel
                   pixPos = incrementArray(pixPos, projBoundingBoxMax, projBoundingBoxMin, pixPos.length-1);

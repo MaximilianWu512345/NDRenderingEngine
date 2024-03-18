@@ -456,7 +456,7 @@ public class Matrix{
       for(int i = 0; i<width; i++){//phase 1
          float sum = 0;
          for(int j = 0; j<height; j++){
-            sum -= table[j][i];
+            sum += table[j][i];
          }
          table[th-1][i] = sum;
       }
@@ -470,7 +470,7 @@ public class Matrix{
       */
       //traverse
       int objFuncIndex = th-1;
-      int currentIndex = pickPivot(table, objFuncIndex);
+      int currentIndex = rvPickPivot(table, objFuncIndex);
       int[] basis = new int[height];
       float[] objFuncOrig = new float[tw];
       for(int i = 0; i<basis.length; i++){
@@ -522,16 +522,17 @@ public class Matrix{
          numPivots++;
          //basis changed
          basis[remove] = currentIndex;
-         currentIndex = pickPivot(table, objFuncIndex);
+         currentIndex = rvPickPivot(table, objFuncIndex);
          //check if can end early
          
       }
+      System.out.println(new Matrix(table));
       
       table[th-1][tw-1] = 0f;
       int newSize = 0;
-      float epsilon = 0.00001f;
+      float epsilon = -0.00001f;
       for(int i = 0; i<tw; i++){
-         if(Float.compare(table[th-1][i], epsilon)<0){
+         if(Float.compare(table[th-1][i], epsilon)>0){
             newSize++;
          }
       }
@@ -544,7 +545,7 @@ public class Matrix{
       int[] antiVariableShift = new int[tw];
       int currVariable = 0;
       for(int i = 0; i<tw; i++){
-         if(Float.compare(table[th-1][i], epsilon)>0){
+         if(Float.compare(table[th-1][i], epsilon)<0){
             count++;
             antiVariableShift[i] = -1;
          } else {
@@ -562,7 +563,7 @@ public class Matrix{
       float[][] temp = new float[th][newSize];
       int addCol = 0;
       for(int i = 0; i<tw; i++){
-         if(Float.compare(table[th-1][i], epsilon)<0){
+         if(Float.compare(table[th-1][i], epsilon)>0){
             for(int j = 0; j<th; j++){
                temp[j][addCol] = table[j][i];
             }
@@ -570,6 +571,7 @@ public class Matrix{
          }
       }
       int[] origBasisTemp = basis;
+      System.out.println(new Matrix(table));
       
       colLoop:for(int currentCol: col){
       //objective fucntion
@@ -579,6 +581,7 @@ public class Matrix{
                table[i][j] = temp[i][j];
             }
          }
+         System.out.println(new Matrix(table));
          basis = new int[origBasisTemp.length];
          for(int i = 0; i<basis.length; i++){
             basis[i] = origBasisTemp[i];
@@ -595,12 +598,18 @@ public class Matrix{
             }
          }
          float objMult = 1/(table[newTargetIndex][antiVariableShift[currentCol]]);
-         for(int j = 0; j<tw; j++){
-            table[th-1][j] = objMult*table[newTargetIndex][j];
+         table[th-1][currentCol] = -1;
+         for(int i = 0; i<basis.length; i++){
+            if(basis[i] == currentCol){ 
+               for(int j = 0; j<tw; j++){
+                  table[th-1][j] -= table[i][j];
+               }
+               break;
+            }
          }
          currentIndex = pickPivot(table, objFuncIndex);
          numPivots = 0;
-         //System.out.println(new Matrix(table));
+         System.out.println(new Matrix(table));
          while(currentIndex != -1){
          //pick row
             float q = -1;
@@ -644,6 +653,8 @@ public class Matrix{
          //basis changed
             basis[remove] = currentIndex;
             currentIndex = pickPivot(table, objFuncIndex);
+            System.out.println("pivot");
+            System.out.println(new Matrix(table));
          }
       
          System.out.println(new Matrix(table));
@@ -708,6 +719,7 @@ public class Matrix{
                   }
                }
             }
+            System.out.println(new Matrix(table));
             v = new float[width];
             for(int i = 0; i<basis.length; i++){
                v[variableShift[basis[i]]] = table[i][tw-1];
@@ -732,6 +744,18 @@ public class Matrix{
          }
       }
       return min;
+   }
+   private int rvPickPivot(float[][] t, int row){ // this is just for the LP solver
+      int max = -1;
+      float epsillon = 0.000001f;
+      for(int i = 0; i<t[row].length; i++){
+         if(t[row][i]>epsillon){
+            if(max == -1 || t[row][i]>t[row][max]){
+               max = i;
+            }
+         }
+      }
+      return max;
    }
    /** decomposed the matrix into LPU matrices
    * This matrix must be a square matrix
