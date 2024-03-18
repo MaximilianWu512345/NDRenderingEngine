@@ -1,14 +1,20 @@
 public class AffineSubSpace{
-   protected subSpace s;
    protected Point p;
-   public AffineSubSpace(subSpace s, Point p){
-      this.s = s;
+   protected SubSpace s;
+   public AffineSubSpace(SubSpace s, Point p){
       this.p = p;
-   }   
+      this.s = s;
+   }
    public Point getPoint(){
       return p;
    }
-   public subSpace getSubSpace(){
+   public void setPoint(Point p){
+      this.p = p;
+   }
+   public SubSpace getSubSpace(){
       return s;
+   }
+   public void setSubSpace(SubSpace s){
+      this.s = s;
    }
 }
