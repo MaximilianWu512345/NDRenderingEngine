@@ -31,7 +31,7 @@ public class Engine {
       axis2[2] = 2f/900f;
       axis[0] = new Vector(axis1);
       axis[1] = new Vector(axis2);
-      subSpace screenDir = new subSpace(axis);
+      SubSpace screenDir = new SubSpace(axis);
       AffineSubSpace screen = new AffineSubSpace(screenDir, screenPos);
       Point camPos = new Point(new float[dimention]);
       int[] pixBounds = new int[]{900, 900};
