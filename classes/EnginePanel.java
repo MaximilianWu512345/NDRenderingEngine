@@ -188,6 +188,8 @@ public class EnginePanel extends JPanel {
       else if (object instanceof Mesh) {
          ((RenderHelper)dictComponents.get(PanelType.RENDER)).setMesh((Mesh)object);
       }
+      this.revalidate();
+      this.repaint();
    }
 
 /** Paints EnginePanel and paints each component in dictComponents.

@@ -110,6 +110,12 @@ public class Simplex {
       pBaryMatrix = decomp[1];
       uBaryMatrix = decomp[2];
    }
+   /**
+   *
+   */
+   public boolean canGenBarycentricCoords(){
+      return true;
+   }
    /** gets the point in barycentric coordinates
    *  @param p the Point to translate
    *  @return a vector of the amount of each point of this simplex, filled with zeros if not possible
@@ -119,8 +125,8 @@ public class Simplex {
       if(lBaryMatrix == null){
          initBaryCalc();
       }
-      if(points.length != (points[0].length()+1)){
-         return new Vector(new float[points.length]);
+      if((points.length != (points[0].length()+1) || lBaryMatrix == null)){
+         return null;
       }
       //set up solution
       float[] dat = new Vector(points[points.length-1], p).getCoords();

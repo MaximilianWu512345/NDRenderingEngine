@@ -21,14 +21,16 @@ public class Engine {
       frame.setVisible(true);
       // Create the engine and camera, start the program.
   /* max test code*/
-      int dimention = 3;
-      Point screenPos = new Point(new float[dimention]);
+      int dimention = 4;
+      float[] camPosData = new float[dimention];
+      camPosData[3] = 0f;
+      Point screenPos = new Point(camPosData);
       screenPos.getCoords()[0] = 1;
       Vector[] axis = new Vector[2];
       float[] axis1 = new float[dimention];
       float[] axis2 = new float[dimention];
-      axis1[1] = 15f/900f;
-      axis2[2] = 10f/900f;
+      axis1[1] = 3f/900f;
+      axis2[2] = 2f/900f;
       axis[0] = new Vector(axis1);
       axis[1] = new Vector(axis2);
       SubSpace screenDir = new SubSpace(axis);
@@ -57,9 +59,10 @@ public class Engine {
       //manuel Input
       Simplex[] manSimplex = new Simplex[1];
       Point[] parr1 = new Point[dimention];
-      parr1[0] = new Point(new float[]{3,3,3});
-      parr1[1] = new Point(new float[]{7,0,4});
-      parr1[2] = new Point(new float[]{4,-3,-3});
+      parr1[0] = new Point(new float[]{1,1,0,0.5f});
+      parr1[1] = new Point(new float[]{1,0,0,0.5f});
+      parr1[2] = new Point(new float[]{2,0,1,0.5f});
+      parr1[3] = new Point(new float[]{2,0,1,-0.5f});
       manSimplex[0] = new Simplex(parr1);
       scene.add(new Mesh(manSimplex, dimention));
      
