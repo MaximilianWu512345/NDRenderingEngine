@@ -335,15 +335,20 @@ public class CameraRastorizationV2 implements Camera{
       }
       //reformat
       Point[] rawPoints = m.LPMaximum(col, sol);
-      Point[] tempPoints = new Point[rawPoints.length];
+      
+      LinkedList<Point> tempRepPoints = new LinkedList<Point>();
       for(int i = 0; i<rawPoints.length; i++){
          float[] data = new float[ms+1];
          for(int j = 0; j<ms; j++){
             data[j] = rawPoints[i].getCoords()[g+j] - rawPoints[i].getCoords()[g+j+ms];
          }
          data[ms] = rawPoints[i].getCoords()[2*ms+g];
-         tempPoints[i] = new Point(data);
+         if(tempRepPoints.indexOf(new Point(data)) == -1){
+            tempRepPoints.add(new Point(data));
+         }
       }
+      Point[] tempPoints = new Point[tempRepPoints.size()];
+      tempPoints = tempRepPoints.toArray(tempPoints);
       Simplex resultSimplex;
       if(tempPoints.length>0){
          resultSimplex = new Simplex(tempPoints);

@@ -91,4 +91,22 @@ public class Point {
       }
       return temp + "}]";
    }
+   /** equals method
+   *  @param p the point you want to compare to
+   *  @return true if p is the same point
+   */
+   public boolean equals(Point p){
+      if(coordinates.length != p.coordinates.length){
+         return false;
+      }
+      for(int i = 0; i<coordinates.length; i++){
+         if(Float.compare(coordinates[i], p.coordinates[i]) != 0){
+            return false;
+         }
+      }
+      return true;
+   }
+   public int hashCode(){
+      return 0;
+   }
 }

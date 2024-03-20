@@ -671,7 +671,9 @@ public class Matrix{
          for(int i = 0; i<basis.length; i++){
             v[variableShift[basis[i]]] = table[i][tw-1];
          }
-         resHolder.add(new Point(v));
+         if(resHolder.indexOf(new Point(v)) == -1){
+            resHolder.add(new Point(v));
+         }
       //alternte Solutions
          LinkedList<Integer> NBI = new LinkedList<Integer>();
          basisLoop:for(int i = 0; i<tw; i++){
@@ -732,7 +734,9 @@ public class Matrix{
             for(int i = 0; i<basis.length; i++){
                v[variableShift[basis[i]]] = table[i][tw-1];
             }
-            resHolder.add(new Point(v));
+            if(resHolder.indexOf(new Point(v)) == -1){
+               resHolder.add(new Point(v));
+            }
          }
          
       }
