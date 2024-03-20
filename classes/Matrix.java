@@ -458,6 +458,12 @@ public class Matrix{
          }
          table[th-1][i] = sum;
       }
+      float sum = 0;
+      for(int j = 0; j<height; j++){
+         sum += table[j][tw-1];
+      }
+      table[th-1][tw-1] = sum;
+      System.out.println(new Matrix(table));
       /*
       float sum = 0;
       for(int j = 0; j<height; j++){
@@ -519,13 +525,15 @@ public class Matrix{
          numPivots++;
          //basis changed
          basis[remove] = currentIndex;
+         System.out.println(new Matrix(table));
          currentIndex = rvPickPivot(table, objFuncIndex);
-         //check if can end early
          
       }
       System.out.println(new Matrix(table));
       
-      table[th-1][tw-1] = 0f;
+      if(Float.compare(table[th-1][tw-1], 0f) != 0){
+         return new Point[0];
+      }
       int newSize = 0;
       float epsilon = -0.00001f;
       for(int i = 0; i<tw; i++){
@@ -537,6 +545,7 @@ public class Matrix{
       LinkedList<Point> resHolder = new LinkedList<Point>();
       //phase 2
       //drop non basic
+      //TODO:check if is feasable, i.e. if artifical variables are gone
       int count = 0;
       int[] variableShift = new int[newSize];
       int[] antiVariableShift = new int[tw];
@@ -732,7 +741,7 @@ public class Matrix{
    private int pickPivot(float[][] t, int row){ // this is just for the LP solver
       int min = -1;
       float epsillon = -0.000001f;
-      for(int i = 0; i<t[row].length; i++){
+      for(int i = 0; i<t[row].length-1; i++){
          if(t[row][i]<epsillon){
             if(min == -1 || t[row][i]<t[row][min]){
                min = i;
@@ -744,7 +753,7 @@ public class Matrix{
    private int rvPickPivot(float[][] t, int row){ // this is just for the LP solver
       int max = -1;
       float epsillon = 0.000001f;
-      for(int i = 0; i<t[row].length; i++){
+      for(int i = 0; i<t[row].length-1; i++){
          if(t[row][i]>epsillon){
             if(max == -1 || t[row][i]>t[row][max]){
                max = i;

@@ -17,4 +17,7 @@ public class AffineSubSpace{
    public void setSubSpace(SubSpace s){
       this.s = s;
    }
+   public void translate(Point p) {
+      this.p.translate(p);
+   }
 }

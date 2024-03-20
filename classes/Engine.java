@@ -23,7 +23,6 @@ public class Engine {
   /* max test code*/
       int dimention = 4;
       float[] camPosData = new float[dimention];
-      camPosData[3] = 0f;
       Point screenPos = new Point(camPosData);
       screenPos.getCoords()[0] = 1;
       Vector[] axis = new Vector[2];
@@ -59,8 +58,8 @@ public class Engine {
       //manuel Input
       Simplex[] manSimplex = new Simplex[1];
       Point[] parr1 = new Point[dimention];
-      parr1[0] = new Point(new float[]{1,1,0,0.5f});
-      parr1[1] = new Point(new float[]{1,0,0,0.5f});
+      parr1[0] = new Point(new float[]{1,1,0,-0.5f});
+      parr1[1] = new Point(new float[]{1,0,0,-0.5f});
       parr1[2] = new Point(new float[]{2,0,1,0.5f});
       parr1[3] = new Point(new float[]{2,0,1,-0.5f});
       manSimplex[0] = new Simplex(parr1);
