@@ -233,4 +233,8 @@ public class OpenCL {
       System.out.println("Creating kernel...");
       return clCreateKernel(program, kernelName, null);
    }
+   public static void endConnection(){
+      clReleaseCommandQueue(CommandQueue);
+      clReleaseContext(Context);
+   }
 }

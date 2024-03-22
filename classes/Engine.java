@@ -82,7 +82,8 @@ public class Engine {
          }
       }
 
-      panel.renderImage(pixelArray);
+      //panel.renderImage(pixelArray);
+      float[][] textData = new float[][]{new float[]{1, 3, 0, 0, 0.5f}, new float[]{3, 3, -4, 5, 8}, new float[]{7, 3, 0, 0, 0.5f}, new float[]{1, 3, 0, 0, 0.5f}, new float[]{1, 3, 0, 0, 0.5f}};
    }
    
    public static Color[] colors = { Color.RED, Color.BLUE, Color.BLACK, Color.WHITE, Color.GREEN, Color.YELLOW, Color.GRAY};
