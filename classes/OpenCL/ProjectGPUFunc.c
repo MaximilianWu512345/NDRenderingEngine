@@ -55,18 +55,23 @@ __global float *out // must be zero to start, 3 times the size of data
          out[firstOut+i*dimention+j + dimention] = temp[i];
       }
       //swap l
+      out[firstOut+targetIndex*dimention+targetIndex+mSize + dimention] = 0;
+      out[firstOut+i*dimention+i+mSize + dimention] = 0;
+      
       for(int j = 0; j<dimention; j++){
          temp[i] = out[firstOut+targetIndex*dimention+j+mSize + dimention];
          out[firstOut+targetIndex*dimention+j+mSize + dimention] = out[firstOut+i*dimention+j+mSize + dimention];
          out[firstOut+i*dimention+j+mSize + dimention] = temp[i];
       }
+      out[firstOut+targetIndex*dimention+targetIndex+mSize + dimention] = 1;
+      out[firstOut+i*dimention+i+mSize + dimention] = 1;
       //eliminate
       for(int j = i+1; j<dimention; j++){
          float mult = out[firstOut+dimention*j+i+2*mSize + dimention]/out[firstOut+(i)*(dimention+1)+2*mSize + dimention];
          for(int k = 0; k<dimention; k++){
             out[firstOut+dimention*j+k+2*mSize + dimention] = out[firstOut+dimention*j+k+2*mSize + dimention]-(mult*out[firstOut+dimention*i+k+2*mSize + dimention])
          }
-         
+         out[firstOut+j*dimention+i+mSize + dimention] = mult;
       }
    }
 }
