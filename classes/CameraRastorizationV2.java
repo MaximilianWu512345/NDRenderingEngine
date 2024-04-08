@@ -22,6 +22,11 @@ public class CameraRastorizationV2 implements Camera{
       this.bounds = bounds;
    }
    
+   public void translate(Point position) {
+      c.translate(position);
+      s.translate(position);
+   }
+   
 /**
 * Sets camera data.
 * @param position the new position of the camera.
@@ -170,7 +175,6 @@ public class CameraRastorizationV2 implements Camera{
       zBufferArrayTexture zBuff = new zBufferArrayTexture(pix,bounds);
       for(Simplex current: projected){
          Point[] allPoints = current.getPoints();
-         System.out.println(current);
          if(allPoints.length>ms){
             //select ms+1 points to draw (triangles)
             int[] selectedPoints = new int[ms+1];
@@ -179,9 +183,7 @@ public class CameraRastorizationV2 implements Camera{
                selectedPoints[i] = i;
             }
             boolean cont = true;
-            System.out.println(current);
             while(cont){
-               System.out.println("drawing triangle");
                //put points in simplex
                Point[] neededPoints = new Point[ms+1];
                Point[] flatPoints = new Point[ms+1];
@@ -243,7 +245,6 @@ public class CameraRastorizationV2 implements Camera{
                   }
                   
                   Point zbuffPoint = new Point(actualPoint.getCoords());
-                  System.out.println("drawing pixel " + zbuffPoint.toString() + " color " + pixColor.toString());
                   zBuff.setColor(zbuffPoint, pixColor);
                   //next pixel
                   pixPos = incrementArray(pixPos, projBoundingBoxMax, projBoundingBoxMin, pixPos.length-1);

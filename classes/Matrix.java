@@ -217,7 +217,7 @@ public class Matrix{
    */
    public static Matrix invert(float[][] data) {
       // convert to cofactor matrix first, transpose the cofactor matrix, then divide it by the determinent of data.
-      System.out.println(Matrix.getCoFactor(data));
+      // System.out.println(Matrix.getCoFactor(data));
       return new Matrix(Matrix.getTranspose(Matrix.getCoFactor(data))).div(Matrix.getDeterminant(data));
    }
    
@@ -432,8 +432,6 @@ public class Matrix{
    *  @return Vector the resulting maximum
    */
    public Point[] LPMaximum(int[] col, Vector resource){
-      System.out.println(this);
-      System.out.println(resource);
       int tw = width+height+1;
       int th = height+1;
       float[][] table = new float[th][tw];
@@ -460,7 +458,6 @@ public class Matrix{
          }
          table[th-1][i] = sum;
       }
-      System.out.println(new Matrix(table));
       /*
       float sum = 0;
       for(int j = 0; j<height; j++){
@@ -646,7 +643,6 @@ public class Matrix{
             currentIndex = pickPivot(table, objFuncIndex);
          }
       
-         System.out.println(new Matrix(table));
       //found vector
          float[] v = new float[width];
          for(int i = 0; i<basis.length; i++){

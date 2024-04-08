@@ -8,6 +8,14 @@ public class AffineSubSpace{
    public Point getPoint(){
       return p;
    }
+   
+   public void setPoint(Point p) {
+      this.p = p;
+   }
+   public void translate(Point p) {
+      this.p.translate(p);
+   }
+   
    public subSpace getSubSpace(){
       return s;
    }

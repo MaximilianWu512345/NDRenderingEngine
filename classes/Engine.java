@@ -10,14 +10,14 @@ public class Engine {
 * @param args default args for main method.
 */
    public static void main(String[] args) {
-      int width = 1000;
-      int height = 1000;
+      int width = 900;
+      int height = 900;
       JFrame frame = new JFrame("Max Wu's Concoction Machine!");
-      frame.setSize(width * 407 / 400, height * 104 / 100);
+      frame.setSize(width * 204 / 200, height * 209 / 200);
       frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
       EnginePanel panel = new EnginePanel(width, height);
+      EnginePanelGUI gui = new EnginePanelGUI(frame, panel, true);
       frame.add(panel);
-      frame.setJMenuBar(panel.getMenuBar());
       frame.setVisible(true);
       // Create the engine and camera, start the program.
   /* max test code*/
@@ -37,7 +37,7 @@ public class Engine {
       int[] pixBounds = new int[]{900, 900};
       Camera camera;
       camera = new CameraRastorizationV2(camPos, screen, pixBounds);
-      
+      //camera.translate(new Point(new float[] {0, 1f, 0}));
       //generate scene
       ArrayList<Mesh> scene = new ArrayList<Mesh>();
       //generate mesh
