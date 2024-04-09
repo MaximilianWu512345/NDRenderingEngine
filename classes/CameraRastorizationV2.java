@@ -162,15 +162,15 @@ public class CameraRastorizationV2 implements Camera{
             projected.add(tempFace); 
          }
       }
-      System.out.println("resulting " + projected.size() + " simplexes:");
-      for(Simplex current: projected){
+      //System.out.println("resulting " + projected.size() + " simplexes:");
+      /*for(Simplex current: projected){
          System.out.println(current);
-      }
+      }*/
       //z-buffering and painting
       zBufferArrayTexture zBuff = new zBufferArrayTexture(pix,bounds);
       for(Simplex current: projected){
          Point[] allPoints = current.getPoints();
-         System.out.println(current);
+         //System.out.println(current);
          if(allPoints.length>ms){
             //select ms+1 points to draw (triangles)
             int[] selectedPoints = new int[ms+1];
@@ -179,9 +179,9 @@ public class CameraRastorizationV2 implements Camera{
                selectedPoints[i] = i;
             }
             boolean cont = true;
-            System.out.println(current);
+            //System.out.println(current);
             while(cont){
-               System.out.println("drawing triangle");
+               //System.out.println("drawing triangle");
                //put points in simplex
                Point[] neededPoints = new Point[ms+1];
                Point[] flatPoints = new Point[ms+1];
@@ -318,8 +318,8 @@ public class CameraRastorizationV2 implements Camera{
       ArrayList<Point> corrispond = new ArrayList<Point>();
       //get simplex slice
       reCalculateMatrix(s);
-      System.out.println(m);
-      System.out.println(sol);
+      //System.out.println(m);
+      //System.out.println(sol);
       
       //get basic fesable solution https://en.wikipedia.org/wiki/Basic_feasible_solution
       int numUnknowns = m.getWidth();
@@ -343,8 +343,9 @@ public class CameraRastorizationV2 implements Camera{
             data[j] = rawPoints[i].getCoords()[g+j] - rawPoints[i].getCoords()[g+j+ms];
          }
          data[ms] = rawPoints[i].getCoords()[2*ms+g];
-         if(tempRepPoints.indexOf(new Point(data)) == -1){
-            tempRepPoints.add(new Point(data));
+         Point toCheck = new Point(data);
+         if(!tempRepPoints.contains(toCheck)){
+            tempRepPoints.add(toCheck);
          }
       }
       Point[] tempPoints = new Point[tempRepPoints.size()];
@@ -355,7 +356,7 @@ public class CameraRastorizationV2 implements Camera{
       } else {
          return null;
       }
-      System.out.println(resultSimplex);
+      //System.out.println(resultSimplex);
       //set texture
       resultSimplex.setTexture(s.getTexture());
       if(!s.getTexture().placeMatters()){

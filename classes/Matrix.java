@@ -217,7 +217,7 @@ public class Matrix{
    */
    public static Matrix invert(float[][] data) {
       // convert to cofactor matrix first, transpose the cofactor matrix, then divide it by the determinent of data.
-      System.out.println(Matrix.getCoFactor(data));
+      //System.out.println(Matrix.getCoFactor(data));
       return new Matrix(Matrix.getTranspose(Matrix.getCoFactor(data))).div(Matrix.getDeterminant(data));
    }
    
@@ -432,8 +432,8 @@ public class Matrix{
    *  @return Vector the resulting maximum
    */
    public Point[] LPMaximum(int[] col, Vector resource){
-      System.out.println(this);
-      System.out.println(resource);
+      //System.out.println(this);
+      //System.out.println(resource);
       int tw = width+height+1;
       int th = height+1;
       float[][] table = new float[th][tw];
@@ -465,7 +465,7 @@ public class Matrix{
          sum += table[j][tw-1];
       }
       table[th-1][tw-1] = sum;
-      System.out.println(new Matrix(table));
+      //System.out.println(new Matrix(table));
       /*
       float sum = 0;
       for(int j = 0; j<height; j++){
@@ -527,11 +527,11 @@ public class Matrix{
          numPivots++;
          //basis changed
          basis[remove] = currentIndex;
-         System.out.println(new Matrix(table));
+         //System.out.println(new Matrix(table));
          currentIndex = rvPickPivot(table, objFuncIndex);
          
       }
-      System.out.println(new Matrix(table));
+      //System.out.println(new Matrix(table));
       
       if(Float.compare(table[th-1][tw-1], 0f) != 0){
          return new Point[0];
@@ -547,7 +547,6 @@ public class Matrix{
       LinkedList<Point> resHolder = new LinkedList<Point>();
       //phase 2
       //drop non basic
-      //TODO:check if is feasable, i.e. if artifical variables are gone
       int count = 0;
       int[] variableShift = new int[newSize];
       int[] antiVariableShift = new int[tw];
@@ -579,8 +578,8 @@ public class Matrix{
          }
       }
       int[] origBasisTemp = basis;
-      System.out.println(new Matrix(table));
-      
+      //System.out.println(new Matrix(table));
+      HashSet<int[]> foundBasis = new HashSet<int[]>();
       colLoop:for(int currentCol: col){
       //objective fucntion
          table = new float[th][newSize];
@@ -589,7 +588,7 @@ public class Matrix{
                table[i][j] = temp[i][j];
             }
          }
-         System.out.println(new Matrix(table));
+         //System.out.println(new Matrix(table));
          basis = new int[origBasisTemp.length];
          for(int i = 0; i<basis.length; i++){
             basis[i] = origBasisTemp[i];
@@ -617,7 +616,7 @@ public class Matrix{
          }
          currentIndex = pickPivot(table, objFuncIndex);
          numPivots = 0;
-         System.out.println(new Matrix(table));
+         //System.out.println(new Matrix(table));
          while(currentIndex != -1){
          //pick row
             float q = -1;
@@ -661,18 +660,19 @@ public class Matrix{
          //basis changed
             basis[remove] = currentIndex;
             currentIndex = pickPivot(table, objFuncIndex);
-            System.out.println("pivot");
-            System.out.println(new Matrix(table));
+            //System.out.println("pivot");
+            //System.out.println(new Matrix(table));
          }
       
-         System.out.println(new Matrix(table));
+         //System.out.println(new Matrix(table));
       //found vector
          float[] v = new float[width];
          for(int i = 0; i<basis.length; i++){
             v[variableShift[basis[i]]] = table[i][tw-1];
          }
-         if(resHolder.indexOf(new Point(v)) == -1){
+         if(!foundBasis.contains(basis)){
             resHolder.add(new Point(v));
+            foundBasis.add(basis);
          }
       //alternte Solutions
          LinkedList<Integer> NBI = new LinkedList<Integer>();
@@ -729,13 +729,14 @@ public class Matrix{
                   }
                }
             }
-            System.out.println(new Matrix(table));
+            //System.out.println(new Matrix(table));
             v = new float[width];
             for(int i = 0; i<basis.length; i++){
                v[variableShift[basis[i]]] = table[i][tw-1];
             }
-            if(resHolder.indexOf(new Point(v)) == -1){
+            if(!foundBasis.contains(basis)){
                resHolder.add(new Point(v));
+               foundBasis.add(basis);
             }
          }
          

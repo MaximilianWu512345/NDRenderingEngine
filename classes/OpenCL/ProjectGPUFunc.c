@@ -110,3 +110,6 @@ __kernel int floatCompare(const float a, const float b, const float epsilon){
       return -1;
    }
 }
+__kernel void Rasterize(){
+
+}

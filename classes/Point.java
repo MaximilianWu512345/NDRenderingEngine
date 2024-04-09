@@ -1,3 +1,4 @@
+import java.util.Arrays;
 /** Point class */
 public class Point {
 
@@ -95,7 +96,12 @@ public class Point {
    *  @param p the point you want to compare to
    *  @return true if p is the same point
    */
-   public boolean equals(Point p){
+   @Override
+   public boolean equals(Object o){
+      if(!(o instanceof Point)){
+         return false;
+      }
+      Point p = (Point)o;
       if(coordinates.length != p.coordinates.length){
          return false;
       }
@@ -107,6 +113,6 @@ public class Point {
       return true;
    }
    public int hashCode(){
-      return 0;
+      return Arrays.hashCode(coordinates);
    }
 }
