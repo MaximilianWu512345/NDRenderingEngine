@@ -35,8 +35,8 @@ public class Engine {
       AffineSubSpace screen = new AffineSubSpace(screenDir, screenPos);
       Point camPos = new Point(new float[dimention]);
       int[] pixBounds = new int[]{900, 900};
-      Camera camera;
-      camera = new CameraRastorizationV2(camPos, screen, pixBounds);
+      Camera camera = new CameraRastorizationV2(camPos, screen, pixBounds);
+      panel.setCamera(camera);
       //camera.translate(new Point(new float[] {0, 1f, 0}));
       //generate scene
       ArrayList<Mesh> scene = new ArrayList<Mesh>();
@@ -62,26 +62,16 @@ public class Engine {
       parr1[2] = new Point(new float[]{4,-3,-3});
       manSimplex[0] = new Simplex(parr1);
       scene.add(new Mesh(manSimplex, dimention));
-     
-  
-      //set up
-      Mesh[] sceneArr = new Mesh[scene.size()];
-      sceneArr = scene.toArray(sceneArr);
+
       //render
       long timeStart = System.nanoTime();
-      Texture realPixels = camera.Project(sceneArr);
+      panel.setMeshes(scene.toArray(new Mesh[0]));
+      panel.render();
       long timeEnd = (System.nanoTime()-timeStart);
       System.out.println( timeEnd + " nanoseconds taken to render the image, or " + (timeEnd/1000000000f) + " seconds");
-      int[] b = realPixels.getBounds();
-      Color[][] pixelArray = new Color[b[0]][b[1]];
-      for(int i = 0; i<pixelArray.length; i++){
-         for(int j = 0; j<pixelArray[i].length; j++){
-            pixelArray[i][j] = realPixels.getColor(new Point(new float[]{i, j}));
-         }
-      }
-
-      panel.renderImage(pixelArray);
    }
+   
+
    
    public static Color[] colors = { Color.RED, Color.BLUE, Color.BLACK, Color.WHITE, Color.GREEN, Color.YELLOW, Color.GRAY};
    

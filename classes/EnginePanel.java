@@ -77,7 +77,18 @@ public class EnginePanel extends JPanel {
    }
    
    public void render() {
-      this.renderImage(this.camera.Project(this.meshes.toArray(new Mesh[0])));
+      this.renderImage(this.textureToColor(this.camera.Project(this.meshes.toArray(new Mesh[0]))));
+   }
+
+   public Color[][] textureToColor(Texture realPixels) {
+      int[] b = realPixels.getBounds();
+      Color[][] pixelArray = new Color[b[0]][b[1]];
+      for(int i = 0; i<pixelArray.length; i++){
+         for(int j = 0; j<pixelArray[i].length; j++){
+            pixelArray[i][j] = realPixels.getColor(new Point(new float[]{i, j}));
+         }
+      }
+      return pixelArray;
    }
    
    public void addComponent(Component c) {
@@ -122,8 +133,10 @@ public class EnginePanel extends JPanel {
    protected void paintComponent(Graphics g) {
       super.paintComponent(g);
       for (Component c : components) {
-         g.setColor(Color.RED);
-         g.drawRect(c.getX(), c.getY(), c.getWidth(), c.getHeight());
+         if (c.isVisible()) {
+            g.setColor(Color.RED);
+            g.drawRect(c.getX(), c.getY(), c.getWidth(), c.getHeight());
+         }
          c.paintComponent(g);
       }
    }

@@ -6,6 +6,7 @@ import javax.swing.*;
 import java.util.*;
 import javax.swing.filechooser.FileFilter;
 import javax.imageio.ImageIO;
+import java.beans.PropertyChangeListener;
 
 public class EnginePanelGUI {
 
@@ -108,16 +109,23 @@ public class EnginePanelGUI {
       
       protected JMenuBar menuBar;
       
+      protected JMenu menuSettings;
       protected JMenu menuFile;
       protected JMenu menuMesh;
       protected JMenu menuTexture;
       
+      protected JMenuItem menuItemConsole;
       protected JMenuItem menuItemSaveFile;
       protected JMenuItem menuItemSaveMesh;
       protected JMenuItem menuItemSaveTexture;
       protected JMenuItem menuItemLoadFile;
       protected JMenuItem menuItemLoadMesh;
       protected JMenuItem menuItemLoadTexture;
+      
+      protected JFrame console;
+      
+      protected JTextArea consoleTextArea;
+      
       /** Creates new MenuHelper with location (x, y) and size (w, h).
       * @param x the x-coord of the location.
       * @param y the y-coord of the location.
@@ -132,34 +140,147 @@ public class EnginePanelGUI {
       /** Initializes the dictButtons hashtable */
       private void initialize() {
          menuBar = new JMenuBar();
+         menuSettings = new JMenu("Settings");
          menuFile = new JMenu("File");
          menuMesh = new JMenu("Mesh");
          menuTexture = new JMenu("Texture");
+         menuBar.add(menuSettings);
          menuBar.add(menuFile);
          menuBar.add(menuMesh);
          menuBar.add(menuTexture);
+         menuItemConsole = new JMenuItem("Console");
          menuItemSaveFile = new JMenuItem("Save Mesh & Texture");
          menuItemSaveMesh = new JMenuItem("Save Mesh");
          menuItemSaveTexture = new JMenuItem("Save Texture");
          menuItemLoadFile = new JMenuItem("Load File");
          menuItemLoadMesh = new JMenuItem("Load Mesh");
          menuItemLoadTexture = new JMenuItem("Load Texture");
+         menuSettings.add(menuItemConsole);
          menuFile.add(menuItemSaveFile);
          menuFile.add(menuItemLoadFile);
          menuMesh.add(menuItemSaveMesh);
          menuMesh.add(menuItemLoadMesh);
          menuTexture.add(menuItemSaveTexture);
          menuTexture.add(menuItemLoadTexture);
+         menuItemConsole.addActionListener(new Listener_Console());
          menuItemSaveFile.addActionListener(new Listener_SaveFile());
          menuItemSaveMesh.addActionListener(new Listener_SaveMesh());
          menuItemSaveTexture.addActionListener(new Listener_SaveTexture());
          menuItemLoadFile.addActionListener(new Listener_LoadFile());
          menuItemLoadMesh.addActionListener(new Listener_LoadMesh());
          menuItemLoadTexture.addActionListener(new Listener_LoadTexture());
+         console = new JFrame("Console");
+         console.setSize(this.getWidth(), this.getHeight());
+         console.setLocation(this.getX(), this.getY());
+         consoleTextArea = new JTextArea("Enter 'help' for commands.\n");
+         updateCaretPosition();
+         console.setContentPane(consoleTextArea);
+         Action enter = 
+               new Listener_Action() {
+                  public void actionPerformed(ActionEvent e) {
+                     processEnter();
+                  }
+               };
+         Action backspace = 
+               new Listener_Action() {
+                  public void actionPerformed(ActionEvent e) {
+                     processBackspace();
+                  }
+               };
+         consoleTextArea.getKeymap().addActionForKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), enter);
+         consoleTextArea.getKeymap().addActionForKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0), backspace);
+      }
+      
+      public void openConsole() {
+         console.setLocation((int)engineFrame.getLocation().getX(), (int)engineFrame.getLocation().getY());
+         console.setSize((int)engineFrame.getSize().getWidth() / 2, (int)engineFrame.getSize().getHeight() / 2);
+         console.setVisible(true);
+      }
+      
+      public void processCommand(String text) {
+         String[] arguments = text.split(" ");
+         if (arguments[0].trim().equalsIgnoreCase("help")) {
+            if (handleError(arguments, 1)) {
+            
+            }
+               
+         }
+         else if (arguments[0].trim().equalsIgnoreCase("rebind")) {
+            if (handleError(arguments, 3)) {
+            
+            }
+         }
+      }
+      
+      public boolean handleError(String[] arguments, int length) {
+         if (arguments.length != length) {
+            consoleTextArea.append("Command '" + arguments[0].trim() + "' found, but arguments do not match.\n");
+            return true;
+         }
+         return false;
+      }
+      
+      public void processEnter() {
+         String text = consoleTextArea.getText();
+         if (text.length() > 1) {
+            int lineBreak = text.lastIndexOf("\n");
+            int caretPosition = consoleTextArea.getCaretPosition();
+            if (lineBreak >= caretPosition)
+               return;
+         }
+         String command = text.substring(text.lastIndexOf("\n"), text.length());
+         consoleTextArea.append("\n");
+         processCommand(command);
+      }
+      
+      public void processBackspace() {
+         String text = consoleTextArea.getText();
+         if (text.length() == 0)
+            return;
+         int lineBreak = text.lastIndexOf("\n");
+         int caretPosition = consoleTextArea.getCaretPosition();
+         if (lineBreak >= caretPosition - 1)
+            return;
+         String lastTwo = text.substring(text.length() - 2, text.length());
+         if (lastTwo.substring(0, 1).equals("\\"))
+            consoleTextArea.setText(consoleTextArea.getText().substring(0, consoleTextArea.getText().length() - 2));
+         else
+            consoleTextArea.setText(consoleTextArea.getText().substring(0, consoleTextArea.getText().length() - 1));
+      }
+      
+      public void updateCaretPosition() {
+         consoleTextArea.setCaretPosition(consoleTextArea.getText().length());
       }
    
       public JMenuBar getMenuBar() {
          return menuBar;
+      }
+      
+      protected class Listener_Action implements Action {
+      
+         public void actionPerformed(ActionEvent e) { }
+                  
+         public Object getValue(String key) { 
+            return null; }
+                  
+         public void putValue(String key, Object value) { }
+                  
+         public void setEnabled(boolean b) { }
+                  
+         public boolean isEnabled() { 
+            return true; }
+                  
+         public void addPropertyChangeListener(PropertyChangeListener listener) { }
+                  
+         public void removePropertyChangeListener(PropertyChangeListener listener) { }
+      }
+      
+      protected class Listener_Console implements ActionListener
+      {	      
+         public void actionPerformed(ActionEvent e)
+         {
+            openConsole();
+         }
       }
       
       protected class Listener_LoadFile implements ActionListener
@@ -279,7 +400,6 @@ public class EnginePanelGUI {
       }
       
       protected void paintComponent(Graphics g) {
-         ArrayList<Mesh> meshes = enginePanel.getMeshes();
       }
       
       protected class Button_Render extends Button {
