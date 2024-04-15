@@ -23,6 +23,7 @@ public class EnginePanelGUI {
       enginePanel = owner;
       frame.setSize(frame.getWidth() * 6 / 5, frame.getHeight());
       enginePanel.setSize(enginePanel.getWidth() * 6 / 5, enginePanel.getHeight());
+      enginePanel.addComponent(inputHelper = new InputHelper(0, 0, 0, 0));
       enginePanel.addComponent(menuHelper = new MenuHelper(0, 0, 0, 0));
       enginePanel.addComponent(buttonHelper = new ButtonHelper(enginePanel.getWidth() * 5 / 6, 0, enginePanel.getWidth() / 6, enginePanel.getHeight()));
       if (enableJMenuBar) {
@@ -38,6 +39,8 @@ public class EnginePanelGUI {
    protected MenuHelper menuHelper;
    
    protected ButtonHelper buttonHelper;
+   
+   protected InputHelper inputHelper;
 
    public JMenuBar getMenuBar() {
       return menuHelper.getMenuBar();
@@ -104,7 +107,85 @@ public class EnginePanelGUI {
       return file;
    }
    
-/** Container class to hold information about buttons. Might be obsolete, could remove later. */
+   protected class Listener_Action implements Action {
+      
+      public void actionPerformed(ActionEvent e) { }
+                  
+      public Object getValue(String key) { 
+         return null; }
+                  
+      public void putValue(String key, Object value) { }
+                  
+      public void setEnabled(boolean b) { }
+                  
+      public boolean isEnabled() { 
+         return true; }
+                  
+      public void addPropertyChangeListener(PropertyChangeListener listener) { }
+                  
+      public void removePropertyChangeListener(PropertyChangeListener listener) { }
+   }
+   
+   protected class InputHelper extends Component {
+   
+         /** Creates new InputHelper with location (x, y) and size (w, h).
+      * @param x the x-coord of the location.
+      * @param y the y-coord of the location.
+      * @param w the width of the location.
+      * @param h the height of the location.
+      */
+      public InputHelper(int x, int y, int w, int h) {
+         super(x, y, w, h);
+         initialize();
+      }
+      
+      protected void initialize() {
+         this.initializeActionMap();
+         this.initializeInputMap();
+      }
+      
+      public void translateCamera(float translation, int index) {
+         float[] translate = new float[enginePanel.getCamera().getDimension()];
+         translate[index] += translation;
+         enginePanel.getCamera().translate(new Point(translate));
+         enginePanel.render();
+      }
+      
+      protected void initializeActionMap() {
+         enginePanel.getActionMap().put("camera_move_left", 
+            new Listener_Action() {
+               public void actionPerformed(ActionEvent e) {
+                  translateCamera(-5, 0);
+               }
+            });
+         enginePanel.getActionMap().put("camera_move_right", 
+            new Listener_Action() {
+               public void actionPerformed(ActionEvent e) {
+                  translateCamera(5, 0);
+               }
+            });
+         enginePanel.getActionMap().put("camera_move_up", 
+            new Listener_Action() {
+               public void actionPerformed(ActionEvent e) {
+                  translateCamera(-5, 1);
+               }
+            });
+         enginePanel.getActionMap().put("camera_move_down", 
+            new Listener_Action() {
+               public void actionPerformed(ActionEvent e) {
+                  translateCamera(5, 1);
+               }
+            });
+      }
+      
+      protected void initializeInputMap() {
+         enginePanel.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), "camera_move_left");
+         enginePanel.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), "camera_move_right");
+         enginePanel.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), "camera_move_up");
+         enginePanel.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), "camera_move_down");
+      }
+   }
+
    protected class MenuHelper extends Component {
       
       protected JMenuBar menuBar;
@@ -137,7 +218,6 @@ public class EnginePanelGUI {
          initialize();
       }
       
-      /** Initializes the dictButtons hashtable */
       private void initialize() {
          menuBar = new JMenuBar();
          menuSettings = new JMenu("Settings");
@@ -174,7 +254,8 @@ public class EnginePanelGUI {
          console.setLocation(this.getX(), this.getY());
          consoleTextArea = new JTextArea("Enter 'help' for commands.\n");
          updateCaretPosition();
-         console.setContentPane(consoleTextArea);
+         JScrollPane scrollPane = new JScrollPane(consoleTextArea);
+         console.setContentPane(scrollPane);
          Action enter = 
                new Listener_Action() {
                   public void actionPerformed(ActionEvent e) {
@@ -201,9 +282,9 @@ public class EnginePanelGUI {
          String[] arguments = text.split(" ");
          if (arguments[0].trim().equalsIgnoreCase("help")) {
             if (handleError(arguments, 1)) {
-            
+               consoleTextArea.append("'help' - lists all available commands\n");
+               consoleTextArea.append("'rebind' 'KeyEvent' 'KeyEvent' - rebinds '2' to '3'\n");
             }
-               
          }
          else if (arguments[0].trim().equalsIgnoreCase("rebind")) {
             if (handleError(arguments, 3)) {
@@ -215,9 +296,9 @@ public class EnginePanelGUI {
       public boolean handleError(String[] arguments, int length) {
          if (arguments.length != length) {
             consoleTextArea.append("Command '" + arguments[0].trim() + "' found, but arguments do not match.\n");
-            return true;
+            return false;
          }
-         return false;
+         return true;
       }
       
       public void processEnter() {
@@ -254,25 +335,6 @@ public class EnginePanelGUI {
    
       public JMenuBar getMenuBar() {
          return menuBar;
-      }
-      
-      protected class Listener_Action implements Action {
-      
-         public void actionPerformed(ActionEvent e) { }
-                  
-         public Object getValue(String key) { 
-            return null; }
-                  
-         public void putValue(String key, Object value) { }
-                  
-         public void setEnabled(boolean b) { }
-                  
-         public boolean isEnabled() { 
-            return true; }
-                  
-         public void addPropertyChangeListener(PropertyChangeListener listener) { }
-                  
-         public void removePropertyChangeListener(PropertyChangeListener listener) { }
       }
       
       protected class Listener_Console implements ActionListener

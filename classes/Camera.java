@@ -17,6 +17,8 @@ public interface Camera{
    
    public void translate(Point translation);
    
+   public int getDimension();
+   
    
 /**
 * Projects a Mesh and an int dimension to a Color[][].

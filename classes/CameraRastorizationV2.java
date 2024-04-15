@@ -27,6 +27,10 @@ public class CameraRastorizationV2 implements Camera{
       s.translate(position);
    }
    
+   public int getDimension() {
+      return c.getCoordinates().length;
+   }
+   
 /**
 * Sets camera data.
 * @param position the new position of the camera.

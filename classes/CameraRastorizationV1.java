@@ -16,7 +16,6 @@ public class CameraRastorizationV1 implements Camera{
    public Color triangleColor;
 /** Background color of this Camera */
    public Color backgroundColor;
-
    
 /**
 * Creates a new Camera.
@@ -43,6 +42,10 @@ public class CameraRastorizationV1 implements Camera{
       this.direction = V;
       this.width = width;
       this.height = height;
+   }
+   
+   public int getDimension() {
+      return this.position.getCoordinates().length;
    }
    
    
