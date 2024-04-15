@@ -124,6 +124,7 @@ public class EnginePanel extends JPanel {
       else if (object instanceof Mesh) {
          renderHelper.setMesh((Mesh)object);
       }
+      this.revalidate();
       this.repaint();
    }
 
