@@ -11,12 +11,15 @@
 __kernel void RaserizeStep1(
 __global float *coords, //actual coords
 __global float *tcoords, //texture coords
+__global int *textureIndex, //texture to use
 __global int dimention, //dimention after slicing
-__global int *textureColors, //all textures are in same array
+__global char *textureColors, //all textures are in same array, each char is an rgb chanel
 __global int *textureSizes,  //texture sizes are all in the same array
 __global int numTextures, //using dimention can help figure out each texture
 __global float *lpuData, //data for lpu, shift, l, p, u
-__global int *out, // final result
+__global char *out, // final result, each char is an rgb chanel
+__global float *zBuff, //zbuffer
+__global int *stencilBuff, //stencil buffer, for lighting
 __global int numSim, //number of simplexes
 __global int *outDim //dimentions of the result
 ){
@@ -38,16 +41,46 @@ __global int *outDim //dimentions of the result
 __kernel void RaserizeStep2(
 __global float *coords, //actual coords
 __global float *tcoords, //texture coords
+__global int *textureIndex, //texture to use
 __global int dimention, //dimention after slicing
-__global int *textureColors, //all textures are in same array
+__global char *textureColors, //all textures are in same array, each char is an rgb chanel
 __global int *textureSizes,  //texture sizes are all in the same array
 __global int numTextures, //using dimention can help figure out each texture
 __global float *lpuData, //data for lpu
-__global int *out, // final result
+__global char *out, // final result, each char is an rgb chanel
+__global float *zBuff, //zbuffer
+__global int *stencilBuff, //stencil buffer, for lighting
 __global int numSim, //number of simplexes
 __global int *outDim //dimentions of the result
 ){
    gid = get_global_id(0);
+   if(stencilBuff[gid/8] && (1<<(gid%8)) > 0){
+      float pixPos[dimention];
+      int pixPosInt = gid;
+      for(int i = 0; i<outDim; i++){
+         pixPos[i] = (float)(pixPosInt%outDim[i]);
+         pixPosInt /= outDim[i];
+      }
+      for(int i = 0; i<numSim; i++){
+         float found[dimention]
+         calcBaryCoords(pixPos, lpuData, i, dimention, found);
+         if(zBuff[gid]<found[dimention-1]){
+            //get new color
+            float texPos [dimention-1];
+            int first = 0;
+            for(int j = 0; j<textureIndex[i]){
+               int sum = 1;
+               for(int k = 0; k<dimention-1; k++){
+                  sum *= textureSizes[i*(dimention-1) + k];
+               }
+               first += sum;
+            }
+            for(int j = 0; j<)
+            //set new color
+            //find 
+         }
+      }
+   }
 }
 __kernel void lpuBarycentricCoords(
 const float *data,
@@ -126,7 +159,7 @@ int id
       }
    }
 }
-__kernal float* calcBaryCoords(float* pos, float* lpu, int triangleIndex, int dimention){
+__kernal calcBaryCoords(float* pos, float* lpu, int triangleIndex, int dimention, float* out){
    float sol[dimention];
    float dat[dimention-1];
    int trueIndex = triangleIndex*(dimention+3*dimention*dimention);
@@ -170,7 +203,12 @@ __kernal float* calcBaryCoords(float* pos, float* lpu, int triangleIndex, int di
       sol[i] -= sum;
       sol[i] /= lpu[trueIndex+dimention*(i+1) + 2*dimention*dimention + i];
    }
-   return &sol;
+   float sum = 0;
+   for(int i = 0; i<dimention-1; i++){
+      sum += sol[i];
+      out[i] = sol[i];
+   }
+   out[dimention] = 1-sum;
 }
 __kernel int floatCompare(const float a, const float b){
    float epsilon = 0.000001f;
