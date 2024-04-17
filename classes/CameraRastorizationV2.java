@@ -1,6 +1,9 @@
+import static org.jocl.CL.*;
+import org.jocl.*;
 import java.awt.Color;
 import java.util.*;
 import java.lang.*;
+import java.io.File;
 public class CameraRastorizationV2 implements Camera{
    protected Point c;
    protected AffineSubSpace s;
@@ -16,6 +19,11 @@ public class CameraRastorizationV2 implements Camera{
    protected int g = 0;
    protected int ms = 0;
    protected int n = 0;
+   public static final boolean useGPU = true;
+   private static final String GPU_CODE_LOC = "OpenCL\\ProjectGPUFunc.c";
+   private static String GPUCode;
+   private static cl_command_queue commandQueue;
+   private static cl_context context;
    public CameraRastorizationV2 (Point c, AffineSubSpace s, int[] bounds){
       this.s = s;
       this.c = c;
@@ -168,145 +176,155 @@ public class CameraRastorizationV2 implements Camera{
       }*/
       //z-buffering and painting
       zBufferArrayTexture zBuff = new zBufferArrayTexture(pix,bounds);
-      for(Simplex current: projected){
-         Point[] allPoints = current.getPoints();
+      if(useGPU){
+         //first make kernals
+         
+         //set arguments
+         //run step 1
+         //run step 2
+         //shadows if we get to it
+         //read results
+      } else {
+         for(Simplex current: projected){
+            Point[] allPoints = current.getPoints();
          //System.out.println(current);
-         if(allPoints.length>ms){
+            if(allPoints.length>ms){
             //select ms+1 points to draw (triangles)
-            int[] selectedPoints = new int[ms+1];
-            int pointCount = current.getPoints().length;
-            for(int i = 0; i<selectedPoints.length; i++){
-               selectedPoints[i] = i;
-            }
-            boolean cont = true;
+               int[] selectedPoints = new int[ms+1];
+               int pointCount = current.getPoints().length;
+               for(int i = 0; i<selectedPoints.length; i++){
+                  selectedPoints[i] = i;
+               }
+               boolean cont = true;
             //System.out.println(current);
-            while(cont){
+               while(cont){
                //System.out.println("drawing triangle");
                //put points in simplex
-               Point[] neededPoints = new Point[ms+1];
-               Point[] flatPoints = new Point[ms+1];
-               for(int i = 0; i<selectedPoints.length; i++){
+                  Point[] neededPoints = new Point[ms+1];
+                  Point[] flatPoints = new Point[ms+1];
+                  for(int i = 0; i<selectedPoints.length; i++){
                   //has depth
-                  neededPoints[i] = allPoints[selectedPoints[i]];
+                     neededPoints[i] = allPoints[selectedPoints[i]];
                   //check pos
-                  float[] pixCoords = new float[allPoints[0].getCoords().length-1];
+                     float[] pixCoords = new float[allPoints[0].getCoords().length-1];
+                     for(int j = 0; j<pixCoords.length; j++){
+                        pixCoords[j] = allPoints[selectedPoints[i]].getCoords()[j]/allPoints[selectedPoints[i]].getCoords()[pixCoords.length] ;
+                     }
+                     flatPoints[i] = new Point(pixCoords);
+                  }
+                  Simplex currentPart = new Simplex(neededPoints);
+                  Simplex flatCurrentPart = new Simplex(flatPoints);
+               //restirctions
+                  float[] projBoundingBoxMax = new float[ms];
+                  float[] projBoundingBoxMin = new float[ms];
+                  for(int i = 0; i<bounds.length; i++){
+                     projBoundingBoxMax[i] = bounds[i]/2;
+                     projBoundingBoxMin[i] = -bounds[i]/2;
+                  }
+                  boolean hasPix = true;
+                  float[] pixPos = new float[ms];
+                  for(int i = 0; i<pixPos.length; i++){
+                     pixPos[i] = projBoundingBoxMin[i];
+                  }
+                  drawLoop:while(hasPix){
+                     Point pixPoint = new Point(pixPos);
+                  //draw pixel
+                     Vector bary = flatCurrentPart.getBarycentricCoords(pixPoint);
+                  //is in triangle
+                     if(bary == null){
+                        pixPos = incrementArray(pixPos, projBoundingBoxMax, projBoundingBoxMin, pixPos.length-1);
+                        hasPix = pixPos != null;
+                        continue drawLoop;
+                     }
+                     for(int i = 0; i<bary.length(); i++){
+                        if(bary.getCoords()[i] < 0 || bary.getCoords()[i] > 1){
+                           pixPos = incrementArray(pixPos, projBoundingBoxMax, projBoundingBoxMin, pixPos.length-1);
+                           hasPix = pixPos != null;
+                           continue drawLoop;
+                        }
+                     }
+                  //get color
+                  
+                     Color pixColor = currentPart.getColor(bary.getCoords());
+                     if (pixColor == null){
+                        pixColor = triangleC;
+                     }
+                  //get depth
+                     float[] actualPointDat = new float[bary.length()];
+                     for(int i = 0; i<actualPointDat.length-1; i++){
+                        actualPointDat[i] = pixPos[i]-projBoundingBoxMin[i];
+                     }
+                     for(int i = 0; i<currentPart.getPoints().length; i++){
+                        actualPointDat[actualPointDat.length-1] += currentPart.getPoints()[i].getCoords()[actualPointDat.length-1]*bary.getCoords()[i];
+                     }
+                  
+                     Point zbuffPoint = new Point(actualPointDat);
+                  //System.out.println("drawing pixel " + zbuffPoint.toString() + "pix Point" + (new Point(pixPos)).toString() + " color " + pixColor.toString());
+                     zBuff.setColor(zbuffPoint, pixColor);
+                  //next pixel
+                     pixPos = incrementArray(pixPos, projBoundingBoxMax, projBoundingBoxMin, pixPos.length-1);
+                     hasPix = pixPos != null;
+                  }
+                  selectedPoints = shiftSelected(selectedPoints, pointCount, selectedPoints.length-1);
+                  cont = selectedPoints != null;
+               
+               }
+            
+            } else if (allPoints.length == 0){
+            //no points to draw
+            
+            }else {
+            //less points (e.g. line or point)
+               Point[] neededPoints = new Point[allPoints.length];
+               Point[] flatPoints = new Point[allPoints.length];
+               for(int i = 0; i<allPoints.length; i++){
+                  //has depth
+                  neededPoints[i] = allPoints[i];
+                  //check pos
+                  float[] pixCoords = new float[allPoints[0].getCoords().length];
                   for(int j = 0; j<pixCoords.length; j++){
-                     pixCoords[j] = allPoints[selectedPoints[i]].getCoords()[j]/allPoints[selectedPoints[i]].getCoords()[pixCoords.length] ;
+                     pixCoords[j] = allPoints[i].getCoords()[j];
                   }
                   flatPoints[i] = new Point(pixCoords);
                }
                Simplex currentPart = new Simplex(neededPoints);
                Simplex flatCurrentPart = new Simplex(flatPoints);
-               //restirctions
                float[] projBoundingBoxMax = new float[ms];
                float[] projBoundingBoxMin = new float[ms];
                for(int i = 0; i<bounds.length; i++){
-                  projBoundingBoxMax[i] = bounds[i]/2;
-                  projBoundingBoxMin[i] = -bounds[i]/2;
+                  projBoundingBoxMax[i] = bounds[i];
+                  projBoundingBoxMin[i] = bounds[i];
                }
                boolean hasPix = true;
                float[] pixPos = new float[ms];
                for(int i = 0; i<pixPos.length; i++){
                   pixPos[i] = projBoundingBoxMin[i];
                }
+               Point pixPoint = new Point(pixPos);
                drawLoop:while(hasPix){
-                  Point pixPoint = new Point(pixPos);
                   //draw pixel
                   Vector bary = flatCurrentPart.getBarycentricCoords(pixPoint);
                   //is in triangle
                   if(bary == null){
-                     pixPos = incrementArray(pixPos, projBoundingBoxMax, projBoundingBoxMin, pixPos.length-1);
-                     hasPix = pixPos != null;
                      continue drawLoop;
                   }
                   for(int i = 0; i<bary.length(); i++){
                      if(bary.getCoords()[i] < 0 || bary.getCoords()[i] > 1){
-                        pixPos = incrementArray(pixPos, projBoundingBoxMax, projBoundingBoxMin, pixPos.length-1);
-                        hasPix = pixPos != null;
                         continue drawLoop;
                      }
                   }
                   //get color
-                  
                   Color pixColor = currentPart.getColor(bary.getCoords());
-                  if (pixColor == null){
-                     pixColor = triangleC;
-                  }
                   //get depth
-                  float[] actualPointDat = new float[bary.length()];
-                  for(int i = 0; i<actualPointDat.length-1; i++){
-                     actualPointDat[i] = pixPos[i]-projBoundingBoxMin[i];
-                  }
+                  Vector actualPoint = new Vector(new float[bary.length()]);
                   for(int i = 0; i<currentPart.getPoints().length; i++){
-                     actualPointDat[actualPointDat.length-1] += currentPart.getPoints()[i].getCoords()[actualPointDat.length-1]*bary.getCoords()[i];
+                     actualPoint.add((new Vector(currentPart.getPoints()[i].getCoords())).scale(bary.getCoords()[i]));
                   }
-                  
-                  Point zbuffPoint = new Point(actualPointDat);
-                  //System.out.println("drawing pixel " + zbuffPoint.toString() + "pix Point" + (new Point(pixPos)).toString() + " color " + pixColor.toString());
+                  Point zbuffPoint = new Point(actualPoint.getCoords());
                   zBuff.setColor(zbuffPoint, pixColor);
-                  //next pixel
                   pixPos = incrementArray(pixPos, projBoundingBoxMax, projBoundingBoxMin, pixPos.length-1);
                   hasPix = pixPos != null;
                }
-               selectedPoints = shiftSelected(selectedPoints, pointCount, selectedPoints.length-1);
-               cont = selectedPoints != null;
-               
-            }
-            
-         } else if (allPoints.length == 0){
-            //no points to draw
-            
-         }else {
-            //less points (e.g. line or point)
-            Point[] neededPoints = new Point[allPoints.length];
-            Point[] flatPoints = new Point[allPoints.length];
-            for(int i = 0; i<allPoints.length; i++){
-                  //has depth
-               neededPoints[i] = allPoints[i];
-                  //check pos
-               float[] pixCoords = new float[allPoints[0].getCoords().length];
-               for(int j = 0; j<pixCoords.length; j++){
-                  pixCoords[j] = allPoints[i].getCoords()[j];
-               }
-               flatPoints[i] = new Point(pixCoords);
-            }
-            Simplex currentPart = new Simplex(neededPoints);
-            Simplex flatCurrentPart = new Simplex(flatPoints);
-            float[] projBoundingBoxMax = new float[ms];
-            float[] projBoundingBoxMin = new float[ms];
-            for(int i = 0; i<bounds.length; i++){
-               projBoundingBoxMax[i] = bounds[i];
-               projBoundingBoxMin[i] = bounds[i];
-            }
-            boolean hasPix = true;
-            float[] pixPos = new float[ms];
-            for(int i = 0; i<pixPos.length; i++){
-               pixPos[i] = projBoundingBoxMin[i];
-            }
-            Point pixPoint = new Point(pixPos);
-            drawLoop:while(hasPix){
-                  //draw pixel
-               Vector bary = flatCurrentPart.getBarycentricCoords(pixPoint);
-                  //is in triangle
-               if(bary == null){
-                  continue drawLoop;
-               }
-               for(int i = 0; i<bary.length(); i++){
-                  if(bary.getCoords()[i] < 0 || bary.getCoords()[i] > 1){
-                     continue drawLoop;
-                  }
-               }
-                  //get color
-               Color pixColor = currentPart.getColor(bary.getCoords());
-                  //get depth
-               Vector actualPoint = new Vector(new float[bary.length()]);
-               for(int i = 0; i<currentPart.getPoints().length; i++){
-                  actualPoint.add((new Vector(currentPart.getPoints()[i].getCoords())).scale(bary.getCoords()[i]));
-               }
-               Point zbuffPoint = new Point(actualPoint.getCoords());
-               zBuff.setColor(zbuffPoint, pixColor);
-               pixPos = incrementArray(pixPos, projBoundingBoxMax, projBoundingBoxMin, pixPos.length-1);
-               hasPix = pixPos != null;
             }
          }
       }
@@ -420,5 +438,40 @@ public class CameraRastorizationV2 implements Camera{
          arr = shiftBool(arr, index-1);
       }
       return arr;
+   }
+   public static void endConnection(){
+      clReleaseCommandQueue(commandQueue);
+      clReleaseContext(context);
+   }
+   
+   // https://www.codeproject.com/Articles/86551/Part-1-Programming-your-Graphics-Card-GPU-with-Jav
+   public static void GPUConnect(){ 
+      GPUCode = OpenCL.GetFileContents(new File(GPU_CODE_LOC));
+      
+      final int platformIndex = 0;
+      final long deviceType = CL_DEVICE_TYPE_GPU;
+      final int deviceIndex = 0;
+      
+      CL.setExceptionsEnabled(true);
+      int numPlatformsArray[] = new int[1];
+      clGetPlatformIDs(0, null, numPlatformsArray);
+      int numPlatforms = numPlatformsArray[0];
+   
+      // Obtain a platform ID
+      cl_platform_id platforms[] = new cl_platform_id[numPlatforms];
+      clGetPlatformIDs(platforms.length, platforms, null);
+      cl_platform_id platform = platforms[platformIndex];
+   
+      // Initialize the context properties
+      cl_context_properties contextProperties = new cl_context_properties();
+      contextProperties.addProperty(CL_CONTEXT_PLATFORM, platform);
+      
+      int numDevices = (int) numPlatformsArray[0] / Sizeof.cl_device_id;
+      cl_device_id devices[] = new cl_device_id[numDevices];
+      clGetContextInfo(context, CL_CONTEXT_DEVICES, numPlatformsArray[0],  
+         Pointer.to(devices), null);
+      
+      commandQueue = clCreateCommandQueue(context, devices[0], 0, null);
+      
    }
 }

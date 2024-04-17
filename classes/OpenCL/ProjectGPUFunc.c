@@ -15,13 +15,17 @@ __global int *textureIndex, //texture to use
 __global int dimention, //dimention after slicing
 __global char *textureColors, //all textures are in same array, each char is an rgb chanel
 __global int *textureSizes,  //texture sizes are all in the same array
+__global char *textureType, //type of texture
 __global int numTextures, //using dimention can help figure out each texture
-__global float *lpuData, //data for lpu, shift, l, p, u
+__global float *lpuData, //data for lpu
 __global char *out, // final result, each char is an rgb chanel
 __global float *zBuff, //zbuffer
 __global int *stencilBuff, //stencil buffer, for lighting
 __global int numSim, //number of simplexes
-__global int *outDim //dimentions of the result
+__global int *outDim, //dimentions of the result
+__global char DefR, //default red 
+__global char DefG, //default green
+__global char DefB  //default blue
 ){
    //flaten
    int gid = get_global_id(0);
@@ -45,13 +49,17 @@ __global int *textureIndex, //texture to use
 __global int dimention, //dimention after slicing
 __global char *textureColors, //all textures are in same array, each char is an rgb chanel
 __global int *textureSizes,  //texture sizes are all in the same array
+__global char *textureType, //type of texture
 __global int numTextures, //using dimention can help figure out each texture
 __global float *lpuData, //data for lpu
 __global char *out, // final result, each char is an rgb chanel
 __global float *zBuff, //zbuffer
 __global int *stencilBuff, //stencil buffer, for lighting
 __global int numSim, //number of simplexes
-__global int *outDim //dimentions of the result
+__global int *outDim, //dimentions of the result
+__global char DefR, //default red 
+__global char DefG, //default green
+__global char DefB  //default blue
 ){
    gid = get_global_id(0);
    if(stencilBuff[gid/8] && (1<<(gid%8)) > 0){
@@ -64,20 +72,56 @@ __global int *outDim //dimentions of the result
       for(int i = 0; i<numSim; i++){
          float found[dimention]
          calcBaryCoords(pixPos, lpuData, i, dimention, found);
-         if(zBuff[gid]<found[dimention-1]){
+         bool inSim = true;
+         for(int j = 0; j<dimention; j++){
+            if(found[j] > 0 && found[j]<1){
+               inSim = false;
+            }
+         }
+         if(zBuff[gid]<found[dimention-1] && inSim){
             //get new color
-            float texPos [dimention-1];
+            char r = DefR;
+            char g = DefG;
+            char b = DefB
             int first = 0;
-            for(int j = 0; j<textureIndex[i]){
+            for(int j = 0; j<textureIndex[i]; j++){
                int sum = 1;
                for(int k = 0; k<dimention-1; k++){
                   sum *= textureSizes[i*(dimention-1) + k];
                }
                first += sum;
             }
-            for(int j = 0; j<)
+            first *= 3;
+            if(textureType[textureIndex[i]] == 'c'){ // constant texture
+               r = textureColors[first];
+               g = textureColors[first+1];
+               b = textureColors[first+2];
+            } 
+            else if (textureType[textureIndex[i]] == 'b') { //bit map
+               float texPos [dimention-1];
+               int first = 0;
+               for(int j = 0; j<(dimention-1); j++){
+                  for(int k = 0; k<dimention; k++){
+                     texPos[j] += tcoords[i*dimention*(dimention-1) + j*(dimention-1) + k]*found[j];
+                  }
+               }
+               int texPosRound [dimention-1];
+               for(int j = 0; j<(dimention-1); j++){
+                  texPosRound[j] = (int)texPos[j];
+               }
+               int mult = 1;
+               for(int j = 0; j<(dimention-1); j++){
+                  first += j*mult;
+                  mult *= textureSizes[i*(dimention-1) + j];
+               }
+               r = textureColors[first];
+               g = textureColors[first+1];
+               b = textureColors[first+2];
+            }
             //set new color
-            //find 
+            out[pixPosInt*3] = r;
+            out[pixPosInt*3] = g;
+            out[pixPosInt*3] = b;
          }
       }
    }
@@ -171,7 +215,6 @@ __kernal calcBaryCoords(float* pos, float* lpu, int triangleIndex, int dimention
       for(int j = 0; j<dimention-1; j++){
          if(floatCompare(lpu[trueIndex+dimention*(i+1)+dimention*dimention + j], 1) == 0){
             sol[i] = dat[j];
-            break;
          }
       }
    }
