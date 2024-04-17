@@ -27,6 +27,25 @@ public class CameraRastorizationV2 implements Camera{
       s.translate(position);
    }
    
+   // translate camera so c is at (0, 0, 0, 0, ..., 0)
+   // rotate point and vectos of s
+   // translate camera so c is at it's original position
+   public void rotate(float theta, int axis1, int axis2) {
+      Point inverse = c.getInverse();
+      c.translate(inverse);
+      Matrix rotation = Matrix.GivensRot(getDimension(), theta, axis1, axis2);
+      s.setPoint(new Point(new Vector(s.getPoint().getCoordinates()).rotBy(rotation).getCoordinates()));
+      
+      System.out.println(rotation.getWidth() + " " + rotation.getHeight());
+      System.out.println(s.getPoint().toMatrix().getWidth() + " " + s.getPoint().toMatrix().getHeight());
+      // s.setPoint(s.getPoint().toMatrix().mult(rotation).toPoint());
+      
+      for (int i = 0; i < s.getSubSpace().getDir().length; i++) {
+         s.getSubSpace().getDir()[i] = s.getSubSpace().getDir()[i].rotBy(rotation);
+      }
+      c.translate(inverse.getInverse());
+   }
+   
    public int getDimension() {
       return c.getCoordinates().length;
    }

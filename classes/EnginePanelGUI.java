@@ -7,6 +7,7 @@ import java.util.*;
 import javax.swing.filechooser.FileFilter;
 import javax.imageio.ImageIO;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.Field;
 
 public class EnginePanelGUI {
 
@@ -128,6 +129,8 @@ public class EnginePanelGUI {
    
    protected class InputHelper extends Component {
    
+      protected int index;
+      
          /** Creates new InputHelper with location (x, y) and size (w, h).
       * @param x the x-coord of the location.
       * @param y the y-coord of the location.
@@ -136,12 +139,11 @@ public class EnginePanelGUI {
       */
       public InputHelper(int x, int y, int w, int h) {
          super(x, y, w, h);
-         initialize();
+         this.initialize();
       }
       
       protected void initialize() {
-         this.initializeActionMap();
-         this.initializeInputMap();
+         this.initializeMap();
       }
       
       public void translateCamera(float translation, int index) {
@@ -151,38 +153,50 @@ public class EnginePanelGUI {
          enginePanel.render();
       }
       
-      protected void initializeActionMap() {
-         enginePanel.getActionMap().put("camera_move_left", 
-            new Listener_Action() {
-               public void actionPerformed(ActionEvent e) {
-                  translateCamera(-5, 0);
-               }
-            });
-         enginePanel.getActionMap().put("camera_move_right", 
-            new Listener_Action() {
-               public void actionPerformed(ActionEvent e) {
-                  translateCamera(5, 0);
-               }
-            });
-         enginePanel.getActionMap().put("camera_move_up", 
-            new Listener_Action() {
-               public void actionPerformed(ActionEvent e) {
-                  translateCamera(-5, 1);
-               }
-            });
-         enginePanel.getActionMap().put("camera_move_down", 
-            new Listener_Action() {
-               public void actionPerformed(ActionEvent e) {
-                  translateCamera(5, 1);
-               }
-            });
+      public void rotateCamera(float theta, int axis1, int axis2) {
+         enginePanel.getCamera().rotate( theta, axis1, axis2);
       }
       
-      protected void initializeInputMap() {
-         enginePanel.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), "camera_move_left");
-         enginePanel.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), "camera_move_right");
-         enginePanel.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), "camera_move_up");
-         enginePanel.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), "camera_move_down");
+      public boolean rebindKey(int code, String type, String[] arguments) {
+         type = type.trim();
+         String actionName = type + index++;
+         try {
+            if (type.equalsIgnoreCase("rebindposition")) {
+               enginePanel.getActionMap().put(actionName, 
+                  new Listener_Action() {
+                     public void actionPerformed(ActionEvent e) {
+                        translateCamera(Float.parseFloat(arguments[2]), Integer.parseInt(arguments[3]));
+                     }
+                  });
+               enginePanel.getInputMap().put(KeyStroke.getKeyStroke(code, 0), actionName);
+            }
+            else if (type.equalsIgnoreCase("rebindrotation")) {
+               enginePanel.getActionMap().put(actionName, 
+                  new Listener_Action() {
+                     public void actionPerformed(ActionEvent e) {
+                        rotateCamera(Float.parseFloat(arguments[2]), Integer.parseInt(arguments[3]), Integer.parseInt(arguments[4]));
+                     }
+                  });
+               enginePanel.getInputMap().put(KeyStroke.getKeyStroke(code, 0), actionName);
+            }
+            else
+               return false;
+            return true;
+         }
+         catch (Exception e) {
+            System.out.println(e);
+            return false;
+         }
+      }
+      
+      protected void initializeMap() {
+         rebindKey(KeyEvent.VK_LEFT, "rebindposition", new String[] { "", "", "-0.1f", "1"});
+         rebindKey(KeyEvent.VK_RIGHT, "rebindposition", new String[] { "", "", "0.1f", "1"});
+         rebindKey(KeyEvent.VK_UP, "rebindposition", new String[] { "", "", "-0.1f", "2"});
+         rebindKey(KeyEvent.VK_DOWN, "rebindposition", new String[] { "", "", "0.1f", "2"});
+         rebindKey(KeyEvent.VK_Q, "rebindrotation", new String[] { "", "", "0.1f", "1", "2"});
+         rebindKey(KeyEvent.VK_E, "rebindrotation", new String[] { "", "", "0.1f", "1", "2"});
+         
       }
    }
 
@@ -282,14 +296,44 @@ public class EnginePanelGUI {
          String[] arguments = text.split(" ");
          if (arguments[0].trim().equalsIgnoreCase("help")) {
             if (handleError(arguments, 1)) {
-               consoleTextArea.append("'help' - lists all available commands\n");
-               consoleTextArea.append("'rebind' 'KeyEvent' 'KeyEvent' - rebinds '2' to '3'\n");
+               consoleTextArea.append("'help'\n");
+               consoleTextArea.append("  - lists all available commands\n");
+               consoleTextArea.append("'rebindposition' 'KeyEvent' 'float translation' 'int dimension'\n");
+               consoleTextArea.append("  - rebinds 'KeyEvent' to add 'float' to dimension 'int' in Camera's position.\n");
+               consoleTextArea.append("  - keys follow format of java's KeyEvent. Examples: 'VK_A'. Arrow keys are directional based, i.e. 'VK_LEFT'.\n");
+               consoleTextArea.append("'rebindrotation' 'KeyEvent' 'float theta' 'int axis1' 'int axis2'\n");
+               consoleTextArea.append("  - rebinds 'KeyEvent' to rotate Camera by 'theta' with axis 'axis1' and 'axis2'\n");
             }
          }
-         else if (arguments[0].trim().equalsIgnoreCase("rebind")) {
-            if (handleError(arguments, 3)) {
-            
+         else if (arguments[0].trim().equalsIgnoreCase("rebindposition")) {
+            if (handleError(arguments, 4)) {
+               if (inputHelper.rebindKey(findKeyCode(arguments[1]), "rebindposition", arguments))
+                  consoleTextArea.append("'" + arguments[1] + "' rebinded.");
+               else
+                  consoleTextArea.append("Error: Unsuccessful.");
             }
+         }
+         else if (arguments[0].trim().equalsIgnoreCase("rebindrotation")) {
+            if (handleError(arguments, 5)) {
+               if (inputHelper.rebindKey(findKeyCode(arguments[1]), "rebindrotation", arguments))
+                  consoleTextArea.append("'" + arguments[1] + "' rebinded.");
+               else
+                  consoleTextArea.append("Error: Unsuccessful.");
+            }
+         }
+      }
+      
+      public int findKeyCode(String field) {
+         try {
+            Field classField = KeyEvent.class.getField(field);
+            Object o = classField.get(null);
+            if (o == null)
+               return -1;
+            return (Integer)o;
+         }
+         catch (Exception e) {
+            System.out.println(e);
+            return -1;
          }
       }
       
