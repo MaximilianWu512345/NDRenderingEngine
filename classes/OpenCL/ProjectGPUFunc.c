@@ -8,6 +8,7 @@
 //2)barycentric coords
 //3)lighting????
 //    something about a stencil buffer...
+//TODO: check if some loops can be remmoved using get_global_id(1) or more
 __kernel void RaserizeStep1(
 __global float *coords, //actual coords
 __global float *tcoords, //texture coords
@@ -52,7 +53,7 @@ __global int *textureSizes,  //texture sizes are all in the same array
 __global char *textureType, //type of texture
 __global int numTextures, //using dimention can help figure out each texture
 __global float *lpuData, //data for lpu
-__global char *out, // final result, each char is an rgb chanel
+__global char *out, //final result, each char is an rgb chanel
 __global float *zBuff, //zbuffer
 __global int *stencilBuff, //stencil buffer, for lighting
 __global int numSim, //number of simplexes

@@ -21,9 +21,14 @@ public class CameraRastorizationV2 implements Camera{
    protected int n = 0;
    public static final boolean useGPU = true;
    private static final String GPU_CODE_LOC = "OpenCL\\ProjectGPUFunc.c";
+   private static final String GPU_KERNEL_LOC1 = "RaserizeStep1";
+   private static final String GPU_KERNEL_LOC2 = "RaserizeStep2";
    private static String GPUCode;
    private static cl_command_queue commandQueue;
    private static cl_context context;
+   private static cl_program program;
+   private cl_kernel rasterS1;
+   private cl_kernel rasterS2;
    public CameraRastorizationV2 (Point c, AffineSubSpace s, int[] bounds){
       this.s = s;
       this.c = c;
@@ -445,6 +450,7 @@ public class CameraRastorizationV2 implements Camera{
    }
    
    // https://www.codeproject.com/Articles/86551/Part-1-Programming-your-Graphics-Card-GPU-with-Jav
+   //static stuff that we only need one of
    public static void GPUConnect(){ 
       GPUCode = OpenCL.GetFileContents(new File(GPU_CODE_LOC));
       
@@ -468,10 +474,79 @@ public class CameraRastorizationV2 implements Camera{
       
       int numDevices = (int) numPlatformsArray[0] / Sizeof.cl_device_id;
       cl_device_id devices[] = new cl_device_id[numDevices];
-      clGetContextInfo(context, CL_CONTEXT_DEVICES, numPlatformsArray[0],  
-         Pointer.to(devices), null);
+      clGetContextInfo(context, CL_CONTEXT_DEVICES, numPlatformsArray[0],Pointer.to(devices), null);
       
       commandQueue = clCreateCommandQueue(context, devices[0], 0, null);
+      program = clCreateProgramWithSource(context, 1, new String[]{ GPUCode }, null, null);
+      clBuildProgram(program, 0, null, null, null, null);
+   }
+   //non static stuff
+   private void initCamGPUCon(){
+      rasterS1 = clCreateKernel(program, GPU_KERNEL_LOC1, null);
+      rasterS2 = clCreateKernel(program, GPU_KERNEL_LOC2, null);
+   }
+   //gets the memory array
+   private cl_mem[] setMemoryBuffRaster(Simplex[] sim, Color background){
+      cl_mem[] result = new cl_mem[17];
+      int dim = sim[0].getPoints().length;//input index 3
+      result[3] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Sizeof.cl_int, Pointer.to(new int[]{dim}), null);
+      int numFloat = sim.length*dim*dim;
+      float[] coords = new float[numFloat];//input index 0
+      int index = 0;
+      for(Simplex current: sim){
+         for(Point p: current.getPoints()){
+            for(float f: p.getCoords()){
+               coords[index] = f;
+               index++;
+            }
+         }
+      }
+      result[0] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_float*numFloat, Pointer.to(new int[]{dim}), null);
+      numFloat = sim.length*dim*(dim-1);
+      float[] tcoords = new float[numFloat];//input index 1
+      index = 0;
+      for(Simplex current: sim){
+         for(Point p: current.getTexturePoints()){
+            for(float f: p.getCoords()){
+               tcoords[index] = f;
+               index++;
+            }
+         }
+      }
+      result[1] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Sizeof.cl_float*numFloat, Pointer.to(new int[]{dim}), null);
+      int[] textureIndex = new int[sim.length]; //input index 2
+      HashMap<Texture, Integer> texMap = new HashMap<Texture, Integer>();
+      LinkedList<Texture> allTextures = new LinkedList<Texture>();
+      index = 0;
+      int simIndex = 0;
+      for(Simplex current: sim){
+         if(texMap.get(current.getTexture()) == null){
+            allTextures.add(current.getTexture());
+            texMap.put(current.getTexture(), index);
+            index++;
+         }
+         textureIndex[simIndex] =  texMap.get(current.getTexture()).intValue();
+         simIndex++;
+      }
+      result[2] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Sizeof.cl_int*textureIndex.length, Pointer.to(textureIndex), null);
+      char[][] TextureData = new char[0][allTextures.size()];
+      index = 0;
+      int textSize = 0;
+      for(Texture t: allTextures){
+         TextureData[index] = t.toCharArray();
+         textSize += TextureData[index].length;
+         index++;
+      }
+      char[] textureColors = new char[textSize]; //input index 4
+      index = 0;
+      for(char[] line: TextureData){
+         for(char c: line){
+            textureColors[index] = c;
+            index++;
+         }
+      }
+      result[4] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Sizeof.cl_char*textureColors.length, Pointer.to(textureColors), null);
       
+      return result;
    }
 }

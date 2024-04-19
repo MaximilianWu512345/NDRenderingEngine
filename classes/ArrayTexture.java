@@ -60,5 +60,13 @@ public class ArrayTexture implements Texture{
       }
       return result;
    }
-
+   public char[] toCharArray(){
+      char[] result = new char[3*data.length];
+      for(int i = 0; i<data.length; i++){
+         result[3*i] = (char)data[i].getRed();
+         result[3*i+1] = (char)data[i].getGreen();
+         result[3*i+2] = (char)data[i].getBlue();
+      }
+      return result;
+   }
 }
