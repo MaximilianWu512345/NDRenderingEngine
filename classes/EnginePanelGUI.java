@@ -22,6 +22,7 @@ public class EnginePanelGUI {
    public EnginePanelGUI(JFrame frame, EnginePanel owner, boolean enableJMenuBar) {
       engineFrame = frame;
       enginePanel = owner;
+      enginePanel.setGUI(this);
       frame.setSize(frame.getWidth() * 6 / 5, frame.getHeight());
       enginePanel.setSize(enginePanel.getWidth() * 6 / 5, enginePanel.getHeight());
       enginePanel.addComponent(inputHelper = new InputHelper(0, 0, 0, 0));
@@ -106,6 +107,10 @@ public class EnginePanelGUI {
       else
          file = null;
       return file;
+   }
+   
+   public void addMesh(Mesh mesh) {
+      buttonHelper.updateForMesh(mesh);
    }
    
    protected class Listener_Action implements Action {
@@ -455,6 +460,8 @@ public class EnginePanelGUI {
    protected class ButtonHelper extends Component {
       
       protected ArrayList<Button> buttons;
+      
+      protected ArrayList<Container> containers;
    
       /** Creates new ButtonHelper with location (x, y) and size (w, h).
       * @param x the x-coord of the location.
@@ -471,6 +478,7 @@ public class EnginePanelGUI {
          buttons = new ArrayList<Button>();
          buttons.add(new Button_NewMesh(this.getX(), this.getY(), this.getWidth(), this.getHeight() / 20, Color.white, "+"));
          buttons.add(new Button_Render(this.getX(), this.getY() + this.getHeight() * 19 / 20, this.getWidth(), this.getHeight() / 20, Color.white, "Render Mesh"));
+         containers = new ArrayList<Container>();
       }
       
       public Mesh createMesh(String type) {
@@ -486,11 +494,18 @@ public class EnginePanelGUI {
          }
       }
       
-      public void updateForMesh() {
-         ArrayList<Mesh> meshes = enginePanel.getMeshes();
-         if (meshes.size() > 0) {
-            enginePanel.remove(buttons.get(0));
+      public void updateForMesh(Mesh m) {
+         int x = this.getX();
+         int y = this.getY() + this.getHeight() / 20;
+         for (Container c : containers) {
+            y += c.getHeight();
          }
+         Container container = new Container(x, y, this.getWidth(), this.getHeight() / 20, "Mesh");
+         for (Simplex s : m.getFaces()) {
+            container.add(new Container(x, y + this.getHeight() / 20, this.getWidth(), this.getHeight() / 20, "Simplex"));
+         }
+         containers.add(container);
+         enginePanel.add(container);
          enginePanel.repaint();
       }
       
@@ -498,9 +513,12 @@ public class EnginePanelGUI {
       * @return an array containing every Button in dictButtons.
       */
       public JComponent[] getComponents() {
-         JComponent[] temp = new JComponent[buttons.size()];
+         JComponent[] temp = new JComponent[buttons.size() + containers.size()];
          for (int i = 0; i < buttons.size(); i++) {
             temp[i] = buttons.get(i);
+         }
+         for (int i = 0; i < containers.size(); i++) {
+            temp[i + buttons.size()] = containers.get(i);
          }
          return temp;
       }
@@ -541,8 +559,8 @@ public class EnginePanelGUI {
                new MouseAdapter() {
                   public void mouseClicked(MouseEvent e) {
                      if (e.getClickCount() == 2) {
-                        enginePanel.addMesh(createMesh((String)list.getSelectedValue()));
-                        updateForMesh();
+                        Mesh mesh = createMesh((String)list.getSelectedValue());
+                        enginePanel.addMesh(mesh);
                         frame.setVisible(false);
                      }
                   }

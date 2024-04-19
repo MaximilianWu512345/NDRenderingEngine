@@ -198,6 +198,7 @@ public class Vector {
       temp[0] = this;
       Matrix v = new Matrix(temp);
       v = new Matrix(v.getTranspose());
+      System.out.println(rot + " " + v);
       Matrix postRot = new Matrix(rot.mult(v).getTranspose());
       Vector[] result = postRot.toVectors();
       return result[0];

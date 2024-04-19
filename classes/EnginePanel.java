@@ -26,6 +26,8 @@ public class EnginePanel extends JPanel {
    
    protected ArrayList<Mesh> meshes;
    
+   protected EnginePanelGUI gui;
+   
 /** Creates an EnginePanel of size (width, height) and calls initialize().
 * @param width the width of the EnginePanel.
 * @param height the height of the EnginePanel.
@@ -57,11 +59,13 @@ public class EnginePanel extends JPanel {
    public void setMeshes(Mesh[] meshes) {
       this.meshes.clear();
       for (Mesh m : meshes)
-         this.meshes.add(m);
+         this.addMesh(m);
    }
    
    public void addMesh(Mesh mesh) {
       this.meshes.add(mesh);
+      if (gui != null)
+         gui.addMesh(mesh);
    }
    
    public ArrayList<Mesh> getMeshes() {
@@ -74,6 +78,10 @@ public class EnginePanel extends JPanel {
    
    public Camera getCamera() {
       return this.camera;
+   }
+   
+   public void setGUI(EnginePanelGUI gui) {
+      this.gui = gui;
    }
    
    public void render() {
