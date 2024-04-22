@@ -32,19 +32,12 @@ public class CameraRastorizationV2 implements Camera{
    // translate camera so c is at it's original position
    public void rotate(float theta, int axis1, int axis2) {
       Point inverse = c.getInverse();
-      c.translate(inverse);
+      s.translate(inverse);
       Matrix rotation = Matrix.GivensRot(getDimension(), theta, axis1, axis2);
-      //s.setPoint(new Point(new Vector(s.getPoint().getCoordinates()).rotBy(rotation).getCoordinates()));
-      
-      //System.out.println(rotation.getWidth() + " " + rotation.getHeight());
-      //System.out.println(s.getPoint().toMatrix().getWidth() + " " + s.getPoint().toMatrix().getHeight());
       s.setPoint(rotation.mult(s.getPoint().toMatrix()).toPoint());
-      
       for (int i = 0; i < s.getSubSpace().getDir().length; i++) {
-         System.out.println(s.getSubSpace().getDir()[i]);
          s.getSubSpace().getDir()[i] = s.getSubSpace().getDir()[i].rotBy(rotation);
       }
-      c.translate(inverse.getInverse());
    }
    
    public int getDimension() {
@@ -76,7 +69,10 @@ public class CameraRastorizationV2 implements Camera{
       int currentCol = 0;
       Point[] newData = s.getPoints();
       v = new Vector[newData.length];
-      u = this.s.getSubSpace().getDir();
+      u = new Vector[this.s.getSubSpace().getDir().length];
+      for (int i = 0; i < u.length; i++) {
+         u[i] = this.s.getSubSpace().getDir()[i];
+      }
       negu = new Vector[u.length];
       exten = new Vector(this.s.getPoint(), c);
       constShift = new Vector(c.getCoords());

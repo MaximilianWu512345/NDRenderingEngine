@@ -160,6 +160,7 @@ public class EnginePanelGUI {
       
       public void rotateCamera(float theta, int axis1, int axis2) {
          enginePanel.getCamera().rotate( theta, axis1, axis2);
+         enginePanel.render();
       }
       
       public boolean rebindKey(int code, String type, String[] arguments) {
@@ -200,7 +201,7 @@ public class EnginePanelGUI {
          rebindKey(KeyEvent.VK_UP, "rebindposition", new String[] { "", "", "-0.1f", "2"});
          rebindKey(KeyEvent.VK_DOWN, "rebindposition", new String[] { "", "", "0.1f", "2"});
          rebindKey(KeyEvent.VK_Q, "rebindrotation", new String[] { "", "", "0.1f", "1", "2"});
-         rebindKey(KeyEvent.VK_E, "rebindrotation", new String[] { "", "", "0.1f", "1", "2"});
+         rebindKey(KeyEvent.VK_E, "rebindrotation", new String[] { "", "", "-0.1f", "1", "2"});
          
       }
    }
@@ -502,11 +503,13 @@ public class EnginePanelGUI {
          }
          Container container = new Container(x, y, this.getWidth(), this.getHeight() / 20, "Mesh");
          for (Simplex s : m.getFaces()) {
-            container.add(new Container(x, y + this.getHeight() / 20, this.getWidth(), this.getHeight() / 20, "Simplex"));
+            container.add(new Container(x, y += this.getHeight() / 20, this.getWidth(), this.getHeight() / 20, "Simplex"));
          }
          containers.add(container);
          enginePanel.add(container);
          enginePanel.repaint();
+         for (Container c : containers)
+            System.out.println(c);
       }
       
       /** Returns an array of every Button in dictButtons.

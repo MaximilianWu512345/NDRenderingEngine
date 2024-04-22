@@ -199,7 +199,7 @@ public class Vector {
       Matrix v = new Matrix(temp);
       v = new Matrix(v.getTranspose());
       System.out.println(rot + " " + v);
-      Matrix postRot = new Matrix(rot.mult(v).getTranspose());
+      Matrix postRot = new Matrix(rot.mult(v).getData());
       Vector[] result = postRot.toVectors();
       return result[0];
    }
