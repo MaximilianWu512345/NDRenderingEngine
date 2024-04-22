@@ -60,7 +60,10 @@ public class CameraRastorizationV2 implements Camera{
       int currentCol = 0;
       Point[] newData = s.getPoints();
       v = new Vector[newData.length];
-      u = this.s.getSubSpace().getDir();
+      u = new Vector[this.s.getSubSpace().getDir().length];
+      for(int i = 0; i<u.length; i++){
+         u[i] = this.s.getSubSpace().getDir()[i];
+      }
       negu = new Vector[u.length];
       exten = new Vector(this.s.getPoint(), c);
       constShift = new Vector(c.getCoords());
@@ -546,6 +549,15 @@ public class CameraRastorizationV2 implements Camera{
          }
       }
       result[4] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Sizeof.cl_char*textureColors.length, Pointer.to(textureColors), null);
+      int[] textureSizes = new int[allTextures.size()*(dim-1)]; //input index 5
+      index = 0;
+      for(Texture t: allTextures){
+         for(int v: t.getBounds()){
+            textureSizes[index] = v;
+            index++;
+         }
+      }
+      result[5] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Sizeof.cl_int*textureSizes.length, Pointer.to(textureSizes), null);
       
       return result;
    }
