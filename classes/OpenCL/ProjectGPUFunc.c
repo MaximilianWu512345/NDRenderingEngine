@@ -79,7 +79,7 @@ __global char DefB  //default blue
                inSim = false;
             }
          }
-         if(zBuff[gid]<found[dimention-1] && inSim){
+         if((zBuff[gid]<found[dimention-1] || zBuff[gid]<0) && inSim){
             //get new color
             char r = DefR;
             char g = DefG;

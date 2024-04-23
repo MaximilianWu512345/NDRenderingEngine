@@ -29,6 +29,9 @@ public class CameraRastorizationV2 implements Camera{
    private static cl_program program;
    private cl_kernel rasterS1;
    private cl_kernel rasterS2;
+   private Pointer outPointer;
+   private char[] out;
+   private static boolean hasConnected = false;
    public CameraRastorizationV2 (Point c, AffineSubSpace s, int[] bounds){
       this.s = s;
       this.c = c;
@@ -185,13 +188,68 @@ public class CameraRastorizationV2 implements Camera{
       //z-buffering and painting
       zBufferArrayTexture zBuff = new zBufferArrayTexture(pix,bounds);
       if(useGPU){
+         if(!hasConnected){
+            GPUConnect();
+         }
          //first make kernals
-         
+         initCamGPUCon();
          //set arguments
+         LinkedList<Simplex> sList = new LinkedList<Simplex>();
+         for(Simplex current: projected){
+            int[] selectedPoints = new int[ms+1];
+            int pointCount = current.getPoints().length;
+            for(int i = 0; i<selectedPoints.length; i++){
+               selectedPoints[i] = i;
+            }
+            boolean cont = true;
+            while(cont){
+               Point[] coords = current.getPoints();
+               Point[] tcoords = current.getTexturePoints();
+               Texture texture = current.getTexture();
+               Point[] newCoords = new Point[selectedPoints.length];
+               Point[] newtCoords = new Point[selectedPoints.length];
+               for(int i = 0; i< newCoords.length; i++){
+                  newCoords[i] = coords[selectedPoints[i]];
+                  newtCoords[i] = tcoords[selectedPoints[i]];
+               }
+               Simplex newS = new Simplex(newCoords);
+               newS.setTexture(texture);
+               newS.setTexturePoints(newtCoords);
+               sList.add(newS);
+               selectedPoints = shiftSelected(selectedPoints, pointCount, selectedPoints.length-1);
+               cont = selectedPoints != null;
+            }
+         }
+         Simplex[] sim = new Simplex[sList.size()];
+         sim = sList.toArray(sim);
+         cl_mem memory[] = setMemoryBuffRaster(sim, backgroundC, triangleC);
+         for(int i = 0; i<memory.length; i++){
+            clSetKernelArg(rasterS1, i, Sizeof.cl_mem, Pointer.to(memory[i]));
+            clSetKernelArg(rasterS2, i, Sizeof.cl_mem, Pointer.to(memory[i]));
+         }
+         int numPixels = 1;
+         for(int b: bounds){
+            numPixels *= b;
+         }
          //run step 1
+         long global_work_size[] = new long[]{sim.length};
+         long local_work_size[] = new long[]{1};
+         clEnqueueNDRangeKernel(commandQueue, rasterS1, 1, null, global_work_size, local_work_size, 0, null, null);
          //run step 2
+         
+         global_work_size = new long[]{numPixels};
+         local_work_size = new long[]{1};
+         clEnqueueNDRangeKernel(commandQueue, rasterS2, 1, null, global_work_size, local_work_size, 0, null, null);
          //shadows if we get to it
          //read results
+         clEnqueueReadBuffer(commandQueue, memory[9], CL_TRUE, 0, numPixels*3*Sizeof.cl_char, outPointer, 0, null, null);
+         Color[] c = new Color[out.length/3];
+         for(int i = 0; i<c.length; i++){
+            c[i] = new Color((int)out[i*3], (int)out[i*3+1], (int)out[i*3+2]);
+         }
+         for (cl_mem m : memory)
+            clReleaseMemObject(m);
+         return new ArrayTexture(c, bounds);
       } else {
          for(Simplex current: projected){
             Point[] allPoints = current.getPoints();
@@ -448,10 +506,14 @@ public class CameraRastorizationV2 implements Camera{
       return arr;
    }
    public static void endConnection(){
+      clReleaseProgram(program);
       clReleaseCommandQueue(commandQueue);
       clReleaseContext(context);
    }
-   
+   public void close(){   
+      clReleaseKernel(rasterS1);
+      clReleaseKernel(rasterS2);
+   }
    // https://www.codeproject.com/Articles/86551/Part-1-Programming-your-Graphics-Card-GPU-with-Jav
    //static stuff that we only need one of
    public static void GPUConnect(){ 
@@ -475,13 +537,23 @@ public class CameraRastorizationV2 implements Camera{
       cl_context_properties contextProperties = new cl_context_properties();
       contextProperties.addProperty(CL_CONTEXT_PLATFORM, platform);
       
-      int numDevices = (int) numPlatformsArray[0] / Sizeof.cl_device_id;
-      cl_device_id devices[] = new cl_device_id[numDevices];
-      clGetContextInfo(context, CL_CONTEXT_DEVICES, numPlatformsArray[0],Pointer.to(devices), null);
+      // Obtain the number of devices for the platform
+      int numDevicesArray[] = new int[1];
+      clGetDeviceIDs(platform, deviceType, 0, null, numDevicesArray);
+      int numDevices = numDevicesArray[0];
       
-      commandQueue = clCreateCommandQueue(context, devices[0], 0, null);
+      // Obtain a device ID 
+      cl_device_id devices[] = new cl_device_id[numDevices];
+      clGetDeviceIDs(platform, deviceType, numDevices, devices, null);
+      cl_device_id device = devices[deviceIndex];
+      
+      //get context
+      cl_context context = clCreateContext(contextProperties, 1, new cl_device_id[]{device}, null, null, null);         
+      
+      commandQueue = clCreateCommandQueue(context, devices[0], 0, null);   
       program = clCreateProgramWithSource(context, 1, new String[]{ GPUCode }, null, null);
       clBuildProgram(program, 0, null, null, null, null);
+      hasConnected = true;
    }
    //non static stuff
    private void initCamGPUCon(){
@@ -489,7 +561,7 @@ public class CameraRastorizationV2 implements Camera{
       rasterS2 = clCreateKernel(program, GPU_KERNEL_LOC2, null);
    }
    //gets the memory array
-   private cl_mem[] setMemoryBuffRaster(Simplex[] sim, Color background){
+   private cl_mem[] setMemoryBuffRaster(Simplex[] sim, Color background, Color def){
       cl_mem[] result = new cl_mem[17];
       int dim = sim[0].getPoints().length;//input index 3
       result[3] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Sizeof.cl_int, Pointer.to(new int[]{dim}), null);
@@ -558,7 +630,44 @@ public class CameraRastorizationV2 implements Camera{
          }
       }
       result[5] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Sizeof.cl_int*textureSizes.length, Pointer.to(textureSizes), null);
-      
+      char[] textureType = new char[allTextures.size()]; //input index 6
+      index = 0;
+      for(Texture t: allTextures){
+         if(t instanceof ArrayTexture){
+            textureType[index] = 'b';
+         } else if(t instanceof ConstentTexture){
+            textureType[index] = 'c';
+         }
+         index++;
+      }
+      result[6] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Sizeof.cl_char*textureType.length, Pointer.to(textureType), null);
+      result[7] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Sizeof.cl_int, Pointer.to(new int[]{allTextures.size()}), null);
+      float[] lpuData = new float[sim.length*(dim*dim*3 + dim)];
+      result[8] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_float*lpuData.length, Pointer.to(lpuData), null);
+      int numPixels = 1;
+      for(int b: bounds){
+         numPixels *= b;
+      }
+      out = new char[numPixels*3]; // input index 9
+      for(int i = 0; i<numPixels; i++){
+         out[i*3] = (char)background.getRed();
+         out[i*3+1] = (char)background.getGreen();
+         out[i*3+2] = (char)background.getBlue();
+      }
+      outPointer = Pointer.to(out);
+      result[9] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_char*out.length, outPointer, null);
+      float[] zBuff = new float[numPixels]; // input index 10
+      for(int i = 0; i<numPixels; i++){
+         zBuff[i] = -1;
+      }
+      result[10] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_float*zBuff.length, Pointer.to(zBuff), null);
+      int[] stencilBuff = new int[numPixels]; // input index 11
+      result[11] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_int*stencilBuff.length, Pointer.to(stencilBuff), null);
+      result[12] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Sizeof.cl_int, Pointer.to(new int[]{sim.length}), null);
+      result[13] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Sizeof.cl_int*bounds.length, Pointer.to(bounds), null);
+      result[14] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Sizeof.cl_char, Pointer.to(new char[]{(char)def.getRed()}), null);
+      result[15] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Sizeof.cl_char, Pointer.to(new char[]{(char)def.getGreen()}), null);
+      result[16] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Sizeof.cl_char, Pointer.to(new char[]{(char)def.getBlue()}), null);
       return result;
    }
 }
