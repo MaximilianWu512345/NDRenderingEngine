@@ -501,15 +501,22 @@ public class EnginePanelGUI {
          for (Container c : containers) {
             y += c.getHeight();
          }
-         Container container = new Container(x, y, this.getWidth(), this.getHeight() / 20, "Mesh");
-         for (Simplex s : m.getFaces()) {
-            container.add(new Container(x, y += this.getHeight() / 20, this.getWidth(), this.getHeight() / 20, "Simplex"));
+         try {
+            Container container = new Container(null, new DataField[] { new DataField_Mesh(m), new DataField_Mesh(m), new DataField_Mesh(m) });
+            container.initialize(x, y, getWidth(), getHeight() / 20, null, "Mesh");
+            container.initializeListeners();
+            for (Simplex s : m.getFaces()) {
+               Container temp = new Container(container, new DataField[0]);
+               temp.initialize(0, 0, 0, 0, null, "Simplex");
+               temp.updateContainer();
+               container.add(temp);
+            }
+            containers.add(container);
+            enginePanel.add(container);
+         } catch (Exception e) {
+            System.out.println(e);
          }
-         containers.add(container);
-         enginePanel.add(container);
          enginePanel.repaint();
-         for (Container c : containers)
-            System.out.println(c);
       }
       
       /** Returns an array of every Button in dictButtons.
@@ -527,6 +534,36 @@ public class EnginePanelGUI {
       }
       
       protected void paintComponent(Graphics g) {
+      }
+      
+      protected class DataField_Mesh extends DataField<Mesh> {
+         public DataField_Mesh(Mesh owner) {
+            super(owner);
+         }
+         public void setValue(Mesh value) {
+            
+         }
+         public String getValue() {
+            return "" + getOwner().getDimension();
+         }
+         public String getName() {
+            return "dimension";
+         }
+      }
+      
+      protected class DataField_Simplex extends DataField<Simplex> {
+         public DataField_Simplex(Simplex owner) {
+            super(owner);
+         }
+         public void setValue(Simplex value) {
+            
+         }
+         public String getValue() {
+            return "lol";
+         }
+         public String getName() {
+            return "dimension";
+         }
       }
       
       protected class Button_Render extends Button {
