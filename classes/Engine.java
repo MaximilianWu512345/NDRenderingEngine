@@ -10,6 +10,11 @@ public class Engine {
 * @param args default args for main method.
 */
    public static void main(String[] args) {
+      //gpu stuff
+      Matrix m1 = new Matrix(new float[][]{new float[]{1, 0}, new float[]{0, 1}});
+      Matrix m2 = new Matrix(new float[][]{new float[]{1, 0}, new float[]{0, 1}});
+      Matrix m3 = m1.multGPU(m2);
+   
       int width = 1000;
       int height = 1000;
       JFrame frame = new JFrame("Max Wu's Concoction Machine!");

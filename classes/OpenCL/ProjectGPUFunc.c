@@ -1,3 +1,5 @@
+//https://community.amd.com/t5/archives-discussions/opencl-tutorial-help-cl-invalid-kernel-name/td-p/384785
+#pragma OPENCL EXTENSION cl_khr_byte_addressable_store : enable
 //steps to render:
 //slicing
 //1)lp
@@ -14,19 +16,19 @@ __global float *coords, //actual coords
 __global float *tcoords, //texture coords
 __global int *textureIndex, //texture to use
 __global int dimention, //dimention after slicing
-__global char *textureColors, //all textures are in same array, each char is an rgb chanel
+__global uchar *textureColors, //all textures are in same array, each uchar is an rgb chanel
 __global int *textureSizes,  //texture sizes are all in the same array
-__global char *textureType, //type of texture
+__global uchar *textureType, //type of texture
 __global int numTextures, //using dimention can help figure out each texture
 __global float *lpuData, //data for lpu
-__global char *out, // final result, each char is an rgb chanel
+__global uchar *out, // final result, each uchar is an rgb chanel
 __global float *zBuff, //zbuffer
 __global int *stencilBuff, //stencil buffer, for lighting
 __global int numSim, //number of simplexes
 __global int *outDim, //dimentions of the result
-__global char DefR, //default red 
-__global char DefG, //default green
-__global char DefB  //default blue
+__global uchar DefR, //default red 
+__global uchar DefG, //default green
+__global uchar DefB  //default blue
 ){
    //flaten
    int gid = get_global_id(0);
@@ -48,19 +50,19 @@ __global float *coords, //actual coords
 __global float *tcoords, //texture coords
 __global int *textureIndex, //texture to use
 __global int dimention, //dimention after slicing
-__global char *textureColors, //all textures are in same array, each char is an rgb chanel
+__global uchar *textureColors, //all textures are in same array, each uchar is an rgb chanel
 __global int *textureSizes,  //texture sizes are all in the same array
-__global char *textureType, //type of texture
+__global uchar *textureType, //type of texture
 __global int numTextures, //using dimention can help figure out each texture
 __global float *lpuData, //data for lpu
-__global char *out, //final result, each char is an rgb chanel
+__global uchar *out, //final result, each uchar is an rgb chanel
 __global float *zBuff, //zbuffer
 __global int *stencilBuff, //stencil buffer, for lighting
 __global int numSim, //number of simplexes
 __global int *outDim, //dimentions of the result
-__global char DefR, //default red 
-__global char DefG, //default green
-__global char DefB  //default blue
+__global uchar DefR, //default red 
+__global uchar DefG, //default green
+__global uchar DefB  //default blue
 ){
    gid = get_global_id(0);
    if(stencilBuff[gid/8] && (1<<(gid%8)) > 0){
@@ -81,9 +83,9 @@ __global char DefB  //default blue
          }
          if((zBuff[gid]<found[dimention-1] || zBuff[gid]<0) && inSim){
             //get new color
-            char r = DefR;
-            char g = DefG;
-            char b = DefB
+            uchar r = DefR;
+            uchar g = DefG;
+            uchar b = DefB
             int first = 0;
             for(int j = 0; j<textureIndex[i]; j++){
                int sum = 1;

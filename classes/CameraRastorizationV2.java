@@ -548,15 +548,16 @@ public class CameraRastorizationV2 implements Camera{
       cl_device_id device = devices[deviceIndex];
       
       //get context
-      cl_context context = clCreateContext(contextProperties, 1, new cl_device_id[]{device}, null, null, null);         
+      context = clCreateContext(contextProperties, 1, new cl_device_id[]{device}, null, null, null);         
       
       commandQueue = clCreateCommandQueue(context, devices[0], 0, null);   
       program = clCreateProgramWithSource(context, 1, new String[]{ GPUCode }, null, null);
-      clBuildProgram(program, 0, null, null, null, null);
+      clBuildProgram(program, 1, new cl_device_id[]{device}, null, null, null);
       hasConnected = true;
    }
    //non static stuff
    private void initCamGPUCon(){
+      cl_kernel temp = clCreateKernel(program, "RaserizeStep1", null);
       rasterS1 = clCreateKernel(program, GPU_KERNEL_LOC1, null);
       rasterS2 = clCreateKernel(program, GPU_KERNEL_LOC2, null);
    }
