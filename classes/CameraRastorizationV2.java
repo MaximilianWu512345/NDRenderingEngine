@@ -564,7 +564,7 @@ public class CameraRastorizationV2 implements Camera{
    }
    //gets the memory array
    private cl_mem[] setMemoryBuffRaster(Simplex[] sim, Color background, Color def){
-      cl_mem[] result = new cl_mem[17];
+      cl_mem[] result = new cl_mem[25];
       int dim = sim[0].getPoints().length;//input index 3
       result[3] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Sizeof.cl_int, Pointer.to(new int[]{dim}), null);
       int numFloat = sim.length*dim*dim;
@@ -670,6 +670,22 @@ public class CameraRastorizationV2 implements Camera{
       result[14] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Sizeof.cl_char, Pointer.to(new char[]{(char)def.getRed()}), null);
       result[15] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Sizeof.cl_char, Pointer.to(new char[]{(char)def.getGreen()}), null);
       result[16] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Sizeof.cl_char, Pointer.to(new char[]{(char)def.getBlue()}), null);
+      float[] fCoords = new float[sim.length*(dim-1)*dim];
+      result[17] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_float*fCoords.length, Pointer.to(fCoords), null);
+      float[] dat = new float[sim.length*(dim)];
+      result[18] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_float*dat.length, Pointer.to(dat), null);
+      float[] sol = new float[sim.length*(dim)];
+      result[19] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_float*sol.length, Pointer.to(sol), null);
+      float[] pixPos = new float[numPixels*(dim-1)];
+      result[20] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_float*pixPos.length, Pointer.to(pixPos), null);
+      float[] found = new float[numPixels*(dim)];
+      result[21] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_float*found.length, Pointer.to(found), null);
+      float[] texPos = new float[numPixels*(dim-1)];
+      result[22] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_float*texPos.length, Pointer.to(texPos), null);
+      int[] texPosRound = new int[numPixels*(dim-1)];
+      result[23] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_int*texPosRound.length, Pointer.to(texPosRound), null);
+      float[] texPosRound = new float[numPixels*(dim)];
+      result[24] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_float*texPosRound.length, Pointer.to(texPosRound), null);
       return result;
    }
    //code taken from:https://www.tabnine.com/code/java/methods/org.jocl.CL/clGetProgramBuildInfo
