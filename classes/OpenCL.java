@@ -92,7 +92,7 @@ public class OpenCL {
          Scanner reader = new Scanner(file);
          String s = "";
          while (reader.hasNextLine()) {
-            s += reader.nextLine();
+            s += reader.nextLine() + "\n";
          }
          reader.close();
          return s;

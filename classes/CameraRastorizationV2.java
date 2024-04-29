@@ -553,6 +553,7 @@ public class CameraRastorizationV2 implements Camera{
       commandQueue = clCreateCommandQueue(context, devices[0], 0, null);   
       program = clCreateProgramWithSource(context, 1, new String[]{ GPUCode }, null, null);
       clBuildProgram(program, 1, new cl_device_id[]{device}, null, null, null);
+      System.out.println(obtainBuildLogs(program, new cl_device_id[]{device}));
       hasConnected = true;
    }
    //non static stuff
@@ -670,5 +671,23 @@ public class CameraRastorizationV2 implements Camera{
       result[15] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Sizeof.cl_char, Pointer.to(new char[]{(char)def.getGreen()}), null);
       result[16] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Sizeof.cl_char, Pointer.to(new char[]{(char)def.getBlue()}), null);
       return result;
+   }
+   //code taken from:https://www.tabnine.com/code/java/methods/org.jocl.CL/clGetProgramBuildInfo
+   public static String obtainBuildLogs(cl_program program, cl_device_id[] devices)
+   {
+      StringBuffer sb = new StringBuffer();
+      for(int i = 0; i < devices.length; i++)
+      {
+         sb.append("Build log for device " + i + ":\n");
+         long logSize[] = new long[1];
+         clGetProgramBuildInfo(program, devices[i],
+             CL_PROGRAM_BUILD_LOG, 0, null, logSize);
+         byte logData[] = new byte[(int) logSize[0]];
+         clGetProgramBuildInfo(program, devices[i],
+             CL_PROGRAM_BUILD_LOG, logSize[0], Pointer.to(logData), null);
+         sb.append(new String(logData, 0, logData.length - 1));
+         sb.append("\n");
+      }
+      return sb.toString();
    }
 }

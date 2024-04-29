@@ -15,20 +15,20 @@ __kernel void RaserizeStep1(
 __global float *coords, //actual coords
 __global float *tcoords, //texture coords
 __global int *textureIndex, //texture to use
-__global int dimention, //dimention after slicing
+int dimention, //dimention after slicing
 __global uchar *textureColors, //all textures are in same array, each uchar is an rgb chanel
 __global int *textureSizes,  //texture sizes are all in the same array
 __global uchar *textureType, //type of texture
-__global int numTextures, //using dimention can help figure out each texture
+int numTextures, //using dimention can help figure out each texture
 __global float *lpuData, //data for lpu
 __global uchar *out, // final result, each uchar is an rgb chanel
 __global float *zBuff, //zbuffer
 __global int *stencilBuff, //stencil buffer, for lighting
 __global int numSim, //number of simplexes
 __global int *outDim, //dimentions of the result
-__global uchar DefR, //default red 
-__global uchar DefG, //default green
-__global uchar DefB  //default blue
+uchar DefR, //default red 
+uchar DefG, //default green
+uchar DefB  //default blue
 ){
    //flaten
    int gid = get_global_id(0);
