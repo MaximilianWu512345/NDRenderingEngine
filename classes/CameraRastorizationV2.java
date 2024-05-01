@@ -222,8 +222,9 @@ public class CameraRastorizationV2 implements Camera{
          }
          Simplex[] sim = new Simplex[sList.size()];
          sim = sList.toArray(sim);
-         cl_mem memory[] = setMemoryBuffRaster(sim, backgroundC, triangleC);
+         cl_mem memory[] = setMemoryBuffRaster(sim, backgroundC, triangleC, new cl_kernel[]{rasterS1, rasterS2});
          for(int i = 0; i<memory.length; i++){
+            System.out.println(memory[i]);
             clSetKernelArg(rasterS1, i, Sizeof.cl_mem, Pointer.to(memory[i]));
             clSetKernelArg(rasterS2, i, Sizeof.cl_mem, Pointer.to(memory[i]));
          }
@@ -242,7 +243,7 @@ public class CameraRastorizationV2 implements Camera{
          clEnqueueNDRangeKernel(commandQueue, rasterS2, 1, null, global_work_size, local_work_size, 0, null, null);
          //shadows if we get to it
          //read results
-         clEnqueueReadBuffer(commandQueue, memory[9], CL_TRUE, 0, numPixels*3*Sizeof.cl_char, outPointer, 0, null, null);
+         clEnqueueReadBuffer(commandQueue, memory[7], CL_TRUE, 0, out.length*Sizeof.cl_uchar, outPointer, 0, null, null);
          Color[] c = new Color[out.length/3];
          for(int i = 0; i<c.length; i++){
             c[i] = new Color((int)out[i*3], (int)out[i*3+1], (int)out[i*3+2]);
@@ -563,10 +564,10 @@ public class CameraRastorizationV2 implements Camera{
       rasterS2 = clCreateKernel(program, GPU_KERNEL_LOC2, null);
    }
    //gets the memory array
-   private cl_mem[] setMemoryBuffRaster(Simplex[] sim, Color background, Color def){
-      cl_mem[] result = new cl_mem[25];
-      int dim = sim[0].getPoints().length;//input index 3
-      result[3] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Sizeof.cl_int, Pointer.to(new int[]{dim}), null);
+   private cl_mem[] setMemoryBuffRaster(Simplex[] sim, Color background, Color def, cl_kernel[] kernels){
+      cl_mem[] result = new cl_mem[19];
+      int tdim = sim[0].getTexturePoints()[0].length();//input index 25
+      int dim = sim[0].getPoints().length;//input index 20
       int numFloat = sim.length*dim*dim;
       float[] coords = new float[numFloat];//input index 0
       int index = 0;
@@ -579,7 +580,7 @@ public class CameraRastorizationV2 implements Camera{
          }
       }
       result[0] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_float*numFloat, Pointer.to(new int[]{dim}), null);
-      numFloat = sim.length*dim*(dim-1);
+      numFloat = sim.length*dim*tdim;
       float[] tcoords = new float[numFloat];//input index 1
       index = 0;
       for(Simplex current: sim){
@@ -606,7 +607,7 @@ public class CameraRastorizationV2 implements Camera{
          simIndex++;
       }
       result[2] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Sizeof.cl_int*textureIndex.length, Pointer.to(textureIndex), null);
-      char[][] TextureData = new char[0][allTextures.size()];
+      char[][] TextureData = new char[1][allTextures.size()];
       index = 0;
       int textSize = 0;
       for(Texture t: allTextures){
@@ -614,7 +615,7 @@ public class CameraRastorizationV2 implements Camera{
          textSize += TextureData[index].length;
          index++;
       }
-      char[] textureColors = new char[textSize]; //input index 4
+      char[] textureColors = new char[textSize]; //input index 3
       index = 0;
       for(char[] line: TextureData){
          for(char c: line){
@@ -622,8 +623,8 @@ public class CameraRastorizationV2 implements Camera{
             index++;
          }
       }
-      result[4] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Sizeof.cl_char*textureColors.length, Pointer.to(textureColors), null);
-      int[] textureSizes = new int[allTextures.size()*(dim-1)]; //input index 5
+      result[3] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Sizeof.cl_uchar*textureColors.length, Pointer.to(textureColors), null);
+      int[] textureSizes = new int[allTextures.size()*(tdim)]; //input index 4
       index = 0;
       for(Texture t: allTextures){
          for(int v: t.getBounds()){
@@ -631,8 +632,8 @@ public class CameraRastorizationV2 implements Camera{
             index++;
          }
       }
-      result[5] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Sizeof.cl_int*textureSizes.length, Pointer.to(textureSizes), null);
-      char[] textureType = new char[allTextures.size()]; //input index 6
+      result[4] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Sizeof.cl_int*textureSizes.length, Pointer.to(textureSizes), null);
+      char[] textureType = new char[allTextures.size()]; //input index 5
       index = 0;
       for(Texture t: allTextures){
          if(t instanceof ArrayTexture){
@@ -642,50 +643,75 @@ public class CameraRastorizationV2 implements Camera{
          }
          index++;
       }
-      result[6] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Sizeof.cl_char*textureType.length, Pointer.to(textureType), null);
-      result[7] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Sizeof.cl_int, Pointer.to(new int[]{allTextures.size()}), null);
-      float[] lpuData = new float[sim.length*(dim*dim*3 + dim)];
-      result[8] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_float*lpuData.length, Pointer.to(lpuData), null);
+      result[5] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Sizeof.cl_uchar*textureType.length, Pointer.to(textureType), null);
+      float[] lpuData = new float[sim.length*(dim*dim*3 + dim)]; //input index 6
+      result[6] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_float*lpuData.length, Pointer.to(lpuData), null);
       int numPixels = 1;
       for(int b: bounds){
          numPixels *= b;
       }
-      out = new char[numPixels*3]; // input index 9
+      out = new char[numPixels*3]; // input index 7
       for(int i = 0; i<numPixels; i++){
          out[i*3] = (char)background.getRed();
          out[i*3+1] = (char)background.getGreen();
          out[i*3+2] = (char)background.getBlue();
       }
       outPointer = Pointer.to(out);
-      result[9] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_char*out.length, outPointer, null);
-      float[] zBuff = new float[numPixels]; // input index 10
+      result[7] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_uchar*out.length, outPointer, null);
+      float[] zBuff = new float[numPixels]; // input index 8
       for(int i = 0; i<numPixels; i++){
          zBuff[i] = -1;
       }
-      result[10] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_float*zBuff.length, Pointer.to(zBuff), null);
-      int[] stencilBuff = new int[numPixels]; // input index 11
-      result[11] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_int*stencilBuff.length, Pointer.to(stencilBuff), null);
-      result[12] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Sizeof.cl_int, Pointer.to(new int[]{sim.length}), null);
-      result[13] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Sizeof.cl_int*bounds.length, Pointer.to(bounds), null);
-      result[14] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Sizeof.cl_char, Pointer.to(new char[]{(char)def.getRed()}), null);
-      result[15] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Sizeof.cl_char, Pointer.to(new char[]{(char)def.getGreen()}), null);
-      result[16] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Sizeof.cl_char, Pointer.to(new char[]{(char)def.getBlue()}), null);
+      result[8] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_float*zBuff.length, Pointer.to(zBuff), null);
+      int[] stencilBuff = new int[numPixels]; // input index 9
+      result[9] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_int*stencilBuff.length, Pointer.to(stencilBuff), null);
+      result[10] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Sizeof.cl_int*bounds.length, Pointer.to(bounds), null);
       float[] fCoords = new float[sim.length*(dim-1)*dim];
-      result[17] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_float*fCoords.length, Pointer.to(fCoords), null);
+      result[11] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_float*fCoords.length, Pointer.to(fCoords), null);
       float[] dat = new float[sim.length*(dim)];
-      result[18] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_float*dat.length, Pointer.to(dat), null);
+      result[12] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_float*dat.length, Pointer.to(dat), null);
       float[] sol = new float[sim.length*(dim)];
-      result[19] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_float*sol.length, Pointer.to(sol), null);
+      result[13] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_float*sol.length, Pointer.to(sol), null);
       float[] pixPos = new float[numPixels*(dim-1)];
-      result[20] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_float*pixPos.length, Pointer.to(pixPos), null);
+      result[14] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_float*pixPos.length, Pointer.to(pixPos), null);
       float[] found = new float[numPixels*(dim)];
-      result[21] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_float*found.length, Pointer.to(found), null);
-      float[] texPos = new float[numPixels*(dim-1)];
-      result[22] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_float*texPos.length, Pointer.to(texPos), null);
-      int[] texPosRound = new int[numPixels*(dim-1)];
-      result[23] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_int*texPosRound.length, Pointer.to(texPosRound), null);
-      float[] texPosRound = new float[numPixels*(dim)];
-      result[24] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_float*texPosRound.length, Pointer.to(texPosRound), null);
+      result[15] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_float*found.length, Pointer.to(found), null);
+      float[] texPos = new float[numPixels*(tdim)];
+      result[16] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_float*texPos.length, Pointer.to(texPos), null);
+      int[] texPosRound = new int[numPixels*(tdim)];
+      result[17] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_int*texPosRound.length, Pointer.to(texPosRound), null);
+      float[] temp = new float[numPixels*(dim)];
+      result[18] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_float*texPosRound.length, Pointer.to(temp), null);
+      //set constants 19-end
+      //use https://stackoverflow.com/questions/13672575/pass-int-as-kernel-argument-in-jocl
+      index = 19;
+      for(cl_kernel kern: kernels){
+         clSetKernelArg(kern, index, Sizeof.cl_int, Pointer.to(new int[]{tdim}));
+      }
+      index++;
+      for(cl_kernel kern: kernels){
+         clSetKernelArg(kern, index, Sizeof.cl_int, Pointer.to(new int[]{dim}));
+      }
+      index++;
+      for(cl_kernel kern: kernels){
+         clSetKernelArg(kern, index, Sizeof.cl_uchar, Pointer.to(new char[]{(char)def.getRed()}));
+      }
+      index++;
+      for(cl_kernel kern: kernels){
+         clSetKernelArg(kern, index, Sizeof.cl_uchar, Pointer.to(new char[]{(char)def.getGreen()}));
+      }
+      index++;
+      for(cl_kernel kern: kernels){
+         clSetKernelArg(kern, index, Sizeof.cl_uchar, Pointer.to(new char[]{(char)def.getBlue()}));
+      }
+      index++;
+      for(cl_kernel kern: kernels){
+         clSetKernelArg(kern, index, Sizeof.cl_int, Pointer.to(new int[]{sim.length}));
+      }
+      index++;
+      for(cl_kernel kern: kernels){
+         clSetKernelArg(kern, index, Sizeof.cl_int, Pointer.to(new int[]{allTextures.size()}));
+      }
       return result;
    }
    //code taken from:https://www.tabnine.com/code/java/methods/org.jocl.CL/clGetProgramBuildInfo

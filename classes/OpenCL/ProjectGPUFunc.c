@@ -170,23 +170,17 @@ int id
    }
 }
 __kernel void RaserizeStep1(
-__global float *coords, //actual coords
-__global float *tcoords, //texture coords
-__global int *textureIndex, //texture to use
-int dimention, //dimention after slicing
-__global uchar *textureColors, //all textures are in same array, each uchar is an rgb chanel
-__global int *textureSizes,  //texture sizes are all in the same array
-__global uchar *textureType, //type of texture
-int numTextures, //using dimention can help figure out each texture
+__global float *coords, //actual coords 
+__global float *tcoords, //texture coords 
+__global int *textureIndex, //texture to use 
+__global uchar *textureColors, //all textures are in same array, each uchar is an rgb chanel 
+__global int *textureSizes,  //texture sizes are all in the same array 
+__global uchar *textureType, //type of texture 
 __global float *lpuData, //data for lpu
 __global uchar *out, // final result, each uchar is an rgb chanel
 __global float *zBuff, //zbuffer
 __global int *stencilBuff, //stencil buffer, for lighting
-int numSim, //number of simplexes
 __global int *outDim, //dimentions of the result
-uchar DefR, //default red 
-uchar DefG, //default green
-uchar DefB, //default blue
 __global float *fCoords, //flat coords
 __global float *dat, //for lpu
 __global float *sol, //for lpu
@@ -194,7 +188,14 @@ __global float *pixPos, //draw
 __global float *found, //draw
 __global float *texPos, //draw
 __global int *texPosRound, //draw
-__global float *temp
+__global float *temp, //draw
+int tdim, //dimention of textures 19
+int dimention, //dimention after slicing 
+uchar DefR, //default red 
+uchar DefG, //default green
+uchar DefB, //default blue
+int numSim, //number of simplexes
+int numTextures //using dimention can help figure out each texture
 ){
    //flaten
    int gid = get_global_id(0);
@@ -209,23 +210,17 @@ __global float *temp
 }
 
 __kernel void RaserizeStep2(   
-__global float *coords, //actual coords
-__global float *tcoords, //texture coords
-__global int *textureIndex, //texture to use
-int dimention, //dimention after slicing
-__global uchar *textureColors, //all textures are in same array, each uchar is an rgb chanel
-__global int *textureSizes,  //texture sizes are all in the same array
-__global uchar *textureType, //type of texture
-int numTextures, //using dimention can help figure out each texture
+__global float *coords, //actual coords 
+__global float *tcoords, //texture coords 
+__global int *textureIndex, //texture to use 
+__global uchar *textureColors, //all textures are in same array, each uchar is an rgb chanel 
+__global int *textureSizes,  //texture sizes are all in the same array 
+__global uchar *textureType, //type of texture 
 __global float *lpuData, //data for lpu
 __global uchar *out, // final result, each uchar is an rgb chanel
 __global float *zBuff, //zbuffer
 __global int *stencilBuff, //stencil buffer, for lighting
-int numSim, //number of simplexes
 __global int *outDim, //dimentions of the result
-uchar DefR, //default red 
-uchar DefG, //default green
-uchar DefB, //default blue
 __global float *fCoords, //flat coords
 __global float *dat, //for lpu
 __global float *sol, //for lpu
@@ -233,12 +228,20 @@ __global float *pixPos, //draw
 __global float *found, //draw
 __global float *texPos, //draw
 __global int *texPosRound, //draw
-__global float *temp
+__global float *temp, //draw
+int tdim, //dimention of textures 19
+int dimention, //dimention after slicing 
+uchar DefR, //default red 
+uchar DefG, //default green
+uchar DefB, //default blue
+int numSim, //number of simplexes
+int numTextures //using dimention can help figure out each texture
 ){
    
    int gid = get_global_id(0);
    int arrStartSmall = gid*(dimention-1);
    int arrStartLarge = gid*(dimention);
+   int arrStartTexture = gid*tdim;
    if(stencilBuff[gid/8] && (1<<(gid%8)) > 0){
       int pixPosInt = gid;
       for(int i = 0; i<(dimention-1); i++){
@@ -246,7 +249,6 @@ __global float *temp
          pixPosInt /= outDim[i];
       }
       for(int i = 0; i<numSim; i++){
-         float found[dimention];
          calcBaryCoords(pixPos, lpuData, i, dimention, found, dat, sol, arrStartSmall, arrStartLarge);
          bool inSim = true;
          for(int j = 0; j<dimention; j++){
@@ -262,8 +264,8 @@ __global float *temp
             int first = 0;
             for(int j = 0; j<textureIndex[i]; j++){
                int sum = 1;
-               for(int k = 0; k<dimention-1; k++){
-                  sum *= textureSizes[i*(dimention-1) + k];
+               for(int k = 0; k<tdim; k++){
+                  sum *= textureSizes[j*(tdim) + k];
                }
                first += sum;
             }
@@ -277,12 +279,11 @@ __global float *temp
                int first = 0;
                for(int j = 0; j<(dimention-1); j++){
                   for(int k = 0; k<dimention; k++){
-                     texPos[j + arrStartSmall] += tcoords[i*dimention*(dimention-1) + j*(dimention-1) + k]*found[j + arrStartLarge];
+                     texPos[j + arrStartTexture] += tcoords[i*dimention*(dimention-1) + j*(dimention-1) + k]*found[j + arrStartLarge];
                   }
                }
-               int texPosRound [dimention-1];
                for(int j = 0; j<(dimention-1); j++){
-                  texPosRound[j + arrStartSmall] = (int)texPos[j + arrStartSmall];
+                  texPosRound[j + arrStartTexture] = (int)texPos[j + arrStartTexture];
                }
                int mult = 1;
                for(int j = 0; j<(dimention-1); j++){

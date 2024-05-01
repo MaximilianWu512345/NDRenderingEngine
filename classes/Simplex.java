@@ -20,7 +20,7 @@ public class Simplex {
 */
    public Simplex(Point[] vertex){
       setPoints(vertex);
-      t = new ConstentTexture(Color.RED, new int[vertex.length]);
+      t = new ConstentTexture(Color.RED, new int[vertex.length-1]);
    }
    
 /** Creates a new Simplex with points of vertex.
@@ -29,8 +29,8 @@ public class Simplex {
 */
    public Simplex(Point[] vertex, Color c){
       setPoints(vertex);
-      t = new ConstentTexture(c, new int[vertex.length]);
-      Point[] textPoints = new Point[vertex.length];
+      t = new ConstentTexture(c, new int[vertex.length-1]);
+      Point[] textPoints = new Point[vertex.length-1];
       for(int i = 0; i<textPoints.length; i++){
          textPoints[i] = new Point(new float[vertex[0].length()]);
       }
