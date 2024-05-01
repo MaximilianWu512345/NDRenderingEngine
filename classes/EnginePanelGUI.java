@@ -457,8 +457,7 @@ public class EnginePanelGUI {
       
    }
    
-/** Container class to hold information about buttons. Might be obsolete, could remove later. */
-   protected class ButtonHelper extends Component {
+   protected class ButtonHelper extends Component implements KeyListener {
       
       protected ArrayList<Button> buttons;
       
@@ -482,6 +481,24 @@ public class EnginePanelGUI {
          containers = new ArrayList<Container>();
       }
       
+      public void keyPressed(KeyEvent e) {
+         for (Container c : containers) {
+            c.keyPressed(e);
+         }
+      }
+      
+      public void keyReleased(KeyEvent e) {
+         for (Container c : containers) {
+            c.keyReleased(e);
+         }
+      }
+      
+      public void keyTyped(KeyEvent e) {
+         for (Container c : containers) {
+            c.keyTyped(e);
+         }
+      }
+      
       public Mesh createMesh(String type) {
          switch (type) {
             case "Default":
@@ -502,16 +519,24 @@ public class EnginePanelGUI {
             y += c.getHeight();
          }
          try {
-            Container container = new Container(null, new DataField[] { new DataField_Mesh(m), new DataField_Mesh(m), new DataField_Mesh(m) });
+            Container container = new Container(null, new DataField[] { new DataField_Mesh(m) });
             container.initialize(x, y, getWidth(), getHeight() / 20, null, "Mesh");
             container.initializeListeners();
-            for (Simplex s : m.getFaces()) {
-               Container temp = new Container(container, new DataField[0]);
-               temp.initialize(0, 0, 0, 0, null, "Simplex");
-               temp.updateContainer();
-               container.add(temp);
-            }
             containers.add(container);
+            for (int i = 0; i < m.getFaces().length; i++) {
+               Simplex s = m.getFaces()[i];
+               Container temp = new Container(container, new DataField[] { } );
+               temp.initialize(null, "Simplex");
+
+               
+               for (int e = 0; e < s.getPoints().length; e++) {
+                  Point p = s.getPoints()[e];
+                  Container tempPoint = new Container(temp, new DataField[] { new DataField_Point(p) } );
+                  tempPoint.initialize(null, "Point");
+               }
+               
+            }
+            System.out.println(container);
             enginePanel.add(container);
          } catch (Exception e) {
             System.out.println(e);
@@ -540,29 +565,33 @@ public class EnginePanelGUI {
          public DataField_Mesh(Mesh owner) {
             super(owner);
          }
-         public void setValue(Mesh value) {
-            
-         }
-         public String getValue() {
-            return "" + getOwner().getDimension();
+         public void updateValue() {
+            setValue("" + owner.getDimension());
          }
          public String getName() {
-            return "dimension";
+            return "Dimension";
+         }
+         
+         public boolean canEdit() {
+            return false;
          }
       }
       
-      protected class DataField_Simplex extends DataField<Simplex> {
-         public DataField_Simplex(Simplex owner) {
+      protected class DataField_Point extends DataField<Point> {
+         public DataField_Point(Point owner) {
             super(owner);
          }
-         public void setValue(Simplex value) {
-            
+         
+         public void updateValue() {
+            setValue("" + owner.getCoords());
          }
-         public String getValue() {
-            return "lol";
-         }
+         
          public String getName() {
-            return "dimension";
+            return "Coords";
+         }
+         
+         public boolean canEdit() {
+            return true;
          }
       }
       

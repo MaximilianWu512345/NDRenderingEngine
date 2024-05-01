@@ -4,13 +4,19 @@ import java.awt.Color;
 import java.awt.event.MouseEvent;
 import javax.swing.event.MouseInputListener;
 import java.util.ArrayList;
+import java.awt.event.KeyListener;
+import java.awt.event.KeyEvent;
 
 /** More personalized and liberal version of a JButton */
-public class Container extends JComponent implements MouseInputListener{
+public class Container extends JComponent implements MouseInputListener, KeyListener {
    
    protected int fieldHeight = 20;
    
+   protected int containerHeight = 20;
+   
    protected int fieldWidthSpacing = 5;
+   
+   protected int heightSpacing = 5;
    
    protected Color defaultBackgroundColor = Color.white;
    
@@ -36,28 +42,31 @@ public class Container extends JComponent implements MouseInputListener{
    protected Container parent;
    
    protected int defaultHeight;
-   
+
    public Container(Container parent, ArrayList<DataField> fields) {
-      children = new ArrayList<Container>();
-      fieldsInfo = new ArrayList<Integer>();
-      setParent(parent);
-      if (fields == null)
-         fields = new ArrayList<DataField>();
-      setFields(fields);
+      this(parent, fields == null ? (DataField[])null : fields.toArray(new DataField[0]));
    }
    
    public Container(Container parent, DataField[] fields) {
-      this(null, (ArrayList)null);
-      for (DataField field : fields) {
-         this.fields.add(field);
-         this.fieldsInfo.add(0);
+      children = new ArrayList<Container>();
+      fieldsInfo = new ArrayList<Integer>();
+      this.fields = new ArrayList<DataField>();
+      for (DataField f : fields) {
+         this.fields.add(f);
+         fieldsInfo.add(0);
       }
+      setParent(parent);
    }
    
    public void initialize(int x, int y, int w, int h, Color c, String t) {
       setLocation(x, y);
       setSize(w, h);
       defaultHeight = h;
+      initialize(c, t);
+      updateContainer();
+   }
+   
+   public void initialize(Color c, String t) {
       if (c != null)
          backgroundColor = c;
       if (t != null)
@@ -76,18 +85,11 @@ public class Container extends JComponent implements MouseInputListener{
       parent.add(this);
    }
    
-   public void setFields(ArrayList<DataField> fields) {
-      this.fields = fields;
-      for (DataField f : fields) {
-         fieldsInfo.add(0);
-      }
-   }
-   
    public void add(Container c) {
       if (c == null)
          return;
       children.add(c);
-      updateContainer();
+      c.initialize(getX(), getY() + getHeight(), getWidth(), containerHeight, null, null);
    }
 
 /** Sets color to c.
@@ -120,19 +122,44 @@ public class Container extends JComponent implements MouseInputListener{
       return (int)getLocation().getY();
    }
    
+   public int getXParent() {
+      if (parent == null)
+         return getX();
+      Container temp = parent;
+      while (temp.parent != null) {
+         temp = temp.parent;
+      }
+      return getX() - temp.getX();
+   }
+   
+   public int getYParent() {
+      if (parent == null)
+         return getY();
+      Container temp = parent;
+      while (temp.parent != null) {
+         temp = temp.parent;
+      }
+      return getY() - temp.getY();
+   }
+   
+   protected void paintComponent(Graphics g) {
+      paintComponent(g, parent == null ? 0 : getXParent(), parent == null ? 0 : getYParent());
+   }
+   
 /** Paints the button. Halves the background color if the mouse has entered the button.
 * @param g the graphics component used to paint the button.
 */
-   protected void paintComponent(Graphics g) {
+   protected void paintComponent(Graphics g, int x, int y) {
       g = g.create();
       g.setColor(defaultBackgroundColor);
-      g.fillRect(0, 0, getWidth(), getHeight());
+      g.fillRect(x, y, getWidth(), getHeight());
       g.setColor(borderColor);
-      g.drawRect(0, 0, getWidth(), getHeight());
+      g.drawRect(x, y, getWidth(), getHeight());
+      int fieldTextHeight = g.getFontMetrics().getHeight() * 3 / 4;
       if (text != null && text.length() > 0) {
          int i = g.getFontMetrics().stringWidth(text);
          g.setColor(textColor);
-         g.drawString(text, getWidth() / 2 - i / 2, defaultHeight / 2);
+         g.drawString(text, x + getWidth() / 2 - i / 2, y + fieldTextHeight);
       }
       for (int i = 0; i < fields.size(); i++) {
          DataField field = fields.get(i);
@@ -140,18 +167,21 @@ public class Container extends JComponent implements MouseInputListener{
          String fieldText = field.getName();
          String fieldValue = field.getValue();
          int fieldWidth = g.getFontMetrics().stringWidth(fieldText);
-         int fieldTextHeight = g.getFontMetrics().getHeight() * 3 / 4;
          g.setColor(textColor);
-         g.drawString(fieldText, 0, defaultHeight + i * fieldHeight);
+         g.drawString(fieldText, x, y + heightSpacing + fieldTextHeight * 2 + i * fieldHeight);
          g.setColor(info > 0 ? defaultBackgroundColor.darker() : defaultBackgroundColor);
-         int boxX = fieldWidth + fieldWidthSpacing;
-         int boxY = defaultHeight + i * fieldHeight - fieldTextHeight;
+         int boxX = x + fieldWidth + fieldWidthSpacing;
+         int boxY = y + heightSpacing + fieldTextHeight + i * fieldHeight;
          int boxWidth = getWidth() - fieldWidth - fieldWidthSpacing - 1;
          g.fillRect(boxX, boxY, boxWidth, fieldHeight);
          g.setColor(borderColor);
          g.drawRect(boxX, boxY, boxWidth, fieldHeight);
          g.setColor(textColor);
          g.drawString(fieldValue, boxX + fieldWidthSpacing, boxY + fieldTextHeight);
+      }
+      for (int i = 0; i < children.size(); i++) {
+         Container child = children.get(i);
+         child.paintComponent(g);
       }
    }
    
@@ -183,9 +213,27 @@ public class Container extends JComponent implements MouseInputListener{
          maxHeight += c.getHeight();
       }
       setSize(maxWidth, maxHeight);
+      if (parent != null)
+         parent.updateContainer();
+   }
+
+   public void keyPressed(KeyEvent e) {
+   }
+      
+   public void keyReleased(KeyEvent e) {
+   }
+      
+   public void keyTyped(KeyEvent e) {
+      for (int i = 0; i < fields.size(); i++) {
+         DataField field = fields.get(i);
+         if (fieldsInfo.get(i) == 2 && field.canEdit()) {
+            field.setValue(field.getValue() + e.getKeyChar());
+         }
+      }
+      repaint();
    }
    
-         /** Called when the button is clicked. */
+      /** Called when the button is clicked. */
    public void mouseClicked(MouseEvent e) {
    }
       
@@ -217,9 +265,10 @@ public class Container extends JComponent implements MouseInputListener{
       for (int i = 0; i < fields.size(); i++) {
          DataField field = fields.get(i);
          if (inBox(i, e.getX(), e.getY())) {
-            fieldsInfo.set(i, 1);
+            if (fieldsInfo.get(i) == 0)
+               fieldsInfo.set(i, 1);
          }
-         else {
+         else if (fieldsInfo.get(i) == 1) {
             fieldsInfo.set(i, 0);
          }
       }
@@ -239,4 +288,11 @@ public class Container extends JComponent implements MouseInputListener{
    public void mouseExited(MouseEvent e) {
    }
    
+   public String toString() {
+      String temp = getX() + " " + getY() + " " + getWidth() + " " + getHeight();
+      for (Container c : children) {
+         temp += "\n" + c;
+      }
+      return temp;
+   }
 }
