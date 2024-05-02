@@ -197,16 +197,19 @@ uchar DefB, //default blue
 int numSim, //number of simplexes
 int numTextures //using dimention can help figure out each texture
 ){
+   //printf("hello");
    //flaten
    int gid = get_global_id(0);
    for(int j = 0; j<dimention; j++){
       float dist = coords[gid*dimention*dimention+dimention*j+dimention-1];
-      for(int k = 0; k<dimention-1; k--){
-         fCoords[(dimention-1)*j + k] = coords[gid*dimention*dimention+dimention*j+k]/dist;
+      for(int k = 0; k<dimention-1; k++){
+         fCoords[(dimention)*(dimention-1)*gid+(dimention-1)*j + k] = coords[gid*dimention*dimention+dimention*j+k]/dist;
       }
    }
+   //printf("barry");
    //make matrixes
    lpuBarycentricCoords(fCoords, dimention, lpuData, gid);
+   //printf("bye");
 }
 
 __kernel void RaserizeStep2(   
@@ -237,7 +240,7 @@ uchar DefB, //default blue
 int numSim, //number of simplexes
 int numTextures //using dimention can help figure out each texture
 ){
-   
+   //printf("hello2");
    int gid = get_global_id(0);
    int arrStartSmall = gid*(dimention-1);
    int arrStartLarge = gid*(dimention);
@@ -301,6 +304,7 @@ int numTextures //using dimention can help figure out each texture
          }
       }
    }
+   //printf("bye2");
 }
 
 
