@@ -471,6 +471,7 @@ public class EnginePanelGUI {
       */
       public ButtonHelper(int x, int y, int w, int h) {
          super(x, y, w, h);
+         enginePanel.addKeyListener(this);
          initialize();
       }
       
@@ -527,7 +528,7 @@ public class EnginePanelGUI {
                Simplex s = m.getFaces()[i];
                Container temp = new Container(container, new DataField[] { } );
                temp.initialize(null, "Simplex");
-
+            
                
                for (int e = 0; e < s.getPoints().length; e++) {
                   Point p = s.getPoints()[e];
@@ -536,7 +537,6 @@ public class EnginePanelGUI {
                }
                
             }
-            System.out.println(container);
             enginePanel.add(container);
          } catch (Exception e) {
             System.out.println(e);
@@ -583,7 +583,13 @@ public class EnginePanelGUI {
          }
          
          public void updateValue() {
-            setValue("" + owner.getCoords());
+            String temp = "";
+            for (int i = 0; i < owner.getCoords().length; i++) {
+               temp += owner.getCoords()[i];
+               if (i < owner.getCoords().length - 1)
+                  temp += " ";
+            }
+            setValue(temp);
          }
          
          public String getName() {

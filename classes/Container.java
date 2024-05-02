@@ -186,14 +186,24 @@ public class Container extends JComponent implements MouseInputListener, KeyList
    }
    
    public boolean inBox(int index, int x, int y) {
+      Graphics g = getGraphics();
+      Container temp = parent;
+      while (g == null && temp != null) {
+         g = temp.getGraphics();
+         temp = temp.parent;
+      }
+      if (g == null)
+         return false;
       if (index >= 0 && index < fields.size()) {
          DataField field = fields.get(index);
          String fieldText = field.getName();
          String fieldValue = field.getValue();
-         int fieldWidth = getGraphics().getFontMetrics().stringWidth(fieldText);
-         int fieldTextHeight = getGraphics().getFontMetrics().getHeight() * 3 / 4;
-         int boxX = fieldWidth + fieldWidthSpacing;
-         int boxY = defaultHeight + index * fieldHeight - fieldTextHeight;
+         int fieldWidth = g.getFontMetrics().stringWidth(fieldText);
+         int fieldTextHeight = g.getFontMetrics().getHeight() * 3 / 4;
+         int offsetX = parent == null ? 0 : getXParent();
+         int offsetY = parent == null ? 0 : getYParent();
+         int boxX = offsetX + fieldWidth + fieldWidthSpacing;
+         int boxY = offsetY + heightSpacing + fieldTextHeight + index * fieldHeight;
          int boxWidth = getWidth() - fieldWidth - fieldWidthSpacing - 1;
          if (x > boxX && x < boxX + boxWidth && y > boxY && y < boxY + fieldHeight)
             return true;
@@ -218,6 +228,28 @@ public class Container extends JComponent implements MouseInputListener, KeyList
    }
 
    public void keyPressed(KeyEvent e) {
+      for (int i = 0; i < fields.size(); i++) {
+         DataField field = fields.get(i);
+         if (fieldsInfo.get(i) == 2 && field.canEdit()) {
+            if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+               field.setValue();
+            }
+            else if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
+               String temp = field.getValue();
+               if (temp.length() > 0) {
+                  temp = temp.substring(0, temp.length() - 1);
+                  field.setValue(temp);
+               }
+            }
+            else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+               field.setValue(field.getValue() + " ");
+            }
+         }
+      }
+      for (Container child : children) {
+         child.keyPressed(e);
+      }
+      repaint();
    }
       
    public void keyReleased(KeyEvent e) {
@@ -227,8 +259,13 @@ public class Container extends JComponent implements MouseInputListener, KeyList
       for (int i = 0; i < fields.size(); i++) {
          DataField field = fields.get(i);
          if (fieldsInfo.get(i) == 2 && field.canEdit()) {
-            field.setValue(field.getValue() + e.getKeyChar());
+            if (Character.isLetterOrDigit(e.getKeyChar())) {
+               field.setValue(field.getValue() + e.getKeyChar());
+            }
          }
+      }
+      for (Container child : children) {
+         child.keyTyped(e);
       }
       repaint();
    }
@@ -249,6 +286,9 @@ public class Container extends JComponent implements MouseInputListener, KeyList
          }
       }
       opened = ! opened;
+      for (Container child : children) {
+         child.mousePressed(e);
+      }
       updateContainer();
       if (parent != null)
          parent.updateContainer();
@@ -271,6 +311,9 @@ public class Container extends JComponent implements MouseInputListener, KeyList
          else if (fieldsInfo.get(i) == 1) {
             fieldsInfo.set(i, 0);
          }
+      }
+      for (Container child : children) {
+         child.mouseMoved(e);
       }
       repaint();
    }
