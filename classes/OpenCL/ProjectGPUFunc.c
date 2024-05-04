@@ -49,7 +49,7 @@ int floatCompareEps(const float a, const float b, const float epsilon){
    }
    return 7;
 }
-void calcBaryCoords(float* pos, float* lpu, int triangleIndex, int dimention, float* out, float* sol, float* dat, int posStart, int outStart){
+void calcBaryCoords(__global float* pos, __global float* lpu, int triangleIndex, int dimention, __global float* out, __global float* sol, __global float* dat, int posStart, int outStart){
    int trueIndex = triangleIndex*(dimention+3*dimention*dimention);
    int arrPos = triangleIndex*dimention;
    for(int i = 0; i<dimention-1; i++){
@@ -92,10 +92,11 @@ void calcBaryCoords(float* pos, float* lpu, int triangleIndex, int dimention, fl
    }
    out[dimention + outStart] = 1-sum;
 }
-void lpuBarycentricCoords(
-float *data,
+TODO: out is making dimXdim, we need (dim-1)X(dim-1), fix both methods and memory to work
+void lpuBarycentricCoords( 
+__global float *data,
 int dimention,
-float *out, // must be zero to start, 3 times the size of data
+__global float *out, // must be zero to start, 3 times the size of data
 int id
 )
 {
@@ -210,6 +211,46 @@ int numTextures //using dimention can help figure out each texture
    //make matrixes
    lpuBarycentricCoords(fCoords, dimention, lpuData, gid);
    //printf("bye");
+   //debug stuff
+   if(gid == 0){
+      int mSize = dimention*dimention;
+      for(int j = 0; j<numSim; j++){
+         printf("simplex %d\n :", j);
+         int index = j*(3*mSize+dimention);
+         printf("Shift:\n{");
+         for(int i = 0; i<dimention; i++){
+            index++;
+            printf("%.3f, ", lpuData[index]);
+         }
+         printf("}\n");
+         printf("P matrix:\n");
+         for(int i = 0; i<dimention; i++){
+            for(int k = 0; k<dimention; k++){
+               index++;
+               printf("%.3f, ", lpuData[index]);
+            }
+            printf("\n");
+         }
+         printf("}\n");
+         printf("L matrix:\n");
+         for(int i = 0; i<dimention; i++){
+            for(int k = 0; k<dimention; k++){
+               index++;
+               printf("%.3f, ", lpuData[index]);
+            }
+            printf("\n");
+         }
+         printf("}\n");
+         printf("U matrix:\n");
+         for(int i = 0; i<dimention; i++){
+            for(int k = 0; k<dimention; k++){
+               index++;
+               printf("%.3f, ", lpuData[index]);
+            }
+            printf("\n");
+         }
+      }
+   }
 }
 
 __kernel void RaserizeStep2(   
