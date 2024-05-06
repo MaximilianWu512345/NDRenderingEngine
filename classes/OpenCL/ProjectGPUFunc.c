@@ -12,6 +12,48 @@
 //    something about a stencil buffer...
 //TODO: check if some loops can be remmoved using get_global_id(1) or more
 //TODO: finish last buffer
+void lpuDebug(int gid, __global float *lpuData, int dimention, int numSim){
+   if(gid == 0){
+      int mSize = (dimention-1)*(dimention-1);
+      for(int j = 0; j<numSim; j++){
+         printf("simplex %d :\n", j);
+         int index = j*(3*mSize+dimention-1);
+         printf("Shift:\n{");
+         for(int i = 0; i<(dimention-1); i++){
+            index++;
+            printf("%.3f, ", lpuData[index]);
+         }
+         printf("}\n");
+         printf("P matrix:\n");
+         for(int i = 0; i<dimention-1; i++){
+            for(int k = 0; k<dimention-1; k++){
+               index++;
+               printf("%.3f, ", lpuData[index]);
+            }
+            printf("\n");
+         }
+         printf("}\n");
+         printf("L matrix:\n");
+         for(int i = 0; i<dimention-1; i++){
+            for(int k = 0; k<dimention-1; k++){
+               index++;
+               printf("%.3f, ", lpuData[index]);
+            }
+            printf("\n");
+         }
+         printf("}\n");
+         printf("U matrix:\n");
+         for(int i = 0; i<dimention-1; i++){
+            for(int k = 0; k<dimention-1; k++){
+               index++;
+               printf("%.3f, ", lpuData[index]);
+            }
+            printf("\n");
+         }
+      }
+   }
+
+}
 int floatCompare(const float a, const float b){
    float epsilon = 0.000001f;
    if(a == b){
@@ -50,26 +92,27 @@ int floatCompareEps(const float a, const float b, const float epsilon){
    return 7;
 }
 void calcBaryCoords(__global float* pos, __global float* lpu, int triangleIndex, int dimention, __global float* out, __global float* sol, __global float* dat, int posStart, int outStart){
-   int trueIndex = triangleIndex*(dimention+3*dimention*dimention);
-   int arrPos = triangleIndex*dimention;
+   int matrixSize = (dimention-1)*(dimention-1);
+   int trueIndex = triangleIndex*(dimention+3*matrixSize);
+   int arrPos = triangleIndex*dimention;//???
    for(int i = 0; i<dimention-1; i++){
       dat[i+ arrPos] = pos[i + posStart]-lpu[i+trueIndex];
    }
    //P
    for(int i = 0; i<dimention-1; i++){
       for(int j = 0; j<dimention-1; j++){
-         if(floatCompare(lpu[trueIndex+dimention*(i+1)+dimention*dimention + j], 1) == 0){
+         if(floatCompare(lpu[trueIndex+dimention*(i+1)+matrixSize + j], 1) == 0){
             sol[i + arrPos] = dat[j+ arrPos];
          }
       }
    }
    //swap
    //L
-   for(int i = 0; i<dimention; i++){
+   for(int i = 0; i<dimention-1; i++){
       dat[i + arrPos] = sol[i + triangleIndex*(dimention)] ;
       float sum = 0;
       for(int j = 0; j<i; j++){
-         sum += lpu[trueIndex+dimention*(i+1) + j]*dat[j];
+         sum += lpu[trueIndex+dimention*(i+1) + j]*dat[j + arrPos];
       }
       dat[i + arrPos] -= sum;
       dat[i + arrPos] /= lpu[trueIndex+dimention*(i+1) + i];
@@ -80,10 +123,10 @@ void calcBaryCoords(__global float* pos, __global float* lpu, int triangleIndex,
       sol[i + arrPos] = dat[i + arrPos];
       float sum = 0;
       for(int j = i+1; j<dimention; j++){
-         sum += lpu[trueIndex+dimention*(i+1) + 2*dimention*dimention + j]*sol[j];
+         sum += lpu[trueIndex+dimention*(i+1) + 2*matrixSize + j]*sol[j + arrPos];
       }
       sol[i + triangleIndex*(dimention)] -= sum;
-      sol[i + triangleIndex*(dimention)] /= lpu[trueIndex+dimention*(i+1) + 2*dimention*dimention + i];
+      sol[i + triangleIndex*(dimention)] /= lpu[trueIndex+dimention*(i+1) + 2*matrixSize + i];
    }
    float sum = 0;
    for(int i = 0; i<dimention-1; i++){
@@ -92,7 +135,6 @@ void calcBaryCoords(__global float* pos, __global float* lpu, int triangleIndex,
    }
    out[dimention + outStart] = 1-sum;
 }
-TODO: out is making dimXdim, we need (dim-1)X(dim-1), fix both methods and memory to work
 void lpuBarycentricCoords( 
 __global float *data,
 int dimention,
@@ -101,73 +143,100 @@ int id
 )
 {
    int gid = id;
-   int dataSize = dimention * (dimention + 1);
-   int mSize = dimention*dimention;
-   int outSize = mSize*3+dimention;
+   int dataSize = dimention * (dimention - 1);
+   int mSize = (dimention-1)*(dimention-1);
+   int outSize = mSize*3+dimention-1;
    int firstOut = gid*outSize;
+   int firstIn = gid*dataSize;
+   if(gid == 0){
+      for(int i = 0; i<dataSize; i++){
+         printf(" %.3f,", data[firstIn+i]);
+      }
+      printf("\n");
+   }
    //getShift
+   for(int i = 0; i<dimention-1; i++){
+      out[firstOut+i] = -1*data[i + firstIn];
+   }
+   
+   printf("afterShiftCalc");
+   lpuDebug(gid, out, dimention, 1);
+   //apply shift
    for(int i = 0; i<dimention; i++){
-      out[firstOut+i] = -1*data[i];
+      for(int j = 0; j<dimention-1; j++){
+         data[firstIn + i*(dimention-1)] -= out[firstOut+j];
+      }
    }
    //p, l, then u
-   for(int i = 0; i<mSize; i += (dimention+1)){
-      out[firstOut+i+dimention] = 1;
-      out[firstOut+i+mSize + dimention] = 1;
+   for(int i = 0; i<mSize; i += (dimention)){
+      out[firstOut+i+(dimention-1)] = 1;
+      out[firstOut+i+mSize + (dimention-1)] = 1;
    }
    for(int i = 0; i<mSize; i++){
       int c = i%dimention;
       int r = i/dimention;
-      out[firstOut+i+mSize*2 + dimention] = data[dimention*(c+1)+r] + out[firstOut+r];
+      out[firstOut+i+mSize*2 + (dimention-1)] = data[dimention*(c+1)+r + firstIn];
+   }
+   //undo shift?
+   for(int i = 0; i<dimention; i++){
+      for(int j = 0; j<dimention-1; j++){
+         data[firstIn + i*(dimention-1)] += out[firstOut+j];
+      }
    }
    //calculations
-   for(int i = 0; i<dimention; i++){
+   for(int i = 0; i<dimention-1; i++){
       //pivot
-      float val = out[firstOut+(i)*(dimention+1)+2*mSize + dimention];
+      float val = out[firstOut+(i)*(dimention-1) + i +2*mSize + (dimention-1)];
       int targetIndex = i;
-      for(int j = i+1; ((j<dimention) && (floatCompare(val, 0) == 0)); j++){
-         val = fabs(out[firstOut+j*dimention+i+2*mSize + dimention]);
+      for(int j = i+1; ((j<dimention-1) && (floatCompare(val, 0) == 0)); j++){
+         val = fabs(out[firstOut+j*(dimention-1)+i+2*mSize + (dimention-1)]);
          targetIndex = j;
       }
       //no pivot found
       if((floatCompare(val, 0) == 0)){
          //set p to zero
          for(int j = 0; j<mSize; j++){
-            out[firstOut+i+dimention] = 0;
+            out[firstOut+i+(dimention-1)] = 0;
          }
+         printf("AAAAAAAAAAAAAA");
          return;
       }
       float temp;
       //swap u
-      for(int j = 0; j<dimention; j++){
-         temp = out[firstOut+targetIndex*dimention+j+mSize*2 + dimention];
-         out[firstOut+targetIndex*dimention+j+mSize*2 + dimention] = out[firstOut+i*dimention+j+mSize*2 + dimention];
-         out[firstOut+i*dimention+j+mSize*2 + dimention] = temp;
+      for(int j = 0; j<(dimention-1); j++){
+         temp = out[firstOut+targetIndex*(dimention-1)+j+mSize*2 + (dimention-1)];
+         out[firstOut+targetIndex*(dimention-1)+j+mSize*2 + (dimention-1)] = out[firstOut+i*(dimention-1)+j+mSize*2 + (dimention-1)];
+         out[firstOut+i*(dimention-1)+j+mSize*2 + (dimention-1)] = temp;
       }
       //swap p
-      for(int j = 0; j<dimention; j++){
-         temp = out[firstOut+targetIndex*dimention+j + dimention];
-         out[firstOut+targetIndex*dimention+j+mSize*2 + dimention] = out[firstOut+i*dimention+j + dimention];
-         out[firstOut+i*dimention+j + dimention] = temp;
+      for(int j = 0; j<(dimention-1); j++){
+         temp = out[firstOut+targetIndex*(dimention-1)+j + (dimention-1)];
+         out[firstOut+targetIndex*(dimention-1)+j+mSize*2 + dimention] = out[firstOut+i*(dimention-1)+j + (dimention-1)];
+         out[firstOut+i*(dimention-1)+j + (dimention-1)] = temp;
       }
       //swap l
-      out[firstOut+targetIndex*dimention+targetIndex+mSize + dimention] = 0;
-      out[firstOut+i*dimention+i+mSize + dimention] = 0;
+      out[firstOut+targetIndex*(dimention-1)+targetIndex+mSize + (dimention-1)] = 0;
+      out[firstOut+i*(dimention-1)+i+mSize + (dimention-1)] = 0;
       
-      for(int j = 0; j<dimention; j++){
-         temp = out[firstOut+targetIndex*dimention+j+mSize + dimention];
-         out[firstOut+targetIndex*dimention+j+mSize + dimention] = out[firstOut+i*dimention+j+mSize + dimention];
-         out[firstOut+i*dimention+j+mSize + dimention] = temp;
+      for(int j = 0; j<(dimention-1); j++){
+         temp = out[firstOut+targetIndex*(dimention-1)+j+mSize + (dimention-1)];
+         out[firstOut+targetIndex*(dimention-1)+j+mSize + (dimention-1)] = out[firstOut+i*(dimention-1)+j+mSize + (dimention-1)];
+         out[firstOut+i*(dimention-1)+j+mSize + (dimention-1)] = temp;
       }
-      out[firstOut+targetIndex*dimention+targetIndex+mSize + dimention] = 1;
-      out[firstOut+i*dimention+i+mSize + dimention] = 1;
+      out[firstOut+targetIndex*(dimention-1)+targetIndex+mSize + (dimention-1)] = 1;
+      out[firstOut+i*(dimention-1)+i+mSize + (dimention-1)] = 1;
+      printf("afterSwapCalc");
+      lpuDebug(gid, out, dimention, 1);
       //eliminate
-      for(int j = i+1; j<dimention; j++){
-         float mult = out[firstOut+dimention*j+i+2*mSize + dimention]/out[firstOut+(i)*(dimention+1)+2*mSize + dimention];
-         for(int k = 0; k<dimention; k++){
-            out[firstOut+dimention*j+k+2*mSize + dimention] = out[firstOut+dimention*j+k+2*mSize + dimention]-(mult*out[firstOut+dimention*i+k+2*mSize + dimention]);
+      for(int j = i+1; j<(dimention-1); j++){
+         float mult = out[firstOut+(dimention-1)*j+i+2*mSize + (dimention-1)]/out[firstOut+(i)*(dimention)+2*mSize + (dimention-1)];
+         for(int k = 0; k<(dimention-1); k++){
+            out[firstOut+(dimention-1)*j+k+2*mSize + (dimention-1)] = out[firstOut+(dimention-1)*j+k+2*mSize + dimention]-(mult*out[firstOut+(dimention-1)*i+k+2*mSize + (dimention-1)]);
          }
-         out[firstOut+j*dimention+i+mSize + dimention] = mult;
+         out[firstOut+j*(dimention-1)+i+mSize + (dimention-1)] = mult;
       }
+      printf("afterElimCalc");
+      lpuDebug(gid, out, dimention, 1);
    }
 }
 __kernel void RaserizeStep1(
@@ -199,58 +268,33 @@ int numSim, //number of simplexes
 int numTextures //using dimention can help figure out each texture
 ){
    //printf("hello");
-   //flaten
    int gid = get_global_id(0);
+   //flaten
+   if(gid == 0){
+      for(int i = 0; i<(dimention)*(dimention); i++){
+         printf(" %.3f,", coords[i]);
+      }
+      printf("\n");
+   }
    for(int j = 0; j<dimention; j++){
       float dist = coords[gid*dimention*dimention+dimention*j+dimention-1];
       for(int k = 0; k<dimention-1; k++){
          fCoords[(dimention)*(dimention-1)*gid+(dimention-1)*j + k] = coords[gid*dimention*dimention+dimention*j+k]/dist;
       }
    }
+   
+   if(gid == 0){
+      for(int i = 0; i<(dimention)*(dimention-1); i++){
+         printf(" %.3f,", fCoords[i]);
+      }
+      printf("\n");
+   }
    //printf("barry");
    //make matrixes
    lpuBarycentricCoords(fCoords, dimention, lpuData, gid);
    //printf("bye");
    //debug stuff
-   if(gid == 0){
-      int mSize = dimention*dimention;
-      for(int j = 0; j<numSim; j++){
-         printf("simplex %d\n :", j);
-         int index = j*(3*mSize+dimention);
-         printf("Shift:\n{");
-         for(int i = 0; i<dimention; i++){
-            index++;
-            printf("%.3f, ", lpuData[index]);
-         }
-         printf("}\n");
-         printf("P matrix:\n");
-         for(int i = 0; i<dimention; i++){
-            for(int k = 0; k<dimention; k++){
-               index++;
-               printf("%.3f, ", lpuData[index]);
-            }
-            printf("\n");
-         }
-         printf("}\n");
-         printf("L matrix:\n");
-         for(int i = 0; i<dimention; i++){
-            for(int k = 0; k<dimention; k++){
-               index++;
-               printf("%.3f, ", lpuData[index]);
-            }
-            printf("\n");
-         }
-         printf("}\n");
-         printf("U matrix:\n");
-         for(int i = 0; i<dimention; i++){
-            for(int k = 0; k<dimention; k++){
-               index++;
-               printf("%.3f, ", lpuData[index]);
-            }
-            printf("\n");
-         }
-      }
-   }
+   lpuDebug(gid, lpuData, dimention, numSim);
 }
 
 __kernel void RaserizeStep2(   
