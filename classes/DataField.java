@@ -1,17 +1,24 @@
 import java.lang.reflect.Field;
 
-public class DataField<T> {
+public class DataField<A, B> {
+
+   public A parent;
    
-   public T owner;
+   public B owner;
    
    public String value;
    
-   public DataField(T owner) {
+   public DataField(A parent, B owner) {
+      this.parent = parent;
       this.owner = owner;
       updateValue();
    }
    
-   public T getOwner() {
+   public A getParent() {
+      return parent;
+   }
+   
+   public B getOwner() {
       return owner;
    }
    

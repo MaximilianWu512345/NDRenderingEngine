@@ -520,22 +520,18 @@ public class EnginePanelGUI {
             y += c.getHeight();
          }
          try {
-            Container container = new Container(null, new DataField[] { new DataField_Mesh(m) });
+            Container container = new Container(null, new DataField[] { new DataField_Mesh(m, null) });
             container.initialize(x, y, getWidth(), getHeight() / 20, null, "Mesh");
             container.initializeListeners();
             containers.add(container);
             for (int i = 0; i < m.getFaces().length; i++) {
                Simplex s = m.getFaces()[i];
-               Container temp = new Container(container, new DataField[] { } );
-               temp.initialize(null, "Simplex");
-            
-               
-               for (int e = 0; e < s.getPoints().length; e++) {
-                  Point p = s.getPoints()[e];
-                  Container tempPoint = new Container(temp, new DataField[] { new DataField_Point(p) } );
-                  tempPoint.initialize(null, "Point");
+               DataField[] fields = new DataField[s.getPoints().length];
+               for (int f = 0; f < fields.length; f++) {
+                  fields[f] = new DataField_Simplex(s, f);
                }
-               
+               Container temp = new Container(container, fields);
+               temp.initialize(null, "Simplex");
             }
             enginePanel.add(container);
          } catch (Exception e) {
@@ -561,12 +557,12 @@ public class EnginePanelGUI {
       protected void paintComponent(Graphics g) {
       }
       
-      protected class DataField_Mesh extends DataField<Mesh> {
-         public DataField_Mesh(Mesh owner) {
-            super(owner);
+      protected class DataField_Mesh extends DataField<Mesh, Object> {
+         public DataField_Mesh(Mesh parent, Object owner) {
+            super(parent, owner);
          }
          public void updateValue() {
-            setValue("" + owner.getDimension());
+            setValue("" + parent.getDimension());
          }
          public String getName() {
             return "Dimension";
@@ -577,16 +573,28 @@ public class EnginePanelGUI {
          }
       }
       
-      protected class DataField_Point extends DataField<Point> {
-         public DataField_Point(Point owner) {
-            super(owner);
+      protected class DataField_Simplex extends DataField<Simplex, Integer> {
+         public DataField_Simplex(Simplex parent, Integer owner) {
+            super(parent, owner);
+         }
+         
+         public void setValue() {
+            String[] splits = getValue().split(" ");
+            float[] temp = new float[splits.length];
+            for (int i = 0; i < temp.length; i++) {
+               temp[i] = Float.parseFloat(splits[i]);
+            }
+            parent.getPoints()[owner] = new Point(temp);
+            parent.setPoints(parent.getPoints());
+            System.out.println(parent.getPoints()[owner]);
          }
          
          public void updateValue() {
             String temp = "";
-            for (int i = 0; i < owner.getCoords().length; i++) {
-               temp += owner.getCoords()[i];
-               if (i < owner.getCoords().length - 1)
+            float[] coords = parent.getPoints()[owner].getCoords();
+            for (int i = 0; i < coords.length; i++) {
+               temp += coords[i];
+               if (i < coords.length - 1)
                   temp += " ";
             }
             setValue(temp);

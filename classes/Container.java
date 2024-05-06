@@ -39,6 +39,8 @@ public class Container extends JComponent implements MouseInputListener, KeyList
    
    protected ArrayList<Integer> fieldsInfo;
    
+   protected ArrayList<Integer> fieldsHeight;
+   
    protected Container parent;
    
    protected int defaultHeight;
@@ -50,10 +52,12 @@ public class Container extends JComponent implements MouseInputListener, KeyList
    public Container(Container parent, DataField[] fields) {
       children = new ArrayList<Container>();
       fieldsInfo = new ArrayList<Integer>();
+      fieldsHeight = new ArrayList<Integer>();
       this.fields = new ArrayList<DataField>();
       for (DataField f : fields) {
          this.fields.add(f);
          fieldsInfo.add(0);
+         fieldsHeight.add(fieldHeight);
       }
       setParent(parent);
    }
@@ -167,17 +171,32 @@ public class Container extends JComponent implements MouseInputListener, KeyList
          String fieldText = field.getName();
          String fieldValue = field.getValue();
          int fieldWidth = g.getFontMetrics().stringWidth(fieldText);
+         int fieldHeight = 0;
+         for (int f = 0; f < i; f++) {
+            fieldHeight += fieldsHeight.get(f);
+         }
+         int currentFieldHeight = fieldsHeight.get(i);
          g.setColor(textColor);
-         g.drawString(fieldText, x, y + heightSpacing + fieldTextHeight * 2 + i * fieldHeight);
+         g.drawString(fieldText, x, y + heightSpacing + fieldTextHeight * 2 + fieldHeight);
          g.setColor(info > 0 ? defaultBackgroundColor.darker() : defaultBackgroundColor);
          int boxX = x + fieldWidth + fieldWidthSpacing;
-         int boxY = y + heightSpacing + fieldTextHeight + i * fieldHeight;
+         int boxY = y + heightSpacing + fieldTextHeight + fieldHeight;
          int boxWidth = getWidth() - fieldWidth - fieldWidthSpacing - 1;
-         g.fillRect(boxX, boxY, boxWidth, fieldHeight);
+         g.fillRect(boxX, boxY, boxWidth, currentFieldHeight);
          g.setColor(borderColor);
-         g.drawRect(boxX, boxY, boxWidth, fieldHeight);
+         g.drawRect(boxX, boxY, boxWidth, currentFieldHeight);
          g.setColor(textColor);
-         g.drawString(fieldValue, boxX + fieldWidthSpacing, boxY + fieldTextHeight);
+         int splits = currentFieldHeight / this.fieldHeight;
+         int begin = 0;
+         int end = 0;
+         for (int h = 0; h < splits; h++) {
+            begin = end;
+            if (h == splits - 1)
+               end = fieldValue.length();
+            else
+               end += fieldValue.length() / splits;
+            g.drawString(fieldValue.substring(begin, end), boxX + fieldWidthSpacing, boxY + fieldTextHeight * (h + 1));
+         }
       }
       for (int i = 0; i < children.size(); i++) {
          Container child = children.get(i);
@@ -187,11 +206,6 @@ public class Container extends JComponent implements MouseInputListener, KeyList
    
    public boolean inBox(int index, int x, int y) {
       Graphics g = getGraphics();
-      Container temp = parent;
-      while (g == null && temp != null) {
-         g = temp.getGraphics();
-         temp = temp.parent;
-      }
       if (g == null)
          return false;
       if (index >= 0 && index < fields.size()) {
@@ -199,23 +213,38 @@ public class Container extends JComponent implements MouseInputListener, KeyList
          String fieldText = field.getName();
          String fieldValue = field.getValue();
          int fieldWidth = g.getFontMetrics().stringWidth(fieldText);
+         int fieldHeight = 0;
+         for (int f = 0; f < index; f++) {
+            fieldHeight += fieldsHeight.get(f);
+         }
+         int currentFieldHeight = fieldsHeight.get(index);
          int fieldTextHeight = g.getFontMetrics().getHeight() * 3 / 4;
          int offsetX = parent == null ? 0 : getXParent();
          int offsetY = parent == null ? 0 : getYParent();
          int boxX = offsetX + fieldWidth + fieldWidthSpacing;
-         int boxY = offsetY + heightSpacing + fieldTextHeight + index * fieldHeight;
+         int boxY = offsetY + heightSpacing + fieldTextHeight + fieldHeight;
          int boxWidth = getWidth() - fieldWidth - fieldWidthSpacing - 1;
-         if (x > boxX && x < boxX + boxWidth && y > boxY && y < boxY + fieldHeight)
+         if (x > boxX && x < boxX + boxWidth && y > boxY && y < boxY + currentFieldHeight)
             return true;
       }
       return false;
    }
    
+   public Graphics getGraphics() {
+      Graphics g = super.getGraphics();
+      Container temp = parent;
+      while (g == null && temp != null) {
+         g = temp.getGraphics();
+         temp = temp.parent;
+      }
+      return g;
+   }
+   
    public void updateContainer() {
       int maxWidth = getWidth();
       int maxHeight = defaultHeight;
-      for (DataField f : fields) {
-         maxHeight += fieldHeight;
+      for (int i = 0; i < fieldsHeight.size(); i++) {
+         maxHeight += fieldsHeight.get(i);
       }
       for (Container c : children) {
          if (c.getWidth() > maxWidth)
@@ -225,6 +254,22 @@ public class Container extends JComponent implements MouseInputListener, KeyList
       setSize(maxWidth, maxHeight);
       if (parent != null)
          parent.updateContainer();
+   }
+   
+   public void checkFieldWidth(int index) {
+      Graphics g = getGraphics();
+      if (g == null)
+         return;
+      DataField field = fields.get(index);
+      String fieldText = field.getName();
+      String fieldValue = field.getValue();
+      int fieldX = g.getFontMetrics().stringWidth(fieldText);
+      int fieldWidth = g.getFontMetrics().stringWidth(fieldValue);
+      int boxWidth = getWidth() - fieldX - fieldWidthSpacing - 1;
+      if (fieldWidth > boxWidth) {
+         fieldsHeight.set(index, (fieldWidth / boxWidth + 1) * fieldHeight);
+         updateContainer();
+      }
    }
 
    public void keyPressed(KeyEvent e) {
@@ -239,10 +284,16 @@ public class Container extends JComponent implements MouseInputListener, KeyList
                if (temp.length() > 0) {
                   temp = temp.substring(0, temp.length() - 1);
                   field.setValue(temp);
+                  checkFieldWidth(i);
                }
             }
             else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
                field.setValue(field.getValue() + " ");
+               checkFieldWidth(i);
+            }
+            else if (e.getKeyCode() == KeyEvent.VK_PERIOD) {
+               field.setValue(field.getValue() + ".");
+               checkFieldWidth(i);
             }
          }
       }
@@ -259,8 +310,9 @@ public class Container extends JComponent implements MouseInputListener, KeyList
       for (int i = 0; i < fields.size(); i++) {
          DataField field = fields.get(i);
          if (fieldsInfo.get(i) == 2 && field.canEdit()) {
-            if (Character.isLetterOrDigit(e.getKeyChar())) {
+            if (Character.isDigit(e.getKeyChar())) {
                field.setValue(field.getValue() + e.getKeyChar());
+               checkFieldWidth(i);
             }
          }
       }
