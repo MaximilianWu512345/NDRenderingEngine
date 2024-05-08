@@ -24,8 +24,11 @@ public class Utilities {
    }
    
    public static Mesh LoadMesh(String fileName) {
+      return LoadMesh(new File("meshes/" + fileName));
+   }
+   
+   public static Mesh LoadMesh(File file) {
       try {
-         File file = new File("meshes/" + fileName);
          Scanner reader = new Scanner(file);
          String text = "";
          while (reader.hasNextLine()) {
@@ -61,8 +64,11 @@ public class Utilities {
    }
    
    public static Texture LoadTexture(String fileName) {
+      return LoadTexture(new File("textures/" + fileName));
+   }
+   
+   public static Texture LoadTexture(File file) {
       try {
-         File file = new File("textures/" + fileName);
          if (file != null) {
             BufferedImage renderedImage = ImageIO.read(file);
             Color[][] colors = new Color[renderedImage.getWidth()][renderedImage.getHeight()];

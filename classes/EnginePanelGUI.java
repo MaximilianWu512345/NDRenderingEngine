@@ -76,12 +76,8 @@ public class EnginePanelGUI {
                   directory = "textures/PlaceTexturesHere.txt";
                   break;
             }
-            File file = pickFile(fileChooser, directory, filter);
-            if (file != null) {
-               enginePanel.renderImage(ImageIO.read(file));
-               enginePanel.repaint();
-            }
-            
+            return pickFile(fileChooser, directory, filter);
+
          }
          catch (Exception e) {
             System.out.println(e);
@@ -242,7 +238,6 @@ public class EnginePanelGUI {
       protected JMenuItem menuItemSaveFile;
       protected JMenuItem menuItemSaveMesh;
       protected JMenuItem menuItemSaveTexture;
-      protected JMenuItem menuItemLoadFile;
       protected JMenuItem menuItemLoadMesh;
       protected JMenuItem menuItemLoadTexture;
       
@@ -275,12 +270,10 @@ public class EnginePanelGUI {
          menuItemSaveFile = new JMenuItem("Save Mesh & Texture");
          menuItemSaveMesh = new JMenuItem("Save Mesh");
          menuItemSaveTexture = new JMenuItem("Save Texture");
-         menuItemLoadFile = new JMenuItem("Load File");
          menuItemLoadMesh = new JMenuItem("Load Mesh");
          menuItemLoadTexture = new JMenuItem("Load Texture");
          menuSettings.add(menuItemConsole);
          menuFile.add(menuItemSaveFile);
-         menuFile.add(menuItemLoadFile);
          menuMesh.add(menuItemSaveMesh);
          menuMesh.add(menuItemLoadMesh);
          menuTexture.add(menuItemSaveTexture);
@@ -289,7 +282,6 @@ public class EnginePanelGUI {
          menuItemSaveFile.addActionListener(new Listener_SaveFile());
          menuItemSaveMesh.addActionListener(new Listener_SaveMesh());
          menuItemSaveTexture.addActionListener(new Listener_SaveTexture());
-         menuItemLoadFile.addActionListener(new Listener_LoadFile());
          menuItemLoadMesh.addActionListener(new Listener_LoadMesh());
          menuItemLoadTexture.addActionListener(new Listener_LoadTexture());
          console = new JFrame("Console");
@@ -434,19 +426,11 @@ public class EnginePanelGUI {
          }
       }
       
-      protected class Listener_LoadFile implements ActionListener
-      {	      
-         public void actionPerformed(ActionEvent e)
-         {
-            askForFile(FileType.ANY);
-         }
-      }
-      
       protected class Listener_LoadMesh implements ActionListener
       {	      
          public void actionPerformed(ActionEvent e)
          {
-            askForFile(FileType.MESH);
+            enginePanel.addMesh(Utilities.LoadMesh(askForFile(FileType.MESH)));
          }
       }
       
@@ -465,7 +449,8 @@ public class EnginePanelGUI {
             String s = JOptionPane.showInputDialog("Name of File?");
             if(s!=null)
             {
-               Utilities.SaveMesh(s, null, true);
+               for (int i = 0; i < enginePanel.getMeshes().size(); i++)
+                  Utilities.SaveMesh(s + i, enginePanel.getMeshes().get(i), true);
             }
          }
       }
@@ -477,7 +462,8 @@ public class EnginePanelGUI {
             String s = JOptionPane.showInputDialog("Name of File?");
             if(s!=null)
             {
-               Utilities.SaveMesh(s, null, false);
+               for (int i = 0; i < enginePanel.getMeshes().size(); i++)
+                  Utilities.SaveMesh(s + i, enginePanel.getMeshes().get(i), true);
             }
          }
       }
