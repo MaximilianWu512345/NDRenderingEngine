@@ -8,6 +8,7 @@ import javax.swing.filechooser.FileFilter;
 import javax.imageio.ImageIO;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Field;
+import javax.swing.InputMap;
 
 public class EnginePanelGUI {
 
@@ -132,6 +133,21 @@ public class EnginePanelGUI {
       public void removePropertyChangeListener(PropertyChangeListener listener) { }
    }
    
+   protected class RebindListener extends Listener_Action {
+         
+      protected String[] arguments;
+         
+      public RebindListener(String[] arguments) {
+         this.arguments = arguments;
+      }
+      
+      public String[] getArguments() {
+         return arguments;
+      }
+      
+      public void actionPerformed(ActionEvent e) { }
+   }
+   
    protected class InputHelper extends Component {
    
       protected int index;
@@ -168,8 +184,12 @@ public class EnginePanelGUI {
          String actionName = type + index++;
          try {
             if (type.equalsIgnoreCase("rebindposition")) {
+               String[] args = new String[arguments.length - 1];
+               for (int i = 1; i < arguments.length; i++) {
+                  args[i - 1] = arguments[i];
+               }
                enginePanel.getActionMap().put(actionName, 
-                  new Listener_Action() {
+                  new RebindListener(args) {
                      public void actionPerformed(ActionEvent e) {
                         translateCamera(Float.parseFloat(arguments[2]), Integer.parseInt(arguments[3]));
                      }
@@ -177,8 +197,12 @@ public class EnginePanelGUI {
                enginePanel.getInputMap().put(KeyStroke.getKeyStroke(code, 0), actionName);
             }
             else if (type.equalsIgnoreCase("rebindrotation")) {
+               String[] args = new String[arguments.length - 1];
+               for (int i = 1; i < arguments.length; i++) {
+                  args[i - 1] = arguments[i];
+               }
                enginePanel.getActionMap().put(actionName, 
-                  new Listener_Action() {
+                  new RebindListener(args) {
                      public void actionPerformed(ActionEvent e) {
                         rotateCamera(Float.parseFloat(arguments[2]), Integer.parseInt(arguments[3]), Integer.parseInt(arguments[4]));
                      }
@@ -202,7 +226,6 @@ public class EnginePanelGUI {
          rebindKey(KeyEvent.VK_DOWN, "rebindposition", new String[] { "", "", "0.1f", "2"});
          rebindKey(KeyEvent.VK_Q, "rebindrotation", new String[] { "", "", "0.1f", "1", "2"});
          rebindKey(KeyEvent.VK_E, "rebindrotation", new String[] { "", "", "-0.1f", "1", "2"});
-         
       }
    }
 
@@ -309,6 +332,8 @@ public class EnginePanelGUI {
                consoleTextArea.append("  - keys follow format of java's KeyEvent. Examples: 'VK_A'. Arrow keys are directional based, i.e. 'VK_LEFT'.\n");
                consoleTextArea.append("'rebindrotation' 'KeyEvent' 'float theta' 'int axis1' 'int axis2'\n");
                consoleTextArea.append("  - rebinds 'KeyEvent' to rotate Camera by 'theta' with axis 'axis1' and 'axis2'\n");
+               consoleTextArea.append("'listrebind'\n");
+               consoleTextArea.append("  - lists all current rebinds\n");
             }
          }
          else if (arguments[0].trim().equalsIgnoreCase("rebindposition")) {
@@ -325,6 +350,20 @@ public class EnginePanelGUI {
                   consoleTextArea.append("'" + arguments[1] + "' rebinded.");
                else
                   consoleTextArea.append("Error: Unsuccessful.");
+            }
+         }
+         else if (arguments[0].trim().equalsIgnoreCase("listrebind")) {
+            if (handleError(arguments, 1)) {
+               InputMap inputMap = enginePanel.getInputMap();
+               ActionMap actionMap = enginePanel.getActionMap();
+               for (KeyStroke keyStroke : inputMap.keys()) {
+                  String temp = keyStroke + " " + inputMap.get(keyStroke) + " ";
+                  RebindListener rebind = (RebindListener)actionMap.get(inputMap.get(keyStroke));
+                  for (String s : rebind.getArguments()) {
+                     temp += s + " ";
+                  }
+                  consoleTextArea.append(temp + "\n");
+               }
             }
          }
       }
