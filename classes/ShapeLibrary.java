@@ -8,10 +8,14 @@ public class ShapeLibrary {
       Simplex[] faces = new Simplex[dimension * 2];
       for (int i = 0; i < faces.length; i++) {
          faces[i] = GenerateSimplex(dimension - 1, size);
-      }*/
+      }
+      */
+      /*
       Simplex[] faces = new Simplex[1];
       faces[0] = GenerateSimplex(dimension, size);
-      return new Mesh(faces, dimension);
+      */
+      // not operational right now, sorry
+      return null; // new Mesh(faces, dimension);
    }
    
    public static Point[] GenerateAllPoints(int dimension, float size) {
@@ -40,6 +44,7 @@ public class ShapeLibrary {
    // https://mathworld.wolfram.com/HyperspherePointPicking.html
    //(x1)^2 + (x2)^2 + (x3)^2 + ... + (xn)^2 = r^2
    public static Mesh GenerateHypersphere(int dimension, float radius, int numPoints) {
+      /*
       Point[] points = new Point[numPoints];
       for (int index = 0; index < points.length; index++) {
          float[] randVar = new float[dimension];
@@ -50,7 +55,9 @@ public class ShapeLibrary {
       }
       Simplex[] faces = new Simplex[1];
       faces[0] = new Simplex(points);
-      return new Mesh(faces, dimension);
+      */
+      // not operational right now, sorry
+      return null; // new Mesh(faces, dimension);
    }
    
    // https://stackoverflow.com/questions/218060/random-gaussian-variables

@@ -62,6 +62,12 @@ public class Container extends JComponent implements MouseInputListener, KeyList
       setParent(parent);
    }
    
+   public void addOffset(int x, int y) {
+      setLocation(getLocation().x + x, getLocation().y + y);
+      for (Container c : children)
+         c.addOffset(x, y);
+   }
+   
    public void initialize(int x, int y, int w, int h, Color c, String t) {
       setLocation(x, y);
       setSize(w, h);
@@ -178,7 +184,9 @@ public class Container extends JComponent implements MouseInputListener, KeyList
          int currentFieldHeight = fieldsHeight.get(i);
          g.setColor(textColor);
          g.drawString(fieldText, x, y + heightSpacing + fieldTextHeight * 2 + fieldHeight);
-         g.setColor(info > 0 ? defaultBackgroundColor.darker() : defaultBackgroundColor);
+         Color color = info > 0 ? defaultBackgroundColor.darker() : defaultBackgroundColor;
+         color = info == 2 ? color.darker() : color;
+         g.setColor(color);
          int boxX = x + fieldWidth + fieldWidthSpacing;
          int boxY = y + heightSpacing + fieldTextHeight + fieldHeight;
          int boxWidth = getWidth() - fieldWidth - fieldWidthSpacing - 1;

@@ -457,11 +457,13 @@ public class EnginePanelGUI {
       
    }
    
-   protected class ButtonHelper extends Component implements KeyListener {
+   protected class ButtonHelper extends Component implements KeyListener, MouseWheelListener {
       
       protected ArrayList<Button> buttons;
       
       protected ArrayList<Container> containers;
+      
+      protected int offsetY;
    
       /** Creates new ButtonHelper with location (x, y) and size (w, h).
       * @param x the x-coord of the location.
@@ -472,6 +474,7 @@ public class EnginePanelGUI {
       public ButtonHelper(int x, int y, int w, int h) {
          super(x, y, w, h);
          enginePanel.addKeyListener(this);
+         enginePanel.addMouseWheelListener(this);
          initialize();
       }
       
@@ -480,6 +483,25 @@ public class EnginePanelGUI {
          buttons.add(new Button_NewMesh(this.getX(), this.getY(), this.getWidth(), this.getHeight() / 20, Color.white, "+"));
          buttons.add(new Button_Render(this.getX(), this.getY() + this.getHeight() * 19 / 20, this.getWidth(), this.getHeight() / 20, Color.white, "Render Mesh"));
          containers = new ArrayList<Container>();
+      }
+      
+      public void mouseWheelMoved(MouseWheelEvent e) {
+         int WHEEL_SENSITIVITY = 0;
+         int notches = e.getWheelRotation();
+         int momentum = 0;
+         if (Math.abs(notches) >= WHEEL_SENSITIVITY) {
+            if (notches > 0) {
+               momentum++;
+            }
+            else if (notches < 0) {
+               momentum--;
+            }
+         }
+         offsetY += momentum * 50;
+         for (Container c : containers) {
+            c.addOffset(0, momentum * 50);
+            c.repaint();
+         }
       }
       
       public void keyPressed(KeyEvent e) {
@@ -503,19 +525,42 @@ public class EnginePanelGUI {
       public Mesh createMesh(String type) {
          switch (type) {
             case "Default":
-               return new Mesh(new Simplex[0], 0);
+               return generateMesh();
             case "Hypercube":
-               return null;
+               return ShapeLibrary.GenerateHypercube(enginePanel.getCamera().getDimension(), 10);
             case "Hypersphere":
-               return null;
+               return ShapeLibrary.GenerateHypersphere(enginePanel.getCamera().getDimension(), 10, 10);
             default:
                return null;
          }
       }
       
+      public Mesh generateMesh() {
+         int dimension = enginePanel.getCamera().getDimension();
+         int numTestSimplexes = 1;
+         Simplex[] tempSimplex = new Simplex[numTestSimplexes];
+         for(int j = 0; j< numTestSimplexes; j++){
+            tempSimplex[j] = generateSimplex(dimension, 10);
+         }
+         return new Mesh(tempSimplex, dimension);
+      }
+      
+      public static Simplex generateSimplex(int dimention, float bounds){
+         Point[] data = new Point[dimention];
+         for(int i = 0; i<dimention; i++){
+            float[] coord = new float[dimention];
+            for(int j = 0; j<dimention; j++){
+               coord[j] = (float)(Math.random()*2*bounds)-bounds;
+            }
+            data[i] = new Point(coord);
+         }
+         return new Simplex(data);
+      
+      }
+      
       public void updateForMesh(Mesh m) {
          int x = this.getX();
-         int y = this.getY() + this.getHeight() / 20;
+         int y = this.getY() + offsetY + this.getHeight() / 20;
          for (Container c : containers) {
             y += c.getHeight();
          }
