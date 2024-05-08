@@ -249,6 +249,7 @@ public class CameraRastorizationV2 implements Camera{
          for(int i = 0; i<c.length; i++){
             c[i] = new Color((int)out[i*3], (int)out[i*3+1], (int)out[i*3+2]);
          }
+         System.out.println(c[0]);
          for (cl_mem m : memory)
             clReleaseMemObject(m);
          return new ArrayTexture(c, bounds);
@@ -519,7 +520,7 @@ public class CameraRastorizationV2 implements Camera{
    // https://www.codeproject.com/Articles/86551/Part-1-Programming-your-Graphics-Card-GPU-with-Jav
    //static stuff that we only need one of
    public static void GPUConnect(){ 
-   setLogLevel(CL.LogLevel.LOG_TRACE);
+      setLogLevel(CL.LogLevel.LOG_TRACE);
       GPUCode = OpenCL.GetFileContents(new File(GPU_CODE_LOC));
       
       final int platformIndex = 0;

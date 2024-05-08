@@ -20,15 +20,15 @@ void lpuDebug(int gid, __global float *lpuData, int dimention, int numSim){
          int index = j*(3*mSize+dimention-1);
          printf("Shift:\n{");
          for(int i = 0; i<(dimention-1); i++){
-            index++;
             printf("%.3f, ", lpuData[index]);
+            index++;
          }
          printf("}\n");
          printf("P matrix:\n");
          for(int i = 0; i<dimention-1; i++){
             for(int k = 0; k<dimention-1; k++){
-               index++;
                printf("%.3f, ", lpuData[index]);
+               index++;
             }
             printf("\n");
          }
@@ -36,8 +36,8 @@ void lpuDebug(int gid, __global float *lpuData, int dimention, int numSim){
          printf("L matrix:\n");
          for(int i = 0; i<dimention-1; i++){
             for(int k = 0; k<dimention-1; k++){
-               index++;
                printf("%.3f, ", lpuData[index]);
+               index++;
             }
             printf("\n");
          }
@@ -45,8 +45,8 @@ void lpuDebug(int gid, __global float *lpuData, int dimention, int numSim){
          printf("U matrix:\n");
          for(int i = 0; i<dimention-1; i++){
             for(int k = 0; k<dimention-1; k++){
-               index++;
                printf("%.3f, ", lpuData[index]);
+               index++;
             }
             printf("\n");
          }
@@ -91,6 +91,7 @@ int floatCompareEps(const float a, const float b, const float epsilon){
    }
    return 7;
 }
+//working! :D
 void calcBaryCoords(__global float* pos, __global float* lpu, int triangleIndex, int dimention, __global float* out, __global float* sol, __global float* dat, int posStart, int outStart){
    int matrixSize = (dimention-1)*(dimention-1);
    int trueIndex = triangleIndex*(dimention+3*matrixSize);
@@ -148,23 +149,15 @@ int id
    int outSize = mSize*3+dimention-1;
    int firstOut = gid*outSize;
    int firstIn = gid*dataSize;
-   if(gid == 0){
-      for(int i = 0; i<dataSize; i++){
-         printf(" %.3f,", data[firstIn+i]);
-      }
-      printf("\n");
-   }
    //getShift
    for(int i = 0; i<dimention-1; i++){
-      out[firstOut+i] = -1*data[i + firstIn];
+      out[firstOut+i] = data[i + firstIn + mSize];
+      
    }
-   
-   printf("afterShiftCalc");
-   lpuDebug(gid, out, dimention, 1);
    //apply shift
-   for(int i = 0; i<dimention; i++){
+   for(int i = 0; i<dimention-1; i++){
       for(int j = 0; j<dimention-1; j++){
-         data[firstIn + i*(dimention-1)] -= out[firstOut+j];
+         data[firstIn + i*(dimention-1) + j] -= out[firstOut+j];
       }
    }
    //p, l, then u
@@ -173,9 +166,9 @@ int id
       out[firstOut+i+mSize + (dimention-1)] = 1;
    }
    for(int i = 0; i<mSize; i++){
-      int c = i%dimention;
-      int r = i/dimention;
-      out[firstOut+i+mSize*2 + (dimention-1)] = data[dimention*(c+1)+r + firstIn];
+      int c = i%(dimention-1);
+      int r = i/(dimention-1);
+      out[firstOut+i+mSize*2 + (dimention-1)] = data[(dimention-1)*(c)+r + firstIn];
    }
    //undo shift?
    for(int i = 0; i<dimention; i++){
@@ -198,7 +191,6 @@ int id
          for(int j = 0; j<mSize; j++){
             out[firstOut+i+(dimention-1)] = 0;
          }
-         printf("AAAAAAAAAAAAAA");
          return;
       }
       float temp;
@@ -211,7 +203,7 @@ int id
       //swap p
       for(int j = 0; j<(dimention-1); j++){
          temp = out[firstOut+targetIndex*(dimention-1)+j + (dimention-1)];
-         out[firstOut+targetIndex*(dimention-1)+j+mSize*2 + dimention] = out[firstOut+i*(dimention-1)+j + (dimention-1)];
+         out[firstOut+targetIndex*(dimention-1)+j + (dimention-1)] = out[firstOut+i*(dimention-1)+j + (dimention-1)];
          out[firstOut+i*(dimention-1)+j + (dimention-1)] = temp;
       }
       //swap l
@@ -225,18 +217,15 @@ int id
       }
       out[firstOut+targetIndex*(dimention-1)+targetIndex+mSize + (dimention-1)] = 1;
       out[firstOut+i*(dimention-1)+i+mSize + (dimention-1)] = 1;
-      printf("afterSwapCalc");
-      lpuDebug(gid, out, dimention, 1);
       //eliminate
       for(int j = i+1; j<(dimention-1); j++){
          float mult = out[firstOut+(dimention-1)*j+i+2*mSize + (dimention-1)]/out[firstOut+(i)*(dimention)+2*mSize + (dimention-1)];
+         
          for(int k = 0; k<(dimention-1); k++){
-            out[firstOut+(dimention-1)*j+k+2*mSize + (dimention-1)] = out[firstOut+(dimention-1)*j+k+2*mSize + dimention]-(mult*out[firstOut+(dimention-1)*i+k+2*mSize + (dimention-1)]);
+            out[firstOut+(dimention-1)*j+k+2*mSize + (dimention-1)] -= (mult*out[firstOut+(dimention-1)*i+k+2*mSize + (dimention-1)]);
          }
          out[firstOut+j*(dimention-1)+i+mSize + (dimention-1)] = mult;
       }
-      printf("afterElimCalc");
-      lpuDebug(gid, out, dimention, 1);
    }
 }
 __kernel void RaserizeStep1(
@@ -270,31 +259,15 @@ int numTextures //using dimention can help figure out each texture
    //printf("hello");
    int gid = get_global_id(0);
    //flaten
-   if(gid == 0){
-      for(int i = 0; i<(dimention)*(dimention); i++){
-         printf(" %.3f,", coords[i]);
-      }
-      printf("\n");
-   }
+   
    for(int j = 0; j<dimention; j++){
       float dist = coords[gid*dimention*dimention+dimention*j+dimention-1];
       for(int k = 0; k<dimention-1; k++){
          fCoords[(dimention)*(dimention-1)*gid+(dimention-1)*j + k] = coords[gid*dimention*dimention+dimention*j+k]/dist;
       }
    }
-   
-   if(gid == 0){
-      for(int i = 0; i<(dimention)*(dimention-1); i++){
-         printf(" %.3f,", fCoords[i]);
-      }
-      printf("\n");
-   }
-   //printf("barry");
    //make matrixes
    lpuBarycentricCoords(fCoords, dimention, lpuData, gid);
-   //printf("bye");
-   //debug stuff
-   lpuDebug(gid, lpuData, dimention, numSim);
 }
 
 __kernel void RaserizeStep2(   
@@ -325,17 +298,18 @@ uchar DefB, //default blue
 int numSim, //number of simplexes
 int numTextures //using dimention can help figure out each texture
 ){
-   //printf("hello2");
    int gid = get_global_id(0);
    int arrStartSmall = gid*(dimention-1);
    int arrStartLarge = gid*(dimention);
    int arrStartTexture = gid*tdim;
-   if(stencilBuff[gid/8] && (1<<(gid%8)) > 0){
+   int debugID = 809833;
+   if(!stencilBuff[gid/8] && (1<<(gid%8)) > 0){
       int pixPosInt = gid;
       for(int i = 0; i<(dimention-1); i++){
          pixPos[i+arrStartSmall] = (float)(pixPosInt%outDim[i]);
          pixPosInt /= outDim[i];
       }
+      pixPosInt = gid;
       for(int i = 0; i<numSim; i++){
          calcBaryCoords(pixPos, lpuData, i, dimention, found, dat, sol, arrStartSmall, arrStartLarge);
          bool inSim = true;
@@ -382,10 +356,17 @@ int numTextures //using dimention can help figure out each texture
                g = textureColors[first+1];
                b = textureColors[first+2];
             }
+            if(gid == debugID){
+               printf("pos: %d ", pixPosInt);
+               printf("color: (%d, ", (int)r);
+               printf("%d, ", (int)g);
+               printf("%d)\n", (int)b);
+            }
             //set new color
             out[pixPosInt*3] = r;
-            out[pixPosInt*3] = g;
-            out[pixPosInt*3] = b;
+            out[pixPosInt*3+1] = g;
+            out[pixPosInt*3+2] = b;
+            
          }
       }
    }
