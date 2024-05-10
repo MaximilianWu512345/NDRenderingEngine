@@ -17,15 +17,20 @@ public class EnginePanel extends JPanel {
 
 /** Used to offset components so they can be displayed better on the JFrame.*/
    public static final int OFFSET = 1;
-   
+
+/** ArrayList of all Components */
    protected ArrayList<Component> components;
-   
+
+/** RenderHelper for rendering images */
    protected RenderHelper renderHelper;
-   
+
+/** Camera for rendering */
    protected Camera camera;
-   
+
+/** ArrayList of all Meshes */
    protected ArrayList<Mesh> meshes;
-   
+
+/** Optional reference to GUI */
    protected EnginePanelGUI gui;
    
 /** Creates an EnginePanel of size (width, height) and calls initialize().

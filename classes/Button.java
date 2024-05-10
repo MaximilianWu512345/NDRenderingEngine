@@ -22,6 +22,7 @@ public class Button extends JComponent {
 /** MouseListener to display graphical changes when mouse enters and exits button */
    protected Listener listener;
    
+/** Helper boolean to store whether mouse has entered button */
    protected boolean entered;
    
 /**

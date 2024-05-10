@@ -7,48 +7,69 @@ import java.util.ArrayList;
 import java.awt.event.KeyListener;
 import java.awt.event.KeyEvent;
 
-/** More personalized and liberal version of a JButton */
+/** Container for DataFields */
 public class Container extends JComponent implements MouseInputListener, KeyListener {
    
+      /** Height for DataFields */
    protected int fieldHeight = 20;
    
+      /** Height for Container children */
    protected int containerHeight = 20;
    
+      /** Spacing between DataField name and box */
    protected int fieldWidthSpacing = 5;
    
+      /** Spacing between DataField */
    protected int heightSpacing = 5;
    
+      /** Background Color */
    protected Color defaultBackgroundColor = Color.white;
    
+      /** Border Color */
    protected Color borderColor = Color.black;
-/** Background color of this Button */
-   protected Color backgroundColor = Color.white;
    
+      /** Text Color */
    protected Color textColor = Color.black;
    
-/** Text to be displayed inside this Button, aligns to be centered vertically and horizontally */
+      /** Text to be displayed */
    protected String text;
    
+      /** Helper boolean for painting */
    protected boolean entered;
    
+      /** Helper boolean for checking if clicked */
    protected boolean opened;
    
+      /** ArrayList of Container children */
    protected ArrayList<Container> children;
    
+      /** ArrayList of DataFields */
    protected ArrayList<DataField> fields;
    
+      /** ArrayList of information about the state of DataFields, 0 == default, 1 == entered, 2 == cliced */
    protected ArrayList<Integer> fieldsInfo;
    
+      /** ArrayList of information of height of DataFields, used for size checking */
    protected ArrayList<Integer> fieldsHeight;
    
+      /** Container parent */
    protected Container parent;
    
+      /** Initial height when initialized */
    protected int defaultHeight;
-
+   
+      /** Creates a new Container with a Container parent and DataField fields
+      * @param parent parent of Container
+      * @param fields fields of Container
+      */
    public Container(Container parent, ArrayList<DataField> fields) {
       this(parent, fields == null ? (DataField[])null : fields.toArray(new DataField[0]));
    }
    
+      /** Creates a new Container with a Container parent and DataField fields
+      * @param parent parent of Container
+      * @param fields fields of Container
+      */
    public Container(Container parent, DataField[] fields) {
       children = new ArrayList<Container>();
       fieldsInfo = new ArrayList<Integer>();
@@ -62,12 +83,24 @@ public class Container extends JComponent implements MouseInputListener, KeyList
       setParent(parent);
    }
    
+      /** Adds offset to this Container when drawn
+      * @param x x coordinate offset
+      * @param y y coordinate offset
+      */
    public void addOffset(int x, int y) {
       setLocation(getLocation().x + x, getLocation().y + y);
       for (Container c : children)
          c.addOffset(x, y);
    }
    
+      /** Initializes Container with location, size, color, and text
+      * @param x x coordinate of location
+      * @param y y coordinate of location
+      * @param w width of size
+      * @param h height of size
+      * @param c background color of Container
+      * @param t text of Container
+      */
    public void initialize(int x, int y, int w, int h, Color c, String t) {
       setLocation(x, y);
       setSize(w, h);
@@ -76,18 +109,28 @@ public class Container extends JComponent implements MouseInputListener, KeyList
       updateContainer();
    }
    
+      /** Initializes Container with color and text
+      * @param c background color of Container
+      * @param t text of Container
+      */
    public void initialize(Color c, String t) {
       if (c != null)
-         backgroundColor = c;
+         defaultBackgroundColor = c;
       if (t != null)
          text = t;
    }
-   
+
+      /** Initializes and adds Listeners, generally should only be used for parent Container
+      */
    public void initializeListeners() {
       addMouseListener(this);
       addMouseMotionListener(this);
    }
    
+   
+      /** Sets parent of Container
+      * @param parent parent of Container
+      */
    public void setParent(Container parent) {
       if (parent == null)
          return;
@@ -95,6 +138,10 @@ public class Container extends JComponent implements MouseInputListener, KeyList
       parent.add(this);
    }
    
+   
+      /** Adds Container child to Container
+      * @param c Container child
+      */
    public void add(Container c) {
       if (c == null)
          return;
@@ -102,36 +149,51 @@ public class Container extends JComponent implements MouseInputListener, KeyList
       c.initialize(getX(), getY() + getHeight(), getWidth(), containerHeight, null, null);
    }
 
-/** Sets color to c.
-* @param c the color to set the background color to.
-*/
+      /** Sets color of Container
+      * @param c the color to set the background color to.
+      */
    public void setColor(Color c) {
-      backgroundColor = c;
+      defaultBackgroundColor = c;
    }
 
-/** Sets text to t.
-* @param t the text to set the button's text to.
-*/
+      /** Sets text of Container
+      * @param t text of Container
+      */
    public void setText(String t) {
       text = t;
    }
    
+      /** Returns width of Container
+      * @return width of Container
+      */
    public int getWidth() {
       return (int)getSize().getWidth();
    }
    
+      /** Returns height of Container
+      * @return height of Container
+      */
    public int getHeight() {
       return (int)getSize().getHeight();
    }
    
+      /** Returns x coordinate of Container position
+      * @return x coordinate of position
+      */
    public int getX() {
       return (int)getLocation().getX();
    }
    
+      /** Returns y coordinate of Container position
+      * @return y coordinate of position
+      */
    public int getY() {
       return (int)getLocation().getY();
    }
    
+      /** Returns x coordinate of Container parent's position
+      * @return x coordinate of parent's position
+      */
    public int getXParent() {
       if (parent == null)
          return getX();
@@ -142,6 +204,9 @@ public class Container extends JComponent implements MouseInputListener, KeyList
       return getX() - temp.getX();
    }
    
+      /** Returns y coordinate of Container parent's position
+      * @return y coordinate of parent's position
+      */
    public int getYParent() {
       if (parent == null)
          return getY();
@@ -152,13 +217,19 @@ public class Container extends JComponent implements MouseInputListener, KeyList
       return getY() - temp.getY();
    }
    
+      /** Paints this Container, adds parent location as offset
+      * @param g Graphics for painting
+      */
    protected void paintComponent(Graphics g) {
       paintComponent(g, parent == null ? 0 : getXParent(), parent == null ? 0 : getYParent());
    }
    
-/** Paints the button. Halves the background color if the mouse has entered the button.
-* @param g the graphics component used to paint the button.
-*/
+   
+      /** Paints this Container with position offset x and y
+      * @param g Graphics for painting
+      * @param x x coordinate position offset
+      * @param y y coordinate position offset
+      */
    protected void paintComponent(Graphics g, int x, int y) {
       g = g.create();
       g.setColor(defaultBackgroundColor);
@@ -212,6 +283,12 @@ public class Container extends JComponent implements MouseInputListener, KeyList
       }
    }
    
+      /** Returns whether or not position x and y are inside of the DataField at index
+      * @param index index of DataField to check
+      * @param x x coordinate of position
+      * @param y y coordinate of position
+      * @return whether or not position is in DataField
+      */
    public boolean inBox(int index, int x, int y) {
       Graphics g = getGraphics();
       if (g == null)
@@ -238,6 +315,9 @@ public class Container extends JComponent implements MouseInputListener, KeyList
       return false;
    }
    
+      /** Returns Graphics of Container
+      * @return Graphics to paint
+      */
    public Graphics getGraphics() {
       Graphics g = super.getGraphics();
       Container temp = parent;
@@ -248,6 +328,8 @@ public class Container extends JComponent implements MouseInputListener, KeyList
       return g;
    }
    
+      /** Updates Container size and width depending on DataFields and Container children
+      */
    public void updateContainer() {
       int maxWidth = getWidth();
       int maxHeight = defaultHeight;
@@ -264,6 +346,9 @@ public class Container extends JComponent implements MouseInputListener, KeyList
          parent.updateContainer();
    }
    
+      /** Checks and updates height based on width at DataField at index
+      * @param index index of DataField to check
+      */
    public void checkFieldWidth(int index) {
       Graphics g = getGraphics();
       if (g == null)
@@ -279,7 +364,10 @@ public class Container extends JComponent implements MouseInputListener, KeyList
          updateContainer();
       }
    }
-
+   
+      /** KeyEvent upon pressing keyboard
+      * @param e Pressed KeyEvent
+      */
    public void keyPressed(KeyEvent e) {
       for (int i = 0; i < fields.size(); i++) {
          DataField field = fields.get(i);
@@ -310,10 +398,16 @@ public class Container extends JComponent implements MouseInputListener, KeyList
       }
       repaint();
    }
-      
+
+      /** KeyEvent upon releasing keyboard
+      * @param e Released KeyEvent
+      */
    public void keyReleased(KeyEvent e) {
    }
-      
+
+      /** KeyEvent upon typing keyboard
+      * @param e Typed KeyEvent
+      */
    public void keyTyped(KeyEvent e) {
       for (int i = 0; i < fields.size(); i++) {
          DataField field = fields.get(i);
@@ -330,11 +424,15 @@ public class Container extends JComponent implements MouseInputListener, KeyList
       repaint();
    }
    
-      /** Called when the button is clicked. */
+      /** MouseEvent upon clicking
+      * @param e Clicked MouseEvent
+      */
    public void mouseClicked(MouseEvent e) {
    }
       
-      /** Called when the mouse is pressed. */
+      /** MouseEvent upon pressing
+      * @param e Pressed MouseEvent
+      */
    public void mousePressed(MouseEvent e) {
       for (int i = 0; i < fields.size(); i++) {
          DataField field = fields.get(i);
@@ -355,12 +453,16 @@ public class Container extends JComponent implements MouseInputListener, KeyList
       repaint();
    }
       
-      /** Called when the mouse is released. */
+      /** MouseEvent upon releasing
+      * @param e Released MouseEvent
+      */
    public void mouseReleased(MouseEvent e) {
    
    }
       
-      /** Called when the mouse is moved. */
+      /** MouseEvent upon moving
+      * @param e Moved MouseEvent
+      */
    public void mouseMoved(MouseEvent e) {
       for (int i = 0; i < fields.size(); i++) {
          DataField field = fields.get(i);
@@ -378,19 +480,29 @@ public class Container extends JComponent implements MouseInputListener, KeyList
       repaint();
    }
       
-      /** Called when the mouse is dragged. */
+      /** MouseEvent upon dragging
+      * @param e Dragged MouseEvent
+      */
    public void mouseDragged(MouseEvent e) {
       
    }
       
-      /** Called when the mouse enters the button. Used to change button color. */
+      /** MouseEvent upon entering
+      * @param e Entered MouseEvent
+      */
    public void mouseEntered(MouseEvent e) {
    }
       
-      /** Called when the mouse exits the button. Used to change button color. */
+   
+      /** MouseEvent upon exiting
+      * @param e Exiting MouseEvent
+      */
    public void mouseExited(MouseEvent e) {
    }
    
+      /** Returns String representation of Container: position, size, Container children
+      * @return Container toString
+      */
    public String toString() {
       String temp = getX() + " " + getY() + " " + getWidth() + " " + getHeight();
       for (Container c : children) {

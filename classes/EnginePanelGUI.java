@@ -10,8 +10,11 @@ import java.beans.PropertyChangeListener;
 import java.lang.reflect.Field;
 import javax.swing.InputMap;
 
+
+/** GUI variant for EnginePanel */
 public class EnginePanelGUI {
 
+/** Enum to filter file types */
    public enum FileType {
       ANY,
       IMAGE,
@@ -34,17 +37,23 @@ public class EnginePanelGUI {
          frame.setSize(frame.getWidth(), frame.getHeight() + 25);
       }
    }
-   
+
+/** Reference to JFrame for adding JMenuBar */
    protected JFrame engineFrame;
-   
+
+/** Reference to EnginePanel for adding and rendering Meshes */
    protected EnginePanel enginePanel;
-   
+
+/** MenuHelper for using file loading and saving and console */
    protected MenuHelper menuHelper;
-   
+
+/** ButtonHelper for editing points of simplexes of meshes and rendering */
    protected ButtonHelper buttonHelper;
-   
+
+/** InputHelper for inputting commands with rebinds */
    protected InputHelper inputHelper;
 
+/** JMenuBar for MenuHelper */
    public JMenuBar getMenuBar() {
       return menuHelper.getMenuBar();
    }
