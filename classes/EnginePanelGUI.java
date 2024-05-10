@@ -58,11 +58,11 @@ public class EnginePanelGUI {
             FileFilter filter = null;
             switch (type) {
                case IMAGE:
-                  directory = "images/PlaceImagesHere.txt";
+                  directory = "objects/MeshesAndTexturesGoHere.txt";
                   break;
                case MESHANDTEXTURE:
                case MESH:
-                  directory = "meshes/PlaceMeshesHere.txt";
+                  directory = "objects/MeshesAndTexturesGoHere.txt";
                   filter = 
                      new FileFilter()
                      {
@@ -73,11 +73,11 @@ public class EnginePanelGUI {
                      };
                   break;
                case TEXTURE:
-                  directory = "textures/PlaceTexturesHere.txt";
+                  directory = "objects/MeshesAndTexturesGoHere.txt";
                   break;
             }
             return pickFile(fileChooser, directory, filter);
-
+         
          }
          catch (Exception e) {
             System.out.println(e);
@@ -438,7 +438,18 @@ public class EnginePanelGUI {
       {	      
          public void actionPerformed(ActionEvent e)
          {
-            askForFile(FileType.TEXTURE);
+            File file = askForFile(FileType.TEXTURE);
+            int count = enginePanel.getMeshes().size();
+            String input = "0";
+            if (count > 1)
+               input = JOptionPane.showInputDialog("Index of Mesh? (0 - " + (count - 1) + ")");
+            count = Integer.parseInt(input);
+            Mesh mesh = enginePanel.getMeshes().get(count);
+            input = "0";
+            if (mesh.getFaces().length > 1)
+               input = JOptionPane.showInputDialog("Index of Simplex? (0 - " + (mesh.getFaces().length - 1) + ")");
+            count = Integer.parseInt(input);
+            mesh.getFaces()[count].setTexture(Utilities.LoadTexture(file));
          }
       }
       
@@ -452,6 +463,7 @@ public class EnginePanelGUI {
                for (int i = 0; i < enginePanel.getMeshes().size(); i++)
                   Utilities.SaveMesh(s + i, enginePanel.getMeshes().get(i), true);
             }
+            
          }
       }
       
@@ -463,7 +475,7 @@ public class EnginePanelGUI {
             if(s!=null)
             {
                for (int i = 0; i < enginePanel.getMeshes().size(); i++)
-                  Utilities.SaveMesh(s + i, enginePanel.getMeshes().get(i), true);
+                  Utilities.SaveMesh(s + i, enginePanel.getMeshes().get(i), false);
             }
          }
       }

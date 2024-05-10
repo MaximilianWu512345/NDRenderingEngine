@@ -12,7 +12,7 @@ public class Utilities {
 
    public static void SaveMesh(String fileName, Mesh mesh, boolean autoSaveTexture) {
       try {
-         File file = new File("meshes/" + fileName);
+         File file = new File("objects/" + fileName);
          file.createNewFile();
          FileWriter writer = new FileWriter(file);
          writer.write(Utilities.MeshToFile(autoSaveTexture ? fileName : null, mesh));
@@ -24,7 +24,7 @@ public class Utilities {
    }
    
    public static Mesh LoadMesh(String fileName) {
-      return LoadMesh(new File("meshes/" + fileName));
+      return LoadMesh(new File("objects/" + fileName));
    }
    
    public static Mesh LoadMesh(File file) {
@@ -45,7 +45,7 @@ public class Utilities {
    
    public static void SaveTexture(String fileName, Texture texture) {
       try {
-         File file = new File("textures/" + fileName);
+         File file = new File("objects/" + fileName);
          file.createNewFile();
          Color[][] colors = TextureToColors(texture);
          BufferedImage temp = new BufferedImage(colors.length, colors[0].length, BufferedImage.TYPE_4BYTE_ABGR);
@@ -64,7 +64,7 @@ public class Utilities {
    }
    
    public static Texture LoadTexture(String fileName) {
-      return LoadTexture(new File("textures/" + fileName));
+      return LoadTexture(new File("objects/" + fileName));
    }
    
    public static Texture LoadTexture(File file) {
@@ -124,26 +124,33 @@ public class Utilities {
       }
       String[] temp = list.split(" ");
       Simplex[] simplexes = new Simplex[ToInt(temp[1])];
+      Point[][] points = new Point[simplexes.length][];
       int index = 2;
       for (int i = 0; i < simplexes.length; i++) {
+         points[i] = new Point[ToInt(temp[index + 1])];
+         /*
          simplexes[i] = new Simplex(new Point[ToInt(temp[index + 1])]);
          simplexes[i].setTexture(LoadTexture(temp[index].replaceAll("\"", "")));
+         */
          index += 2;
       }
-      for (int i = 0; i < simplexes.length; i++) {
-         for (int x = 0; x < simplexes[i].getPoints().length; x++) {
+      for (int i = 0; i < points.length; i++) {
+         for (int x = 0; x < points[i].length; x++) {
+            points[i][x] = new Point(new float[ToInt(temp[index])]);
+            /*
             simplexes[i].getPoints()[x] = new Point(new float[ToInt(temp[index])]);
+            */
             index++;
          }
       }
-      for (int i = 0; i < simplexes.length; i++) {
-         for (int x = 0; x < simplexes[i].getPoints().length; x++) {
-            for (int c = 0; c < simplexes[i].getPoints()[x].getCoordinates().length; c++) {
-               simplexes[i].getPoints()[x].getCoordinates()[c] = ToFloat(temp[index]);
+      for (int i = 0; i < points.length; i++) {
+         for (int x = 0; x < points[i].length; x++) {
+            for (int c = 0; c < points[i][x].getCoordinates().length; c++) {
+               points[i][x].getCoordinates()[c] = ToFloat(temp[index]);
                index++;
             }
          }
-         simplexes[i].setPoints(simplexes[i].getPoints());
+         simplexes[i] = new Simplex(points[i]);
       }
       return new Mesh(simplexes, ToInt(temp[0]));
    }
