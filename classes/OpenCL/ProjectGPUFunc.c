@@ -91,13 +91,35 @@ int floatCompareEps(const float a, const float b, const float epsilon){
    }
    return 7;
 }
-//working! :D
-void calcBaryCoords(__global float* pos, __global float* lpu, int triangleIndex, int dimention, __global float* out, __global float* sol, __global float* dat, int posStart, int outStart){
+void calcBaryCoords(__global float* pos, __global float* lpu, int triangleIndex, int dimention, __global float* out, __global float* sol, __global float* dat, int posStart, int outStart, int arrPos){
    int matrixSize = (dimention-1)*(dimention-1);
-   int trueIndex = triangleIndex*(dimention+3*matrixSize);
-   int arrPos = triangleIndex*dimention;//???
+   int trueIndex = triangleIndex*(dimention+3*matrixSize-1);
+   int debugIndex = 0;
+   if(posStart == debugIndex){
+      printf("pos: ");
+      for(int i = 0; i<dimention-1; i++){
+         printf(" %.3f, ", pos[i]);
+      }
+      printf("\n");
+   }
+   if(posStart == debugIndex){
+      printf("shift: ");
+   }
    for(int i = 0; i<dimention-1; i++){
       dat[i+ arrPos] = pos[i + posStart]-lpu[i+trueIndex];
+      if(posStart == debugIndex){
+         printf(" %.3f, ", pos[i + posStart]-lpu[i+trueIndex]);
+      }
+   }
+   if(posStart == debugIndex){
+      printf("\n");
+   }
+   if(posStart == debugIndex){
+      printf("dat: ");
+      for(int i = 0; i<dimention-1; i++){
+         printf(" %.3f, ", dat[i+arrPos]);
+      }
+      printf("\n");
    }
    //P
    for(int i = 0; i<dimention-1; i++){
@@ -136,6 +158,7 @@ void calcBaryCoords(__global float* pos, __global float* lpu, int triangleIndex,
    }
    out[dimention + outStart] = 1-sum;
 }
+//working! :D
 void lpuBarycentricCoords( 
 __global float *data,
 int dimention,
@@ -227,6 +250,7 @@ int id
          out[firstOut+j*(dimention-1)+i+mSize + (dimention-1)] = mult;
       }
    }
+   lpuDebug(gid, out, dimention, 1);
 }
 __kernel void RaserizeStep1(
 __global float *coords, //actual coords 
@@ -311,10 +335,11 @@ int numTextures //using dimention can help figure out each texture
       }
       pixPosInt = gid;
       for(int i = 0; i<numSim; i++){
-         calcBaryCoords(pixPos, lpuData, i, dimention, found, dat, sol, arrStartSmall, arrStartLarge);
+         calcBaryCoords(pixPos, lpuData, i, dimention, found, dat, sol, arrStartSmall, arrStartLarge, arrStartLarge);
          bool inSim = true;
          for(int j = 0; j<dimention; j++){
             if(found[j + arrStartLarge] < 0 || found[j + arrStartLarge]>1){
+               
                inSim = false;
             }
          }
@@ -355,12 +380,6 @@ int numTextures //using dimention can help figure out each texture
                r = textureColors[first];
                g = textureColors[first+1];
                b = textureColors[first+2];
-            }
-            if(gid == debugID){
-               printf("pos: %d ", pixPosInt);
-               printf("color: (%d, ", (int)r);
-               printf("%d, ", (int)g);
-               printf("%d)\n", (int)b);
             }
             //set new color
             out[pixPosInt*3] = r;

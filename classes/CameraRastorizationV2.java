@@ -30,8 +30,9 @@ public class CameraRastorizationV2 implements Camera{
    private cl_kernel rasterS1;
    private cl_kernel rasterS2;
    private Pointer outPointer;
-   private char[] out;
+   private byte[] out;
    private static boolean hasConnected = false;
+   private boolean hasBuilt = false;
    public CameraRastorizationV2 (Point c, AffineSubSpace s, int[] bounds){
       this.s = s;
       this.c = c;
@@ -192,7 +193,9 @@ public class CameraRastorizationV2 implements Camera{
             GPUConnect();
          }
          //first make kernals
-         initCamGPUCon();
+         if(!hasBuilt){
+            initCamGPUCon();
+         }
          //set arguments
          LinkedList<Simplex> sList = new LinkedList<Simplex>();
          for(Simplex current: projected){
@@ -247,9 +250,11 @@ public class CameraRastorizationV2 implements Camera{
          //System.out.println(clFinish(commandQueue));
          Color[] c = new Color[out.length/3];
          for(int i = 0; i<c.length; i++){
-            c[i] = new Color((int)out[i*3], (int)out[i*3+1], (int)out[i*3+2]);
+            c[i] = new Color(Byte.toUnsignedInt(out[i*3]), Byte.toUnsignedInt(out[i*3+1]), Byte.toUnsignedInt(out[i*3+2]));
+            if(c[i].equals(new Color(255, 0, 0))){
+               //System.out.println(i);
+            }
          }
-         System.out.println(c[0]);
          for (cl_mem m : memory)
             clReleaseMemObject(m);
          return new ArrayTexture(c, bounds);
@@ -561,10 +566,11 @@ public class CameraRastorizationV2 implements Camera{
       hasConnected = true;
    }
    //non static stuff
-   private void initCamGPUCon(){
+   public void initCamGPUCon(){
       cl_kernel temp = clCreateKernel(program, "RaserizeStep1", null);
       rasterS1 = clCreateKernel(program, GPU_KERNEL_LOC1, null);
       rasterS2 = clCreateKernel(program, GPU_KERNEL_LOC2, null);
+            hasBuilt = true;
    }
    //gets the memory array
    private cl_mem[] setMemoryBuffRaster(Simplex[] sim, Color background, Color def, cl_kernel[] kernels){
@@ -661,11 +667,11 @@ public class CameraRastorizationV2 implements Camera{
       for(int b: bounds){
          numPixels *= b;
       }
-      out = new char[numPixels*3]; // input index 7
+      out = new byte[numPixels*3]; // input index 7
       for(int i = 0; i<numPixels; i++){
-         out[i*3] = (char)background.getRed();
-         out[i*3+1] = (char)background.getGreen();
-         out[i*3+2] = (char)background.getBlue();
+         out[i*3] = (byte)background.getRed();
+         out[i*3+1] = (byte)background.getGreen();
+         out[i*3+2] = (byte)background.getBlue();
       }
       outPointer = Pointer.to(out);
       result[7] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_uchar*out.length, outPointer, null);

@@ -43,7 +43,8 @@ public class Engine {
       int[] pixBounds = new int[]{900, 900};
       Camera camera;
       camera = new CameraRastorizationV2(camPos, screen, pixBounds);
-      
+      ((CameraRastorizationV2)camera).GPUConnect();
+      ((CameraRastorizationV2)camera).initCamGPUCon();
       //generate scene
       ArrayList<Mesh> scene = new ArrayList<Mesh>();
       //generate mesh
