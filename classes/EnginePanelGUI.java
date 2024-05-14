@@ -196,7 +196,8 @@ public class EnginePanelGUI {
                enginePanel.getActionMap().put(actionName, 
                   new RebindListener(args) {
                      public void actionPerformed(ActionEvent e) {
-                        translateCamera(Float.parseFloat(arguments[2]), Integer.parseInt(arguments[3]));
+                        if (! buttonHelper.isSelected())
+                           translateCamera(Float.parseFloat(arguments[1]), Integer.parseInt(arguments[2]));
                      }
                   });
                enginePanel.getInputMap().put(KeyStroke.getKeyStroke(code, 0), actionName);
@@ -209,7 +210,8 @@ public class EnginePanelGUI {
                enginePanel.getActionMap().put(actionName, 
                   new RebindListener(args) {
                      public void actionPerformed(ActionEvent e) {
-                        rotateCamera(Float.parseFloat(arguments[2]), Integer.parseInt(arguments[3]), Integer.parseInt(arguments[4]));
+                        if (! buttonHelper.isSelected())
+                           rotateCamera(Float.parseFloat(arguments[1]), Integer.parseInt(arguments[2]), Integer.parseInt(arguments[3]));
                      }
                   });
                enginePanel.getInputMap().put(KeyStroke.getKeyStroke(code, 0), actionName);
@@ -568,6 +570,14 @@ public class EnginePanelGUI {
          }
       }
       
+      public boolean isSelected() {
+         for (Container c : containers) {
+            if (c.isSelected())
+               return true;
+         }
+         return false;
+      }
+      
       public Mesh createMesh(String type) {
          switch (type) {
             case "Default":
@@ -673,7 +683,8 @@ public class EnginePanelGUI {
             String[] splits = getValue().split(" ");
             float[] temp = new float[splits.length];
             for (int i = 0; i < temp.length; i++) {
-               temp[i] = Float.parseFloat(splits[i]);
+               if (! splits[i].isEmpty())
+                  temp[i] = Float.parseFloat(splits[i]);
             }
             parent.getPoints()[owner] = new Point(temp);
             parent.setPoints(parent.getPoints());

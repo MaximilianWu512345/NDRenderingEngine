@@ -58,6 +58,9 @@ public class Container extends JComponent implements MouseInputListener, KeyList
       /** Initial height when initialized */
    protected int defaultHeight;
    
+      /** helper int to check current textIndex */
+   protected int textIndex;
+   
       /** Creates a new Container with a Container parent and DataField fields
       * @param parent parent of Container
       * @param fields fields of Container
@@ -247,6 +250,11 @@ public class Container extends JComponent implements MouseInputListener, KeyList
          Integer info = fieldsInfo.get(i);
          String fieldText = field.getName();
          String fieldValue = field.getValue();
+         if (fieldValue != null && info == 2) {
+            if (textIndex > fieldValue.length())
+               textIndex = fieldValue.length();
+            fieldValue = fieldValue.substring(0, textIndex) + "|" + fieldValue.substring(textIndex, fieldValue.length());
+         }
          int fieldWidth = g.getFontMetrics().stringWidth(fieldText);
          int fieldHeight = 0;
          for (int f = 0; f < i; f++) {
@@ -328,6 +336,21 @@ public class Container extends JComponent implements MouseInputListener, KeyList
       return g;
    }
    
+      /** Returns whether or not any fields are selected
+      * @return boolean if fields are selected
+      */
+   public boolean isSelected() {
+      for (Integer i : fieldsInfo) {
+         if (i == 2)
+            return true;
+      }
+      for (Container c : children) {
+         if (c.isSelected())
+            return true;
+      }
+      return false;
+   }
+   
       /** Updates Container size and width depending on DataFields and Container children
       */
    public void updateContainer() {
@@ -378,18 +401,29 @@ public class Container extends JComponent implements MouseInputListener, KeyList
             else if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
                String temp = field.getValue();
                if (temp.length() > 0) {
-                  temp = temp.substring(0, temp.length() - 1);
-                  field.setValue(temp);
-                  checkFieldWidth(i);
+                  if (textIndex != 0) {
+                     temp = temp.substring(0, textIndex - 1) + temp.substring(textIndex, temp.length());
+                     field.setValue(temp);
+                     textIndex = Math.max(0, textIndex - 1);
+                     checkFieldWidth(i);
+                  }
                }
             }
             else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
                field.setValue(field.getValue() + " ");
+               textIndex++;
                checkFieldWidth(i);
             }
             else if (e.getKeyCode() == KeyEvent.VK_PERIOD) {
                field.setValue(field.getValue() + ".");
+               textIndex++;
                checkFieldWidth(i);
+            }
+            else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+               textIndex = Math.max(0, textIndex - 1);
+            }
+            else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+               textIndex = Math.min(field.getValue().length(), textIndex + 1);
             }
          }
       }
@@ -414,6 +448,7 @@ public class Container extends JComponent implements MouseInputListener, KeyList
          if (fieldsInfo.get(i) == 2 && field.canEdit()) {
             if (Character.isDigit(e.getKeyChar())) {
                field.setValue(field.getValue() + e.getKeyChar());
+               textIndex++;
                checkFieldWidth(i);
             }
          }
