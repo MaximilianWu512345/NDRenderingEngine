@@ -19,7 +19,7 @@ public class CameraRastorizationV2 implements Camera{
    protected int g = 0;
    protected int ms = 0;
    protected int n = 0;
-   public static final boolean useGPU = true;
+   public static final boolean useGPU = false;
    private static final String GPU_CODE_LOC = "OpenCL\\ProjectGPUFunc.c";
    private static final String GPU_KERNEL_LOC1 = "RaserizeStep1";
    private static final String GPU_KERNEL_LOC2 = "RaserizeStep2";
@@ -690,14 +690,14 @@ public class CameraRastorizationV2 implements Camera{
       float[] fCoords = new float[sim.length*(dim-1)*dim];
       result[11] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_float*fCoords.length, Pointer.to(fCoords), null);
       numBytes += Sizeof.cl_float*fCoords.length;
-      float[] dat = new float[sim.length*(dim)];
+      float[] dat = new float[numPixels*(dim)];
       result[12] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_float*dat.length, Pointer.to(dat), null);
       numBytes += Sizeof.cl_float*dat.length;
-      float[] sol = new float[sim.length*(dim)];
+      float[] sol = new float[numPixels*(dim)];
       result[13] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_float*sol.length, Pointer.to(sol), null);
       numBytes += Sizeof.cl_float*sol.length;
       float[] pixPos = new float[numPixels*(dim-1)];
-      result[14] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_float*pixPos.length, Pointer.to(pixPos), null);
+      result[14] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_int*pixPos.length, Pointer.to(pixPos), null);
       numBytes += Sizeof.cl_float*pixPos.length;
       float[] found = new float[numPixels*(dim)];
       result[15] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Sizeof.cl_float*found.length, Pointer.to(found), null);

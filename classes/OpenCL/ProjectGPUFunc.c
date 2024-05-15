@@ -91,30 +91,30 @@ int floatCompareEps(const float a, const float b, const float epsilon){
    }
    return 7;
 }
-void calcBaryCoords(__global float* pos, __global float* lpu, int triangleIndex, int dimention, __global float* out, __global float* sol, __global float* dat, int posStart, int outStart, int arrPos){
+void calcBaryCoords(__global int* pos, __global float* lpu, int triangleIndex, int dimention, __global float* out, __global float* sol, __global float* dat, int posStart, int outStart, int arrPos){
    int matrixSize = (dimention-1)*(dimention-1);
    int trueIndex = triangleIndex*(dimention+3*matrixSize-1);
-   int debugIndex = 0;
-   if(posStart == debugIndex){
+   int debugIndex = 809833;
+   if(outStart == debugIndex*3){
       printf("pos: ");
       for(int i = 0; i<dimention-1; i++){
-         printf(" %.3f, ", pos[i]);
+         printf(" %d, ", pos[i + posStart]);
       }
       printf("\n");
    }
-   if(posStart == debugIndex){
+   if(outStart == debugIndex*3){
       printf("shift: ");
    }
    for(int i = 0; i<dimention-1; i++){
       dat[i+ arrPos] = pos[i + posStart]-lpu[i+trueIndex];
-      if(posStart == debugIndex){
+      if(outStart == debugIndex*3){
          printf(" %.3f, ", pos[i + posStart]-lpu[i+trueIndex]);
       }
    }
-   if(posStart == debugIndex){
+   if(outStart == debugIndex*3){
       printf("\n");
    }
-   if(posStart == debugIndex){
+   if(outStart == debugIndex*3){
       printf("dat: ");
       for(int i = 0; i<dimention-1; i++){
          printf(" %.3f, ", dat[i+arrPos]);
@@ -124,10 +124,17 @@ void calcBaryCoords(__global float* pos, __global float* lpu, int triangleIndex,
    //P
    for(int i = 0; i<dimention-1; i++){
       for(int j = 0; j<dimention-1; j++){
-         if(floatCompare(lpu[trueIndex+dimention*(i+1)+matrixSize + j], 1) == 0){
+         if(floatCompare(lpu[trueIndex+(dimention-1)*(i+1) + j], 1) == 0){
             sol[i + arrPos] = dat[j+ arrPos];
          }
       }
+   }
+   if(outStart == debugIndex*3){
+      printf("sol: ");
+      for(int i = 0; i<dimention-1; i++){
+         printf(" %.3f, ", sol[i+arrPos]);
+      }
+      printf("\n");
    }
    //swap
    //L
@@ -135,10 +142,20 @@ void calcBaryCoords(__global float* pos, __global float* lpu, int triangleIndex,
       dat[i + arrPos] = sol[i + triangleIndex*(dimention)] ;
       float sum = 0;
       for(int j = 0; j<i; j++){
-         sum += lpu[trueIndex+dimention*(i+1) + j]*dat[j + arrPos];
+         sum += lpu[trueIndex+(dimention-1)*(i+1)+matrixSize + j]*dat[j + arrPos];
+         if(outStart == debugIndex*3){
+            printf("matrixNum: %d", trueIndex+(dimention-1)*(i)+matrixSize + j);
+         }
       }
       dat[i + arrPos] -= sum;
-      dat[i + arrPos] /= lpu[trueIndex+dimention*(i+1) + i];
+      dat[i + arrPos] /= lpu[trueIndex+(dimention-1)*(i)+matrixSize + i];
+   }
+   if(outStart == debugIndex*3){
+      printf("dat: ");
+      for(int i = 0; i<dimention-1; i++){
+         printf(" %.3f, ", dat[i+arrPos]);
+      }
+      printf("\n");
    }
    //swap
    //U
@@ -146,10 +163,17 @@ void calcBaryCoords(__global float* pos, __global float* lpu, int triangleIndex,
       sol[i + arrPos] = dat[i + arrPos];
       float sum = 0;
       for(int j = i+1; j<dimention; j++){
-         sum += lpu[trueIndex+dimention*(i+1) + 2*matrixSize + j]*sol[j + arrPos];
+         sum += lpu[trueIndex+(dimention-1)*(i) + 2*matrixSize + j]*sol[j + arrPos];
       }
       sol[i + triangleIndex*(dimention)] -= sum;
-      sol[i + triangleIndex*(dimention)] /= lpu[trueIndex+dimention*(i+1) + 2*matrixSize + i];
+      sol[i + triangleIndex*(dimention)] /= lpu[trueIndex+(dimention-1)*(i) + 2*matrixSize + i];
+   }
+   if(outStart == debugIndex*3){
+      printf("sol: ");
+      for(int i = 0; i<dimention-1; i++){
+         printf(" %.3f, ", dat[i+arrPos]);
+      }
+      printf("\n");
    }
    float sum = 0;
    for(int i = 0; i<dimention-1; i++){
@@ -267,7 +291,7 @@ __global int *outDim, //dimentions of the result
 __global float *fCoords, //flat coords
 __global float *dat, //for lpu
 __global float *sol, //for lpu
-__global float *pixPos, //draw
+__global int *pixPos, //draw
 __global float *found, //draw
 __global float *texPos, //draw
 __global int *texPosRound, //draw
@@ -309,7 +333,7 @@ __global int *outDim, //dimentions of the result
 __global float *fCoords, //flat coords
 __global float *dat, //for lpu
 __global float *sol, //for lpu
-__global float *pixPos, //draw
+__global int *pixPos, //draw
 __global float *found, //draw
 __global float *texPos, //draw
 __global int *texPosRound, //draw
@@ -327,10 +351,13 @@ int numTextures //using dimention can help figure out each texture
    int arrStartLarge = gid*(dimention);
    int arrStartTexture = gid*tdim;
    int debugID = 809833;
+   if(gid == debugID){
+      printf("array start: %d \n", arrStartLarge);
+   }
    if(!stencilBuff[gid/8] && (1<<(gid%8)) > 0){
       int pixPosInt = gid;
       for(int i = 0; i<(dimention-1); i++){
-         pixPos[i+arrStartSmall] = (float)(pixPosInt%outDim[i]);
+         pixPos[i+arrStartSmall] = (pixPosInt%outDim[i]);
          pixPosInt /= outDim[i];
       }
       pixPosInt = gid;
@@ -338,10 +365,15 @@ int numTextures //using dimention can help figure out each texture
          calcBaryCoords(pixPos, lpuData, i, dimention, found, dat, sol, arrStartSmall, arrStartLarge, arrStartLarge);
          bool inSim = true;
          for(int j = 0; j<dimention; j++){
-            if(found[j + arrStartLarge] < 0 || found[j + arrStartLarge]>1){
-               
+            if(found[j + arrStartLarge] < 0 || found[j + arrStartLarge]>1){  
                inSim = false;
             }
+            if(gid == debugID){
+               printf("%.3f, ", found[j + arrStartLarge]);
+            }
+         }
+         if(gid == debugID){
+            printf("\n");
          }
          if((zBuff[gid]<found[dimention-1 + arrStartLarge] || zBuff[gid]<0) && inSim){
             //get new color
