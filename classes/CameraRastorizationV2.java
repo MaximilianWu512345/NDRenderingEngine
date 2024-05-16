@@ -19,7 +19,7 @@ public class CameraRastorizationV2 implements Camera{
    protected int g = 0;
    protected int ms = 0;
    protected int n = 0;
-   public static final boolean useGPU = false;
+   public static final boolean useGPU = true;
    private static final String GPU_CODE_LOC = "OpenCL\\ProjectGPUFunc.c";
    private static final String GPU_KERNEL_LOC1 = "RaserizeStep1";
    private static final String GPU_KERNEL_LOC2 = "RaserizeStep2";
@@ -570,7 +570,7 @@ public class CameraRastorizationV2 implements Camera{
       cl_kernel temp = clCreateKernel(program, "RaserizeStep1", null);
       rasterS1 = clCreateKernel(program, GPU_KERNEL_LOC1, null);
       rasterS2 = clCreateKernel(program, GPU_KERNEL_LOC2, null);
-            hasBuilt = true;
+      hasBuilt = true;
    }
    //gets the memory array
    private cl_mem[] setMemoryBuffRaster(Simplex[] sim, Color background, Color def, cl_kernel[] kernels){
