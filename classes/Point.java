@@ -73,6 +73,10 @@ public class Point {
    public void rotate(int degrees, java.awt.Point point) {
    }
    
+   public void translate(Point other) {
+      this.translate(other.getCoordinates());
+   }
+   
    public void translate(float[] coords) {
       for (int i = 0; i < coordinates.length && i < coords.length; i++) {
          coordinates[i] += coords[i];

@@ -39,6 +39,15 @@ public class CameraRastorizationV2 implements Camera{
       this.bounds = bounds;
    }
    
+   public void translate(Point position) {
+      c.translate(position);
+      s.translate(position);
+   }
+   
+   public int getDimension() {
+      return c.getCoordinates().length;
+   }
+   
 /**
 * Sets camera data.
 * @param position the new position of the camera.
@@ -525,7 +534,6 @@ public class CameraRastorizationV2 implements Camera{
    // https://www.codeproject.com/Articles/86551/Part-1-Programming-your-Graphics-Card-GPU-with-Jav
    //static stuff that we only need one of
    public static void GPUConnect(){ 
-      setLogLevel(CL.LogLevel.LOG_TRACE);
       GPUCode = OpenCL.GetFileContents(new File(GPU_CODE_LOC));
       
       final int platformIndex = 0;

@@ -1,3 +1,5 @@
+// add to build classpath: NDRederingEngine\classes\lib\*
+
 import static org.jocl.CL.*;
 
 import org.jocl.*;

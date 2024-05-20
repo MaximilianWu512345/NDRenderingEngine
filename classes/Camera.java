@@ -12,7 +12,12 @@ public interface Camera{
 * @param h the new height of the camera.
 */
    public void setData(Point position, Vector V, int width, int height);
-
+      
+   
+   
+   public void translate(Point translation);
+   
+   public int getDimension();
    
    
 /**

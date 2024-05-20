@@ -104,17 +104,11 @@ public class Simplex {
          }
       }
       //lpu decomp
-      System.out.println(shift);
       Matrix m = new Matrix(mdata);
-      System.out.println(m);
       Matrix[] decomp = m.LPUDecomp();
       lBaryMatrix = decomp[0];
       pBaryMatrix = decomp[1];
       uBaryMatrix = decomp[2];
-      System.out.println(shift);
-      System.out.println(lBaryMatrix);
-      System.out.println(pBaryMatrix);
-      System.out.println(uBaryMatrix);
    }
    /**
    *

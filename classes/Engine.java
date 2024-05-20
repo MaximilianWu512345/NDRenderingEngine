@@ -18,11 +18,11 @@ public class Engine {
       int width = 1000;
       int height = 1000;
       JFrame frame = new JFrame("Max Wu's Concoction Machine!");
-      frame.setSize(width * 407 / 400, height * 104 / 100);
+      frame.setSize(width * 204 / 200, height * 209 / 200);
       frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
       EnginePanel panel = new EnginePanel(width, height);
+      EnginePanelGUI gui = new EnginePanelGUI(frame, panel, true);
       frame.add(panel);
-      frame.setJMenuBar(panel.getMenuBar());
       frame.setVisible(true);
       // Create the engine and camera, start the program.
   /* max test code*/
@@ -45,6 +45,8 @@ public class Engine {
       camera = new CameraRastorizationV2(camPos, screen, pixBounds);
       ((CameraRastorizationV2)camera).GPUConnect();
       ((CameraRastorizationV2)camera).initCamGPUCon();
+      panel.setCamera(camera);
+      
       //generate scene
       ArrayList<Mesh> scene = new ArrayList<Mesh>();
       //generate mesh
@@ -70,27 +72,18 @@ public class Engine {
       parr1[3] = new Point(new float[]{2,0,1,-0.5f});
       manSimplex[0] = new Simplex(parr1);
       scene.add(new Mesh(manSimplex, dimention));
-     
-  
-      //set up
-      Mesh[] sceneArr = new Mesh[scene.size()];
-      sceneArr = scene.toArray(sceneArr);
+
       //render
       long timeStart = System.nanoTime();
-      Texture realPixels = camera.Project(sceneArr);
+      panel.setMeshes(scene.toArray(new Mesh[0]));
+      panel.render();
       long timeEnd = (System.nanoTime()-timeStart);
       System.out.println( timeEnd + " nanoseconds taken to render the image, or " + (timeEnd/1000000000f) + " seconds");
-      int[] b = realPixels.getBounds();
-      Color[][] pixelArray = new Color[b[0]][b[1]];
-      for(int i = 0; i<pixelArray.length; i++){
-         for(int j = 0; j<pixelArray[i].length; j++){
-            pixelArray[i][j] = realPixels.getColor(new Point(new float[]{i, j}));
-         }
-      }
 
-      panel.renderImage(pixelArray);
       float[][] textData = new float[][]{new float[]{1, 3, 0, 0, 0.5f}, new float[]{3, 3, -4, 5, 8}, new float[]{7, 3, 0, 0, 0.5f}, new float[]{1, 3, 0, 0, 0.5f}, new float[]{1, 3, 0, 0, 0.5f}};
    }
+   
+
    
    public static Color[] colors = { Color.RED, Color.BLUE, Color.BLACK, Color.WHITE, Color.GREEN, Color.YELLOW, Color.GRAY};
    
