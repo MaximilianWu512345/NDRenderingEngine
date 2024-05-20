@@ -10,8 +10,13 @@ public class Engine {
 * @param args default args for main method.
 */
    public static void main(String[] args) {
-      int width = 900;
-      int height = 900;
+      //gpu stuff
+      Matrix m1 = new Matrix(new float[][]{new float[]{1, 0}, new float[]{0, 1}});
+      Matrix m2 = new Matrix(new float[][]{new float[]{1, 0}, new float[]{0, 1}});
+      Matrix m3 = m1.multGPU(m2);
+   
+      int width = 1000;
+      int height = 1000;
       JFrame frame = new JFrame("Max Wu's Concoction Machine!");
       frame.setSize(width * 204 / 200, height * 209 / 200);
       frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -36,9 +41,12 @@ public class Engine {
       AffineSubSpace screen = new AffineSubSpace(screenDir, screenPos);
       Point camPos = new Point(new float[dimention]);
       int[] pixBounds = new int[]{900, 900};
-      Camera camera = new CameraRastorizationV2(camPos, screen, pixBounds);
+      Camera camera;
+      camera = new CameraRastorizationV2(camPos, screen, pixBounds);
+      ((CameraRastorizationV2)camera).GPUConnect();
+      ((CameraRastorizationV2)camera).initCamGPUCon();
       panel.setCamera(camera);
-      //camera.translate(new Point(new float[] {0, 1f, 0}));
+      
       //generate scene
       ArrayList<Mesh> scene = new ArrayList<Mesh>();
       //generate mesh
@@ -70,6 +78,8 @@ public class Engine {
       panel.render();
       long timeEnd = (System.nanoTime()-timeStart);
       System.out.println( timeEnd + " nanoseconds taken to render the image, or " + (timeEnd/1000000000f) + " seconds");
+
+      float[][] textData = new float[][]{new float[]{1, 3, 0, 0, 0.5f}, new float[]{3, 3, -4, 5, 8}, new float[]{7, 3, 0, 0, 0.5f}, new float[]{1, 3, 0, 0, 0.5f}, new float[]{1, 3, 0, 0, 0.5f}};
    }
    
 

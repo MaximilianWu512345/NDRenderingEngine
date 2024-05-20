@@ -20,7 +20,7 @@ public class Simplex {
 */
    public Simplex(Point[] vertex){
       setPoints(vertex);
-      t = new ConstentTexture(Color.RED, new int[vertex.length]);
+      t = new ConstentTexture(Color.RED, new int[vertex.length-1]);
    }
    
 /** Creates a new Simplex with points of vertex.
@@ -29,8 +29,8 @@ public class Simplex {
 */
    public Simplex(Point[] vertex, Color c){
       setPoints(vertex);
-      t = new ConstentTexture(c, new int[vertex.length]);
-      Point[] textPoints = new Point[vertex.length];
+      t = new ConstentTexture(c, new int[vertex.length-1]);
+      Point[] textPoints = new Point[vertex.length-1];
       for(int i = 0; i<textPoints.length; i++){
          textPoints[i] = new Point(new float[vertex[0].length()]);
       }
@@ -127,6 +127,9 @@ public class Simplex {
       }
       if((points.length != (points[0].length()+1) || lBaryMatrix == null)){
          return null;
+      }
+      if((Float.compare(p.getCoords()[0], -449) == 0) && (Float.compare(p.getCoords()[1], -450) == 0)){
+         System.out.println("debug");
       }
       //set up solution
       float[] dat = new Vector(points[points.length-1], p).getCoords();
