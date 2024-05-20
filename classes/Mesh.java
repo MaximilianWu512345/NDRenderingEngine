@@ -88,4 +88,9 @@ public class Mesh{
       result = hull.toArray(result);
       return result;
    }
+   public void translate(Point p){
+      for(Simplex s: faces){
+         s.translate(p.getCoords());
+      }
+   }
 }

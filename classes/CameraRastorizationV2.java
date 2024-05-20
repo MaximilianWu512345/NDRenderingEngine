@@ -211,8 +211,11 @@ public class CameraRastorizationV2 implements Camera{
          //set arguments
          LinkedList<Simplex> sList = new LinkedList<Simplex>();
          for(Simplex current: projected){
-            int[] selectedPoints = new int[ms+1];
             int pointCount = current.getPoints().length;
+            if(pointCount < ms+1){
+               continue;
+            }
+            int[] selectedPoints = new int[ms+1];
             for(int i = 0; i<selectedPoints.length; i++){
                selectedPoints[i] = i;
             }
