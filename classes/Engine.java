@@ -72,8 +72,8 @@ public class Engine {
       parr1[2] = new Point(new float[]{2,0,1,0.5f});
       parr1[3] = new Point(new float[]{2,0,1,-0.5f});
       manSimplex[0] = new Simplex(parr1);
-      //scene.add(new Mesh(manSimplex, dimention));
-      scene.add(ShapeLibrary.Generate4DTesseract(2));
+      scene.add(new Mesh(manSimplex, dimention));
+      //scene.add(ShapeLibrary.Generate4DTesseract(2));
 
       //render
       long timeStart = System.nanoTime();

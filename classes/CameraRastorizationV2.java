@@ -197,6 +197,9 @@ public class CameraRastorizationV2 implements Camera{
       }*/
       //z-buffering and painting
       zBufferArrayTexture zBuff = new zBufferArrayTexture(pix,bounds);
+      if(projected.size() == 0){
+         return zBuff;
+      }
       if(useGPU){
          if(!hasConnected){
             GPUConnect();
@@ -234,7 +237,7 @@ public class CameraRastorizationV2 implements Camera{
          }
          Simplex[] sim = new Simplex[sList.size()];
          sim = sList.toArray(sim);
-         cl_mem memory[] = setMemoryBuffRaster(sim, backgroundC, triangleC, new cl_kernel[]{rasterS1, rasterS2});
+         cl_mem memory[] = setMemoryBuffRaster(sim, backgroundC, triangleC, new cl_kernel[]{rasterS1, rasterS2}, o[0].getFaces()[0].getPoints()[0].length()-1);
          for(int i = 0; i<memory.length; i++){
             clSetKernelArg(rasterS1, i, Sizeof.cl_mem, Pointer.to(memory[i]));
             clSetKernelArg(rasterS2, i, Sizeof.cl_mem, Pointer.to(memory[i]));
@@ -581,11 +584,10 @@ public class CameraRastorizationV2 implements Camera{
       hasBuilt = true;
    }
    //gets the memory array
-   private cl_mem[] setMemoryBuffRaster(Simplex[] sim, Color background, Color def, cl_kernel[] kernels){
+   private cl_mem[] setMemoryBuffRaster(Simplex[] sim, Color background, Color def, cl_kernel[] kernels, int tdim){
       int numBytes = 0;
       cl_mem[] result = new cl_mem[19];
-      int tdim = sim[0].getTexturePoints()[0].length();//input index 25
-      int dim = sim[0].getPoints().length;//input index 20
+      int dim = sim[0].getPoints()[0].length();//input index 20
       int numFloat = sim.length*dim*dim;
       float[] coords = new float[numFloat];//input index 0
       int index = 0;
