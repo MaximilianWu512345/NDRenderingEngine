@@ -72,7 +72,6 @@ public class Engine {
       parr1[3] = new Point(new float[]{2,0,1,-0.5f});
       manSimplex[0] = new Simplex(parr1);
       scene.add(new Mesh(manSimplex, dimention));
-
       //render
       long timeStart = System.nanoTime();
       panel.setMeshes(scene.toArray(new Mesh[0]));

@@ -544,6 +544,7 @@ public class Matrix{
       LinkedList<Point> resHolder = new LinkedList<Point>();
       //phase 2
       //drop non basic
+      //TODO:check if is feasable, i.e. if artifical variables are gone
       int count = 0;
       int[] variableShift = new int[newSize];
       int[] antiVariableShift = new int[tw];

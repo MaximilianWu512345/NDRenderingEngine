@@ -17,14 +17,21 @@ public class EnginePanel extends JPanel {
 
 /** Used to offset components so they can be displayed better on the JFrame.*/
    public static final int OFFSET = 1;
-   
+
+/** ArrayList of all Components */
    protected ArrayList<Component> components;
-   
+
+/** RenderHelper for rendering images */
    protected RenderHelper renderHelper;
-   
+
+/** Camera for rendering */
    protected Camera camera;
-   
+
+/** ArrayList of all Meshes */
    protected ArrayList<Mesh> meshes;
+
+/** Optional reference to GUI */
+   protected EnginePanelGUI gui;
    
 /** Creates an EnginePanel of size (width, height) and calls initialize().
 * @param width the width of the EnginePanel.
@@ -57,11 +64,13 @@ public class EnginePanel extends JPanel {
    public void setMeshes(Mesh[] meshes) {
       this.meshes.clear();
       for (Mesh m : meshes)
-         this.meshes.add(m);
+         this.addMesh(m);
    }
    
    public void addMesh(Mesh mesh) {
       this.meshes.add(mesh);
+      if (gui != null)
+         gui.addMesh(mesh);
    }
    
    public ArrayList<Mesh> getMeshes() {
@@ -74,6 +83,10 @@ public class EnginePanel extends JPanel {
    
    public Camera getCamera() {
       return this.camera;
+   }
+   
+   public void setGUI(EnginePanelGUI gui) {
+      this.gui = gui;
    }
    
    public void render() {

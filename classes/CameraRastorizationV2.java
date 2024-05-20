@@ -44,6 +44,19 @@ public class CameraRastorizationV2 implements Camera{
       s.translate(position);
    }
    
+   // translate camera so c is at (0, 0, 0, 0, ..., 0)
+   // rotate point and vectos of s
+   // translate camera so c is at it's original position
+   public void rotate(float theta, int axis1, int axis2) {
+      Point inverse = c.getInverse();
+      s.translate(inverse);
+      Matrix rotation = Matrix.GivensRot(getDimension(), theta, axis1, axis2);
+      s.setPoint(rotation.mult(s.getPoint().toMatrix()).toPoint());
+      for (int i = 0; i < s.getSubSpace().getDir().length; i++) {
+         s.getSubSpace().getDir()[i] = s.getSubSpace().getDir()[i].rotBy(rotation);
+      }
+   }
+   
    public int getDimension() {
       return c.getCoordinates().length;
    }
@@ -74,7 +87,7 @@ public class CameraRastorizationV2 implements Camera{
       Point[] newData = s.getPoints();
       v = new Vector[newData.length];
       u = new Vector[this.s.getSubSpace().getDir().length];
-      for(int i = 0; i<u.length; i++){
+      for (int i = 0; i < u.length; i++) {
          u[i] = this.s.getSubSpace().getDir()[i];
       }
       negu = new Vector[u.length];
