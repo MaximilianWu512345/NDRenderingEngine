@@ -13,7 +13,100 @@ public class ShapeLibrary {
       faces[0] = GenerateSimplex(dimension, size);
       return new Mesh(faces, dimension);
    }
-   
+   public static Mesh Generate4DTesseract(float size){
+      Point[] points = GenerateAllPoints(4, size);
+      Simplex[] sim = new Simplex[40];
+      int index = 0;
+      //f1 face
+      sim[index] = new Simplex(new Point[]{points[0], points[1], points[2], points[4]});
+      index++;
+      sim[index] = new Simplex(new Point[]{points[1], points[2], points[4], points[7]});
+      index++;
+      sim[index] = new Simplex(new Point[]{points[3], points[1], points[2], points[7]});
+      index++;
+      sim[index] = new Simplex(new Point[]{points[5], points[1], points[4], points[7]});
+      index++;
+      sim[index] = new Simplex(new Point[]{points[6], points[7], points[2], points[3]});
+      index++;
+      //b1 face
+      sim[index] = new Simplex(new Point[]{points[8], points[9], points[10], points[12]});
+      index++;
+      sim[index] = new Simplex(new Point[]{points[9], points[10], points[12], points[15]});
+      index++;
+      sim[index] = new Simplex(new Point[]{points[11], points[9], points[10], points[15]});
+      index++;
+      sim[index] = new Simplex(new Point[]{points[13], points[9], points[12], points[15]});
+      index++;
+      sim[index] = new Simplex(new Point[]{points[14], points[15], points[10], points[11]});
+      index++;
+      //f2 face
+      sim[index] = new Simplex(new Point[]{points[0], points[1], points[2], points[8]});
+      index++;
+      sim[index] = new Simplex(new Point[]{points[1], points[2], points[8], points[11]});
+      index++;
+      sim[index] = new Simplex(new Point[]{points[3], points[1], points[2], points[11]});
+      index++;
+      sim[index] = new Simplex(new Point[]{points[9], points[1], points[8], points[11]});
+      index++;
+      sim[index] = new Simplex(new Point[]{points[10], points[11], points[2], points[3]});
+      index++;
+      //b2 face
+      sim[index] = new Simplex(new Point[]{points[4], points[5], points[6], points[12]});
+      index++;
+      sim[index] = new Simplex(new Point[]{points[5], points[6], points[12], points[15]});
+      index++;
+      sim[index] = new Simplex(new Point[]{points[7], points[5], points[6], points[15]});
+      index++;
+      sim[index] = new Simplex(new Point[]{points[13], points[5], points[12], points[15]});
+      index++;
+      sim[index] = new Simplex(new Point[]{points[14], points[15], points[6], points[7]});
+      index++;
+      //f3 face
+      sim[index] = new Simplex(new Point[]{points[0], points[1], points[4], points[8]});
+      index++;
+      sim[index] = new Simplex(new Point[]{points[1], points[4], points[8], points[13]});
+      index++;
+      sim[index] = new Simplex(new Point[]{points[5], points[1], points[4], points[13]});
+      index++;
+      sim[index] = new Simplex(new Point[]{points[9], points[1], points[8], points[13]});
+      index++;
+      sim[index] = new Simplex(new Point[]{points[12], points[13], points[4], points[5]});
+      index++;
+      //b3 face
+      sim[index] = new Simplex(new Point[]{points[2], points[3], points[6], points[10]});
+      index++;
+      sim[index] = new Simplex(new Point[]{points[3], points[6], points[10], points[15]});
+      index++;
+      sim[index] = new Simplex(new Point[]{points[7], points[3], points[6], points[15]});
+      index++;
+      sim[index] = new Simplex(new Point[]{points[11], points[3], points[10], points[15]});
+      index++;
+      sim[index] = new Simplex(new Point[]{points[6], points[15], points[6], points[7]});
+      index++;
+      //f4 face
+      sim[index] = new Simplex(new Point[]{points[0], points[2], points[4], points[8]});
+      index++;
+      sim[index] = new Simplex(new Point[]{points[2], points[4], points[8], points[14]});
+      index++;
+      sim[index] = new Simplex(new Point[]{points[6], points[2], points[4], points[14]});
+      index++;
+      sim[index] = new Simplex(new Point[]{points[10], points[2], points[8], points[14]});
+      index++;
+      sim[index] = new Simplex(new Point[]{points[12], points[14], points[4], points[6]});
+      index++;
+      //b4 face
+      sim[index] = new Simplex(new Point[]{points[1], points[3], points[5], points[9]});
+      index++;
+      sim[index] = new Simplex(new Point[]{points[3], points[5], points[9], points[15]});
+      index++;
+      sim[index] = new Simplex(new Point[]{points[7], points[3], points[5], points[15]});
+      index++;
+      sim[index] = new Simplex(new Point[]{points[11], points[3], points[9], points[15]});
+      index++;
+      sim[index] = new Simplex(new Point[]{points[13], points[15], points[5], points[7]});
+      index++;
+      return new Mesh(sim, 4);
+   }
    public static Point[] GenerateAllPoints(int dimension, float size) {
       Point[] temp = new Point[(int)Math.pow(2, dimension)];
       for (int i = 0; i < temp.length; i++) {

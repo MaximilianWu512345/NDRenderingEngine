@@ -28,8 +28,9 @@ public class Engine {
   /* max test code*/
       int dimention = 4;
       float[] camPosData = new float[dimention];
+      camPosData[0] = -2;
       Point screenPos = new Point(camPosData);
-      screenPos.getCoords()[0] = 1;
+      screenPos.getCoords()[0] = -1;
       Vector[] axis = new Vector[2];
       float[] axis1 = new float[dimention];
       float[] axis2 = new float[dimention];
@@ -71,7 +72,8 @@ public class Engine {
       parr1[2] = new Point(new float[]{2,0,1,0.5f});
       parr1[3] = new Point(new float[]{2,0,1,-0.5f});
       manSimplex[0] = new Simplex(parr1);
-      scene.add(new Mesh(manSimplex, dimention));
+      //scene.add(new Mesh(manSimplex, dimention));
+      scene.add(ShapeLibrary.Generate4DTesseract(2));
 
       //render
       long timeStart = System.nanoTime();
