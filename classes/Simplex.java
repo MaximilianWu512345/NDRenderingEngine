@@ -134,6 +134,9 @@ public class Simplex {
       if((points.length != (points[0].length()+1) || lBaryMatrix == null)){
          return null;
       }
+      if((Float.compare(p.getCoords()[0], -449) == 0) && (Float.compare(p.getCoords()[1], -450) == 0)){
+         System.out.println("debug");
+      }
       //set up solution
       float[] dat = new Vector(points[points.length-1], p).getCoords();
       float[] sol = new float[points.length];
