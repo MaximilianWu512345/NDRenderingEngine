@@ -4,22 +4,21 @@ public class ShapeLibrary {
    // https://en.wikipedia.org/wiki/Polygon_triangulation
    // https://stackoverflow.com/questions/71256623/algorithm-to-dynamically-generate-m-face-list-for-n-dimensional-hypercube
    public static Mesh GenerateHypercube(int dimension, float size) {
-      
-      
-      
-      
       /*
+      Point[] points = GenerateAllPoints(dimension, size);
       Simplex[] faces = new Simplex[dimension * 2];
+      int pointAmount = (int)Math.pow(2, dimension);
       for (int i = 0; i < faces.length; i++) {
-         faces[i] = GenerateSimplex(dimension - 1, size);
+         Point[] temp = new Point[pointAmount];
+         for (int x = 0; x < temp.length; x++) {
+            temp[x] = points[(i * 2 + x) % points.length];
+         }
+         faces[i] = new Simplex(temp);
       }
+      return new Mesh(faces, dimension);
       */
-      /*
-      Simplex[] faces = new Simplex[1];
-      faces[0] = GenerateSimplex(dimension, size);
-      */
-      // not operational right now, sorry
-      return null; // new Mesh(faces, dimension);
+      // Not functional right now
+      return null;
    }
    
    public static Point[] GenerateAllPoints(int dimension, float size) {
