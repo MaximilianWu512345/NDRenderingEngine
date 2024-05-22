@@ -6,6 +6,7 @@ import java.math.*;
 * a matrix from linear algebra
 */
 public class Matrix{
+   public static final float EPSILON = 0.00000001f;
    /**
    *elements of the matrix
    */
@@ -532,15 +533,9 @@ public class Matrix{
          
       }
       
-      
-      if(Float.compare(table[th-1][tw-1], 0f) != 0){
+      System.out.println(new Matrix(table));
+      if(Math.abs(table[th-1][tw-1]) < EPSILON){
          return new Point[0];
-      }
-      //check if artifical is in basis
-      for(int i = 0; i<basis.length; i++){
-         if(basis[i]>tw-height){
-            return new Point[0];
-         }
       }
       int newSize = 0;
       float epsilon = -0.00001f;
@@ -602,6 +597,9 @@ public class Matrix{
          th = table.length;
          tw = table[0].length;
          objFuncOrig = new float[tw];
+         System.out.println("before objective");
+            System.out.println(new Matrix(table));
+         
          objFuncOrig[antiVariableShift[currentCol]] = 1;
          int newTargetIndex = 0;
          for(int i = 0; i<th; i++){
@@ -615,15 +613,19 @@ public class Matrix{
          for(int i = 0; i<basis.length; i++){
             if(basis[i] == currentCol){ 
                for(int j = 0; j<tw; j++){
-                  table[th-1][j] -= table[i][j];
+                  table[th-1][j] += table[i][j];
                }
                break;
             }
          }
+         System.out.println("after objective");
+            System.out.println(new Matrix(table));
          currentIndex = pickPivot(table, objFuncIndex);
          numPivots = 0;
          
          while(currentIndex != -1){
+         
+            System.out.println(new Matrix(table));
          //pick row
             float q = -1;
             int remove = -1;
@@ -668,11 +670,14 @@ public class Matrix{
             currentIndex = pickPivot(table, objFuncIndex);
             
          }
-      
-      
+         System.out.println("final table:");
+         System.out.println(new Matrix(table));
       //found vector
          float[] v = new float[width];
          for(int i = 0; i<basis.length; i++){
+            if(variableShift[basis[i]]>=v.length){
+               continue;
+            }
             v[variableShift[basis[i]]] = table[i][tw-1];
          }
          if(!foundBasis.contains(basis)){
@@ -737,6 +742,9 @@ public class Matrix{
             
             v = new float[width];
             for(int i = 0; i<basis.length; i++){
+               if(variableShift[basis[i]]>=v.length){
+                  continue;
+               }
                v[variableShift[basis[i]]] = table[i][tw-1];
             }
             if(!foundBasis.contains(basis)){

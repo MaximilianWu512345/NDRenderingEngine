@@ -441,6 +441,8 @@ public class CameraRastorizationV2 implements Camera{
          col[i] = i;
       }
       //reformat
+      System.out.println(m);
+      System.out.println(sol);
       Point[] rawPoints = m.LPMaximum(col, sol);
       
       LinkedList<Point> tempRepPoints = new LinkedList<Point>();
