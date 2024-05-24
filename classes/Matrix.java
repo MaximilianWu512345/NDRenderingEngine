@@ -524,11 +524,9 @@ public class Matrix{
          numPivots++;
          //basis changed
          basis[remove] = currentIndex;
-         //System.out.println(new Matrix(table));
          currentIndex = rvPickPivot(table, objFuncIndex);
          
       }
-      //System.out.println(new Matrix(table));
       
       if(Float.compare(table[th-1][tw-1], 0f) != 0){
          return new Point[0];
@@ -576,7 +574,6 @@ public class Matrix{
          }
       }
       int[] origBasisTemp = basis;
-      //System.out.println(new Matrix(table));
       HashSet<int[]> foundBasis = new HashSet<int[]>();
       colLoop:for(int currentCol: col){
       //objective fucntion
@@ -586,7 +583,6 @@ public class Matrix{
                table[i][j] = temp[i][j];
             }
          }
-         //System.out.println(new Matrix(table));
          basis = new int[origBasisTemp.length];
          for(int i = 0; i<basis.length; i++){
             basis[i] = origBasisTemp[i];
@@ -614,7 +610,6 @@ public class Matrix{
          }
          currentIndex = pickPivot(table, objFuncIndex);
          numPivots = 0;
-         //System.out.println(new Matrix(table));
          while(currentIndex != -1){
          //pick row
             float q = -1;
@@ -658,8 +653,6 @@ public class Matrix{
          //basis changed
             basis[remove] = currentIndex;
             currentIndex = pickPivot(table, objFuncIndex);
-            //System.out.println("pivot");
-            //System.out.println(new Matrix(table));
          }
       //found vector
          float[] v = new float[width];
@@ -725,7 +718,6 @@ public class Matrix{
                   }
                }
             }
-            //System.out.println(new Matrix(table));
             v = new float[width];
             for(int i = 0; i<basis.length; i++){
                v[variableShift[basis[i]]] = table[i][tw-1];

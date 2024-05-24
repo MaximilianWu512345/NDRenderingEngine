@@ -688,7 +688,6 @@ public class EnginePanelGUI {
             }
             parent.getPoints()[owner] = new Point(temp);
             parent.setPoints(parent.getPoints());
-            System.out.println(parent.getPoints()[owner]);
          }
          
          public void updateValue() {

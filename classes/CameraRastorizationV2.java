@@ -19,7 +19,7 @@ public class CameraRastorizationV2 implements Camera{
    protected int g = 0;
    protected int ms = 0;
    protected int n = 0;
-   public static final boolean useGPU = true;
+   public static final boolean useGPU = false;
    private static final String GPU_CODE_LOC = "OpenCL\\ProjectGPUFunc.c";
    private static final String GPU_KERNEL_LOC1 = "RaserizeStep1";
    private static final String GPU_KERNEL_LOC2 = "RaserizeStep2";
@@ -204,10 +204,6 @@ public class CameraRastorizationV2 implements Camera{
             projected.add(tempFace); 
          }
       }
-      //System.out.println("resulting " + projected.size() + " simplexes:");
-      /*for(Simplex current: projected){
-         System.out.println(current);
-      }*/
       //z-buffering and painting
       zBufferArrayTexture zBuff = new zBufferArrayTexture(pix,bounds);
       if(useGPU){
@@ -260,22 +256,16 @@ public class CameraRastorizationV2 implements Camera{
          long global_work_size[] = new long[]{sim.length};
          long local_work_size[] = new long[]{1};
          clEnqueueNDRangeKernel(commandQueue, rasterS1, 1, null, global_work_size, local_work_size, 0, null, null);
-         //System.out.println(clFinish(commandQueue));
          //run step 2
          global_work_size = new long[]{numPixels};
          local_work_size = new long[]{1};
          clEnqueueNDRangeKernel(commandQueue, rasterS2, 1, null, global_work_size, local_work_size, 0, null, null);
-         //System.out.println(clFinish(commandQueue));
          //shadows if we get to it
          //read results
          clEnqueueReadBuffer(commandQueue, memory[7], CL_TRUE, 0, out.length*Sizeof.cl_uchar, outPointer, 0, null, null);
-         //System.out.println(clFinish(commandQueue));
          Color[] c = new Color[out.length/3];
          for(int i = 0; i<c.length; i++){
             c[i] = new Color(Byte.toUnsignedInt(out[i*3]), Byte.toUnsignedInt(out[i*3+1]), Byte.toUnsignedInt(out[i*3+2]));
-            if(c[i].equals(new Color(255, 0, 0))){
-               //System.out.println(i);
-            }
          }
          for (cl_mem m : memory)
             clReleaseMemObject(m);
@@ -283,7 +273,6 @@ public class CameraRastorizationV2 implements Camera{
       } else {
          for(Simplex current: projected){
             Point[] allPoints = current.getPoints();
-         //System.out.println(current);
             if(allPoints.length>ms){
             //select ms+1 points to draw (triangles)
                int[] selectedPoints = new int[ms+1];
@@ -292,9 +281,7 @@ public class CameraRastorizationV2 implements Camera{
                   selectedPoints[i] = i;
                }
                boolean cont = true;
-            //System.out.println(current);
                while(cont){
-               //System.out.println("drawing triangle");
                //put points in simplex
                   Point[] neededPoints = new Point[ms+1];
                   Point[] flatPoints = new Point[ms+1];
@@ -355,7 +342,6 @@ public class CameraRastorizationV2 implements Camera{
                      }
                   
                      Point zbuffPoint = new Point(actualPointDat);
-                  //System.out.println("drawing pixel " + zbuffPoint.toString() + "pix Point" + (new Point(pixPos)).toString() + " color " + pixColor.toString());
                      zBuff.setColor(zbuffPoint, pixColor);
                   //next pixel
                      pixPos = incrementArray(pixPos, projBoundingBoxMax, projBoundingBoxMin, pixPos.length-1);
@@ -417,16 +403,6 @@ public class CameraRastorizationV2 implements Camera{
                      actualPoint.add((new Vector(currentPart.getPoints()[i].getCoords())).scale(bary.getCoords()[i]));
                   }
                   Point zbuffPoint = new Point(actualPoint.getCoords());
-                  //System.out.println("drawing pixel " + zbuffPoint.toString() + "pix Point" + (new Point(pixPos)).toString() + " color " + pixColor.toString());
-/* old stuff??
-                  float[] zBuffPos = new float[actualPoint.length()];
-                  for(int i = 0; i<zBuffPos.length-1; i++){
-                     zBuffPos[i] = pixPos[i]-projBoundingBoxMin[i];
-                  }
-                  zBuffPos[zBuffPos.length-1] = actualPoint.getCoords()[zBuffPos.length-1];
-                  Point zbuffPoint = new Point(zBuffPos);
-                  //System.out.println("drawing pixel " + zbuffPoint.toString() + " color " + pixColor.toString());
-*/
                   zBuff.setColor(zbuffPoint, pixColor);
                   pixPos = incrementArray(pixPos, projBoundingBoxMax, projBoundingBoxMin, pixPos.length-1);
                   hasPix = pixPos != null;
@@ -434,7 +410,6 @@ public class CameraRastorizationV2 implements Camera{
             }
          }
       }
-      System.out.println("drawing done");
       return zBuff.getArrayTexture();
    }
    protected Simplex projectSimplex(Simplex s){
@@ -442,8 +417,6 @@ public class CameraRastorizationV2 implements Camera{
       ArrayList<Point> corrispond = new ArrayList<Point>();
       //get simplex slice
       reCalculateMatrix(s);
-      //System.out.println(m);
-      //System.out.println(sol);
       
       //get basic fesable solution https://en.wikipedia.org/wiki/Basic_feasible_solution
       int numUnknowns = m.getWidth();
@@ -480,7 +453,6 @@ public class CameraRastorizationV2 implements Camera{
       } else {
          return null;
       }
-      //System.out.println(resultSimplex);
       //set texture
       resultSimplex.setTexture(s.getTexture());
       if(!s.getTexture().placeMatters()){
@@ -593,7 +565,6 @@ public class CameraRastorizationV2 implements Camera{
       commandQueue = clCreateCommandQueue(context, devices[0], 0, null);   
       program = clCreateProgramWithSource(context, 1, new String[]{ GPUCode }, null, null);
       clBuildProgram(program, 1, new cl_device_id[]{device}, null, null, null);
-      System.out.println(obtainBuildLogs(program, new cl_device_id[]{device}));
       hasConnected = true;
    }
    //non static stuff
