@@ -22,11 +22,8 @@ public class Button extends JComponent {
 /** MouseListener to display graphical changes when mouse enters and exits button */
    protected Listener listener;
    
-/** Helper byte to more accurately track Listener switches */
-   protected byte switches;
-   
-/** Helper byte to determine whether mouse has entered or not */
-   protected static byte ENTERED = 1;
+/** Helper boolean to store whether mouse has entered button */
+   protected boolean entered;
    
 /**
 * Creates a new Button at location (x, y) with size (w, h), with a color of c and with a text of t.
@@ -67,7 +64,7 @@ public class Button extends JComponent {
       super();
       setLocation(this.x = x, this.y = y);
       setSize(width = w, height = h);
-      addMouseListener(listener = new Listener());
+      addMouseListener(listener = new Listener(this));
       addMouseMotionListener(listener);
    }
    
@@ -90,7 +87,7 @@ public class Button extends JComponent {
 */
    protected void paintComponent(Graphics g) {
       g = g.create();
-      if ((switches & (1 << ENTERED)) != 0) {
+      if (entered) {
          g.setColor(getGreyScale(backgroundColor.getRed(), backgroundColor.getGreen(), backgroundColor.getBlue()));
       }
       else
@@ -99,7 +96,7 @@ public class Button extends JComponent {
       g.setColor(Color.black);
       g.drawRect(0, 0, width, height);
       if (text != null && text.length() > 0) {
-         g.drawString(text, width / 2, height / 2);
+         g.drawString(text, width / 2 - text.length() - g.getFontMetrics().stringWidth(text) / 3, height / 2);
       }
    }
    
@@ -117,41 +114,89 @@ public class Button extends JComponent {
 * @return String describing this Object.
 */
    public String toString() {
-      String temp = "Button (int x, int y, int width, int height, Color backgroundColor, String text, Listener listener, byte switches) : [\n\t" + x + "\n\t" + y + "\n\t" + width + "\n\t" + height + "\n\t" + backgroundColor + "\n\t" + text + "\n\t" + listener + "\n\t" + switches + "\n]";
+      String temp = "Button (int x, int y, int width, int height, Color backgroundColor, String text, Listener listener, boolean entered) : [\n\t" + x + "\n\t" + y + "\n\t" + width + "\n\t" + height + "\n\t" + backgroundColor + "\n\t" + text + "\n\t" + listener + "\n\t" + entered + "\n]";
       return temp;
+   }
+   
+         /** Called when the button is clicked. */
+   public void mouseClicked(MouseEvent e) {
+   }
+      
+      /** Called when the mouse is pressed. */
+   public void mousePressed(MouseEvent e) {
+      
+   }
+      
+      /** Called when the mouse is released. */
+   public void mouseReleased(MouseEvent e) {
+      
+   }
+      
+      /** Called when the mouse is moved. */
+   public void mouseMoved(MouseEvent e) {
+      
+   }
+      
+      /** Called when the mouse is dragged. */
+   public void mouseDragged(MouseEvent e) {
+      
+   }
+      
+      /** Called when the mouse enters the button. Used to change button color. */
+   public void mouseEntered(MouseEvent e) {
+      entered = true;
+      this.repaint();
+   }
+      
+      /** Called when the mouse exits the button. Used to change button color. */
+   public void mouseExited(MouseEvent e) {
+      entered = false;
+      this.repaint();
    }
    
 /** Custom MouseInputListener class for button */
    protected class Listener implements MouseInputListener {
-   
+      
+      public Button owner;
+      
       /** Creates new Listener */
-      public Listener() { }
+      public Listener(Button owner) {
+         this.owner = owner;
+      }
       
       /** Called when the button is clicked. */
-      public void mouseClicked(MouseEvent e) { }
+      public void mouseClicked(MouseEvent e) {
+         owner.mouseClicked(e);
+      }
       
       /** Called when the mouse is pressed. */
-      public void mousePressed(MouseEvent e) { }
+      public void mousePressed(MouseEvent e) {
+         owner.mousePressed(e);
+      }
       
       /** Called when the mouse is released. */
-      public void mouseReleased(MouseEvent e) { }
+      public void mouseReleased(MouseEvent e) {
+         owner.mouseReleased(e);
+      }
       
       /** Called when the mouse is moved. */
-      public void mouseMoved(MouseEvent e) { }
+      public void mouseMoved(MouseEvent e) {
+         owner.mouseMoved(e);
+      }
       
       /** Called when the mouse is dragged. */
-      public void mouseDragged(MouseEvent e) { }
+      public void mouseDragged(MouseEvent e) {
+         owner.mouseDragged(e);
+      }
       
       /** Called when the mouse enters the button. Used to change button color. */
       public void mouseEntered(MouseEvent e) {
-         switches |= (1 << ENTERED);
-         paintComponent(getGraphics());
+         owner.mouseEntered(e);
       }
       
       /** Called when the mouse exits the button. Used to change button color. */
       public void mouseExited(MouseEvent e) {
-         switches &= ~(1 << ENTERED);
-         paintComponent(getGraphics());
+         owner.mouseExited(e);
       }
    }
    

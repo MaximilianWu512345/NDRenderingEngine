@@ -13,6 +13,9 @@ public class Component {
    
 /** Determines color of component. */
    protected Color color;
+   
+/** Determines whether or not this component is visible. */
+   protected boolean visible;
 
 /**
 * Creates a new Component at location (x, y) with size (w, h), with a color of c.
@@ -37,6 +40,7 @@ public class Component {
    public Component(int x, int y, int w, int h) {
       setLocation(x, y);
       setSize(w, h);
+      this.setVisible(true);
    }
 
 /**
@@ -65,6 +69,14 @@ public class Component {
 */
    public void setColor(Color c) {
       color = c;
+   }
+   
+   /**
+* Sets visible to v.
+* @param v a boolean of what to toggle visible to.
+*/
+   public void setVisible(boolean v) {
+      visible = v;
    }
 
 /**
@@ -105,6 +117,14 @@ public class Component {
 */
    public Color getColor() {
       return color;
+   }
+   
+   /**
+* Returns the Color of this object.
+* @return the Color of this object.
+*/
+   public boolean isVisible() {
+      return visible;
    }
 
 /**

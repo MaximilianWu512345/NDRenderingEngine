@@ -1,3 +1,4 @@
+import java.util.Arrays;
 /** Point class */
 public class Point {
 
@@ -60,6 +61,14 @@ public class Point {
       return getCoordinates();
    }
    
+   public void setCoordinates(float[] coordinates) {
+      this.coordinates = coordinates;
+   }
+   
+   public void setCoords(float[] coordinates) {
+      setCoords(coordinates);
+   }
+   
    // V1 * A = V2
    public Matrix rotate(Vector one, Vector two) {
       return null;
@@ -72,10 +81,26 @@ public class Point {
    public void rotate(int degrees, java.awt.Point point) {
    }
    
+   public void translate(Vector other) {
+      this.translate(other.getCoordinates());
+   }
+   
+   public void translate(Point other) {
+      this.translate(other.getCoordinates());
+   }
+   
    public void translate(float[] coords) {
       for (int i = 0; i < coordinates.length && i < coords.length; i++) {
          coordinates[i] += coords[i];
       }
+   }
+   
+   public Point getInverse() {
+      float[] coords = new float[coordinates.length];
+      for (int i = 0; i < coords.length; i++) {
+       coords[i] = -coordinates[i];
+      }
+      return new Point(coords);
    }
    
 /** Generic toString() method.
@@ -90,5 +115,28 @@ public class Point {
          temp += coordinates[coordinates.length - 1];
       }
       return temp + "}]";
+   }
+   /** equals method
+   *  @param p the point you want to compare to
+   *  @return true if p is the same point
+   */
+   @Override
+   public boolean equals(Object o){
+      if(!(o instanceof Point)){
+         return false;
+      }
+      Point p = (Point)o;
+      if(coordinates.length != p.coordinates.length){
+         return false;
+      }
+      for(int i = 0; i<coordinates.length; i++){
+         if(Float.compare(coordinates[i], p.coordinates[i]) != 0){
+            return false;
+         }
+      }
+      return true;
+   }
+   public int hashCode(){
+      return Arrays.hashCode(coordinates);
    }
 }

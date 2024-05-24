@@ -12,8 +12,14 @@ public interface Camera{
 * @param h the new height of the camera.
 */
    public void setData(Point position, Vector V, int width, int height);
-
+      
    
+   
+   public void translate(Point translation);
+   
+   public void rotate(float theta, int axis1, int axis2);
+   
+   public int getDimension();
    
 /**
 * Projects a Mesh and an int dimension to a Color[][].

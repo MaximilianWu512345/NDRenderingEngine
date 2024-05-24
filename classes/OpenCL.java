@@ -1,3 +1,5 @@
+// add to build classpath: NDRederingEngine\classes\lib\*
+
 import static org.jocl.CL.*;
 
 import org.jocl.*;
@@ -92,7 +94,7 @@ public class OpenCL {
          Scanner reader = new Scanner(file);
          String s = "";
          while (reader.hasNextLine()) {
-            s += reader.nextLine();
+            s += reader.nextLine() + "\n";
          }
          reader.close();
          return s;
@@ -232,5 +234,9 @@ public class OpenCL {
         // Create the kernel
       System.out.println("Creating kernel...");
       return clCreateKernel(program, kernelName, null);
+   }
+   public static void endConnection(){
+      clReleaseCommandQueue(CommandQueue);
+      clReleaseContext(Context);
    }
 }
