@@ -402,22 +402,18 @@ public class Container extends JComponent implements MouseInputListener, KeyList
                String temp = field.getValue();
                if (temp.length() > 0) {
                   if (textIndex != 0) {
-                     temp = temp.substring(0, textIndex - 1) + temp.substring(textIndex, temp.length());
-                     field.setValue(temp);
-                     textIndex = Math.max(0, textIndex - 1);
-                     checkFieldWidth(i);
+                     fieldRemoveAt(i, textIndex);
                   }
                }
             }
             else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-               field.setValue(field.getValue() + " ");
-               textIndex++;
-               checkFieldWidth(i);
+               fieldAddAt(i, " ", textIndex);
             }
             else if (e.getKeyCode() == KeyEvent.VK_PERIOD) {
-               field.setValue(field.getValue() + ".");
-               textIndex++;
-               checkFieldWidth(i);
+               fieldAddAt(i, ".", textIndex);
+            }
+            else if (e.getKeyCode() == KeyEvent.VK_MINUS) {
+               fieldAddAt(i, "-", textIndex);
             }
             else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
                textIndex = Math.max(0, textIndex - 1);
@@ -431,6 +427,24 @@ public class Container extends JComponent implements MouseInputListener, KeyList
          child.keyPressed(e);
       }
       repaint();
+   }
+   
+   public void fieldAddAt(int field, String add, int index) {
+      String temp = fields.get(field).getValue();
+      temp = temp.substring(0, textIndex) + add + temp.substring(textIndex, temp.length());
+      fields.get(field).setValue(temp);
+      textIndex++;
+      checkFieldWidth(field);
+   }
+   
+   public void fieldRemoveAt(int field, int index) {
+      if (textIndex != 0) {
+         String temp = fields.get(field).getValue();
+         temp = temp.substring(0, textIndex - 1) + temp.substring(textIndex, temp.length());
+         fields.get(field).setValue(temp);
+         textIndex = Math.max(0, textIndex - 1);
+         checkFieldWidth(field);
+      }
    }
 
       /** KeyEvent upon releasing keyboard
@@ -447,9 +461,7 @@ public class Container extends JComponent implements MouseInputListener, KeyList
          DataField field = fields.get(i);
          if (fieldsInfo.get(i) == 2 && field.canEdit()) {
             if (Character.isDigit(e.getKeyChar())) {
-               field.setValue(field.getValue() + e.getKeyChar());
-               textIndex++;
-               checkFieldWidth(i);
+               fieldAddAt(i, "" + e.getKeyChar(), textIndex);
             }
          }
       }
