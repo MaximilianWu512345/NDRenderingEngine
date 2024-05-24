@@ -417,6 +417,16 @@ public class CameraRastorizationV2 implements Camera{
                      actualPoint.add((new Vector(currentPart.getPoints()[i].getCoords())).scale(bary.getCoords()[i]));
                   }
                   Point zbuffPoint = new Point(actualPoint.getCoords());
+                  //System.out.println("drawing pixel " + zbuffPoint.toString() + "pix Point" + (new Point(pixPos)).toString() + " color " + pixColor.toString());
+/* old stuff??
+                  float[] zBuffPos = new float[actualPoint.length()];
+                  for(int i = 0; i<zBuffPos.length-1; i++){
+                     zBuffPos[i] = pixPos[i]-projBoundingBoxMin[i];
+                  }
+                  zBuffPos[zBuffPos.length-1] = actualPoint.getCoords()[zBuffPos.length-1];
+                  Point zbuffPoint = new Point(zBuffPos);
+                  //System.out.println("drawing pixel " + zbuffPoint.toString() + " color " + pixColor.toString());
+*/
                   zBuff.setColor(zbuffPoint, pixColor);
                   pixPos = incrementArray(pixPos, projBoundingBoxMax, projBoundingBoxMin, pixPos.length-1);
                   hasPix = pixPos != null;
