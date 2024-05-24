@@ -489,12 +489,14 @@ public class Matrix{
       
       int numPivots = 0;
       while(currentIndex != -1){
+         System.out.println(new Matrix(table));
+         System.out.println(new Vector(basis));
          //pick row
          float q = -1;
          int remove = -1;
          for(int i = 0; i<height; i++){
             if(Float.compare(table[i][currentIndex],0) > 0){
-               if(remove == -1 || Float.compare(q, table[i][tw-1]/table[i][currentIndex]) >= 0){
+               if(remove == -1 || Float.compare(q, table[i][tw-1]/table[i][currentIndex]) > 0){
                   if(Float.compare(q, table[i][tw-1]/table[i][currentIndex]) == 0){
                      if(objFuncOrig[basis[remove]]>objFuncOrig[basis[i]]){
                         q = table[i][tw-1]/table[i][currentIndex];

@@ -12,7 +12,6 @@
 //    something about a stencil buffer...
 //TODO: check if some loops can be remmoved using get_global_id(1) or more
 //TODO: finish last buffer
-
 int floatCompare(const float a, const float b){
    float epsilon = 0.000001f;
    if(a == b){
@@ -109,7 +108,7 @@ void calcBaryCoords(__global int* pos, __global float* lpu, int triangleIndex, i
    
    out[dimention + outStart-1] = 1-sum;
 }
-//working! :D
+//working :|????
 void lpuBarycentricCoords( 
 __global float *data,
 int dimention,
@@ -118,7 +117,7 @@ int id
 )
 {
    int gid = id;
-   int dataSize = dimention * (dimention - 1);
+   int dataSize = dimention * (dimention-1);
    int mSize = (dimention-1)*(dimention-1);
    int outSize = mSize*3+dimention-1;
    int firstOut = gid*outSize;
@@ -150,6 +149,7 @@ int id
          data[firstIn + i*(dimention-1)] += out[firstOut+j];
       }
    }
+  
    //calculations
    for(int i = 0; i<dimention-1; i++){
       //pivot
@@ -232,7 +232,6 @@ int numTextures //using dimention can help figure out each texture
 ){
    int gid = get_global_id(0);
    //flaten
-   
    for(int j = 0; j<dimention; j++){
       float dist = coords[gid*dimention*dimention+dimention*j+dimention-1];
       for(int k = 0; k<dimention-1; k++){

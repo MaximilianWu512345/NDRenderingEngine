@@ -137,7 +137,7 @@ public class CameraRastorizationV2 implements Camera{
       
       result[numRow-1] = 1;
       for(int i = 0; i<constShift.length(); i++){
-         result[i] = -1*constShift.getCoords()[i];
+         result[i] = constShift.getCoords()[i];
       }
       sol = new Vector(result);
       
@@ -189,6 +189,7 @@ public class CameraRastorizationV2 implements Camera{
          Simplex tempFace = projectSimplex(current);
          if(tempFace != null){
             projected.add(tempFace); 
+            System.out.println(tempFace);
          }
       }
       //System.out.println("resulting " + projected.size() + " simplexes:");
