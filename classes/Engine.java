@@ -30,6 +30,7 @@ public class Engine {
       float[] axis1 = new float[dimention];
       float[] axis2 = new float[dimention];
       axis1[1] = 3f/900f;
+      axis1[1] = 15f/900f;
       axis2[2] = 2f/900f;
       axis[0] = new Vector(axis1);
       axis[1] = new Vector(axis2);
@@ -84,6 +85,8 @@ public class Engine {
       }
 
       panel.renderImage(pixelArray);
+      frame.revalidate();
+      frame.repaint();
    }
    
    public static Color[] colors = { Color.RED, Color.BLUE, Color.BLACK, Color.WHITE, Color.GREEN, Color.YELLOW, Color.GRAY};
