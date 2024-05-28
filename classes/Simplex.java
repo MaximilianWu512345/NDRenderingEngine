@@ -123,6 +123,10 @@ public class Simplex {
       lBaryMatrix = decomp[0];
       pBaryMatrix = decomp[1];
       uBaryMatrix = decomp[2];
+      System.out.println(shift);
+      System.out.println(pBaryMatrix);
+      System.out.println(lBaryMatrix);
+      System.out.println(uBaryMatrix);
    }
    /**
    *

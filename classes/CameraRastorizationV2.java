@@ -19,7 +19,7 @@ public class CameraRastorizationV2 implements Camera{
    protected int g = 0;
    protected int ms = 0;
    protected int n = 0;
-   public static final boolean useGPU = true;
+   public static final boolean useGPU = false;
    private static final String GPU_CODE_LOC = "OpenCL\\ProjectGPUFunc.c";
    private static final String GPU_KERNEL_LOC1 = "RaserizeStep1";
    private static final String GPU_KERNEL_LOC2 = "RaserizeStep2";
