@@ -441,7 +441,11 @@ public class Matrix{
       //construct matrix
       for(int i = 0; i<width; i++){
          for(int j = 0; j<height; j++){
-            table[j][i] = data[j][i];
+            if(resource.getCoords()[j]<0){
+               table[j][i] = -1*data[j][i];
+            } else {
+               table[j][i] = data[j][i];
+            }
          }
       }
       //add artifical
@@ -489,8 +493,8 @@ public class Matrix{
       
       int numPivots = 0;
       while(currentIndex != -1){
-         System.out.println(new Matrix(table));
-         System.out.println(new Vector(basis));
+         //System.out.println(new Matrix(table));
+         //System.out.println(new Vector(basis));
          //pick row
          float q = -1;
          int remove = -1;
@@ -535,8 +539,9 @@ public class Matrix{
          
       }
       
-      System.out.println(new Matrix(table));
-      if(Math.abs(table[th-1][tw-1]) < EPSILON){
+      //System.out.println(new Matrix(table));
+      //System.out.println(table[th-1][tw-1]);
+      if(Math.abs(table[th-1][tw-1]) > EPSILON){
          return new Point[0];
       }
       int newSize = 0;
@@ -599,8 +604,8 @@ public class Matrix{
          th = table.length;
          tw = table[0].length;
          objFuncOrig = new float[tw];
-         System.out.println("before objective");
-            System.out.println(new Matrix(table));
+         //System.out.println("before objective");
+         //System.out.println(new Matrix(table));
          
          objFuncOrig[antiVariableShift[currentCol]] = 1;
          int newTargetIndex = 0;
@@ -620,14 +625,14 @@ public class Matrix{
                break;
             }
          }
-         System.out.println("after objective");
-            System.out.println(new Matrix(table));
+         //System.out.println("after objective");
+         //System.out.println(new Matrix(table));
          currentIndex = pickPivot(table, objFuncIndex);
          numPivots = 0;
          
          while(currentIndex != -1){
          
-            System.out.println(new Matrix(table));
+            //System.out.println(new Matrix(table));
          //pick row
             float q = -1;
             int remove = -1;
@@ -672,8 +677,8 @@ public class Matrix{
             currentIndex = pickPivot(table, objFuncIndex);
             
          }
-         System.out.println("final table:");
-         System.out.println(new Matrix(table));
+         //System.out.println("final table:");
+         //System.out.println(new Matrix(table));
       //found vector
          float[] v = new float[width];
          for(int i = 0; i<basis.length; i++){

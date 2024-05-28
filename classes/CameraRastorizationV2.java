@@ -184,18 +184,23 @@ public class CameraRastorizationV2 implements Camera{
       
       LinkedList<Simplex> projected = new LinkedList<Simplex>();
       //for each simplex, project points
+      int index = 0;
       for(Simplex current: original){
          //null check add
          Simplex tempFace = projectSimplex(current);
-         if(tempFace != null){
+         if(tempFace != null && tempFace.getPoints().length >= (s.getSubSpace().getDir().length+1)){
             projected.add(tempFace); 
+            System.out.println(index);
             System.out.println(tempFace);
          }
+         index++;
       }
-      //System.out.println("resulting " + projected.size() + " simplexes:");
-      /*for(Simplex current: projected){
+      /*
+      System.out.println("resulting " + projected.size() + " simplexes:");
+      for(Simplex current: projected){
          System.out.println(current);
-      }*/
+      }
+      */
       //z-buffering and painting
       zBufferArrayTexture zBuff = new zBufferArrayTexture(pix,bounds);
       if(projected.size() == 0){
@@ -239,7 +244,17 @@ public class CameraRastorizationV2 implements Camera{
                cont = selectedPoints != null;
             }
          }
+         int triIndex = 0;
+         for(Simplex tri: sList){
+            int[] bounds = new int[3];
+            for(int i = 0; i<bounds.length; i++){
+               bounds[i] = 1;
+            }
+            tri.setTexture(new ConstentTexture(Color.getHSBColor(triIndex/5f,1,1), bounds));
+            triIndex++;
+         }
          Simplex[] sim = new Simplex[sList.size()];
+         System.out.println(sList);
          sim = sList.toArray(sim);
          cl_mem memory[] = setMemoryBuffRaster(sim, backgroundC, triangleC, new cl_kernel[]{rasterS1, rasterS2}, o[0].getFaces()[0].getPoints()[0].length()-1);
          for(int i = 0; i<memory.length; i++){
@@ -442,8 +457,8 @@ public class CameraRastorizationV2 implements Camera{
          col[i] = i;
       }
       //reformat
-      System.out.println(m);
-      System.out.println(sol);
+      //System.out.println(m);
+      //System.out.println(sol);
       Point[] rawPoints = m.LPMaximum(col, sol);
       
       LinkedList<Point> tempRepPoints = new LinkedList<Point>();
@@ -636,18 +651,18 @@ public class CameraRastorizationV2 implements Camera{
       }
       result[2] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Sizeof.cl_int*textureIndex.length, Pointer.to(textureIndex), null);
       numBytes += Sizeof.cl_int*textureIndex.length;
-      char[][] TextureData = new char[1][allTextures.size()];
+      byte[][] TextureData = new byte[allTextures.size()][1];
       index = 0;
       int textSize = 0;
       for(Texture t: allTextures){
-         TextureData[index] = t.toCharArray();
+         TextureData[index] = t.toByteArray();
          textSize += TextureData[index].length;
          index++;
       }
-      char[] textureColors = new char[textSize]; //input index 3
+      byte[] textureColors = new byte[textSize]; //input index 3
       index = 0;
-      for(char[] line: TextureData){
-         for(char c: line){
+      for(byte[] line: TextureData){
+         for(byte c: line){
             textureColors[index] = c;
             index++;
          }
@@ -664,13 +679,13 @@ public class CameraRastorizationV2 implements Camera{
       }
       result[4] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Sizeof.cl_int*textureSizes.length, Pointer.to(textureSizes), null);
       numBytes += Sizeof.cl_int*textureSizes.length;
-      char[] textureType = new char[allTextures.size()]; //input index 5
+      byte[] textureType = new byte[allTextures.size()]; //input index 5
       index = 0;
       for(Texture t: allTextures){
          if(t instanceof ArrayTexture){
-            textureType[index] = 'b';
+            textureType[index] = ((byte)'b');
          } else if(t instanceof ConstentTexture){
-            textureType[index] = 'c';
+            textureType[index] = ((byte)'c');
          }
          index++;
       }

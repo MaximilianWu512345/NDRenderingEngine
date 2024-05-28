@@ -10,12 +10,12 @@ public interface Texture{
    public default boolean placeMatters(){
       return true;
    }
-   public default char[] toCharArray(){
+   public default byte[] toByteArray(){
       Color c = getColor(null);
-      char[] result = new char[3];
-      result[0] = (char)c.getRed();
-      result[1] = (char)c.getGreen();
-      result[2] = (char)c.getBlue();
+      byte[] result = new byte[3];
+      result[0] = (byte)c.getRed();
+      result[1] = (byte)c.getGreen();
+      result[2] = (byte)c.getBlue();
       return result;
    }
 }
