@@ -580,6 +580,19 @@ public class EnginePanelGUI {
       
       public Mesh createMesh(String type) {
          switch (type) {
+            case "Remove":
+               String s = JOptionPane.showInputDialog("Index of the mesh to be removed?");
+               if(s!=null)
+               {
+                  try{
+                     int index = Integer.valueOf(s);
+                     enginePanel.getMeshes().remove(index-1);
+                     containers.remove(index-1);
+                  } catch(Exception e){
+                  
+                  }
+               }
+               return null;
             case "Default":
                return generateMesh();
             case "Hypercube":
@@ -727,7 +740,7 @@ public class EnginePanelGUI {
          
          public Button_NewMesh(int x, int y, int width, int height, Color color, String text) {
             super(x, y, width, height, color, text);
-            String[] meshStrings = new String[] { "Default", "Hypercube", "Hypersphere" };
+            String[] meshStrings = new String[] { "Remove", "Default", "Hypercube", "Hypersphere"};
             JList list = new JList(meshStrings);
             list.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
             list.setLayoutOrientation(JList.VERTICAL);
@@ -744,7 +757,9 @@ public class EnginePanelGUI {
                   public void mouseClicked(MouseEvent e) {
                      if (e.getClickCount() == 2) {
                         Mesh mesh = createMesh((String)list.getSelectedValue());
-                        enginePanel.addMesh(mesh);
+                        if(mesh != null){
+                           enginePanel.addMesh(mesh);
+                        }
                         frame.setVisible(false);
                      }
                   }

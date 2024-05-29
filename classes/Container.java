@@ -497,6 +497,7 @@ public class Container extends JComponent implements MouseInputListener, KeyList
       updateContainer();
       if (parent != null)
          parent.updateContainer();
+      
       repaint();
    }
       

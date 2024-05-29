@@ -19,7 +19,7 @@ s#p0doc
 s#q0test
 s#w0canvas
 !251;u
-a0	b68	c255	d%\\011classes%slib%sjocl-2.0.2.jar\011%\\011classes%sOpenCL%sMatrixMultiplication.c\011%\\011classes%sOpenCL%sProjectGPUFunc.c	f%\011Build%sNDRenderingEngine.jar	g%\011NDRenderingEngine.zip	hManifest-Version\0111.0\011Main-Class\011Engine!842;g
+a0	b68	c255	d%\\011classes%slib%sjocl-2.0.2.jar\011%\\011classes%sOpenCL%sMatrixMultiplication.c\011%\\011classes%sOpenCL%sProjectGPUFunc.c	f%\011Build%sNDRenderingEngine.jar	g%\011NDRenderingEngine.zip	hManifest-Version\0111.0\011Main-Class\011Engine!801;g
 %\011classes%sArrayTexture.java
 %\011classes%sSimplex.java
 %\011classes%sOpenCL.java
@@ -41,14 +41,13 @@ a0	b68	c255	d%\\011classes%slib%sjocl-2.0.2.jar\011%\\011classes%sOpenCL%sMatrix
 %\011classes%sMatrix.java
 %\011classes%sCamera.java
 %\011classes%sPoint.java
-%\011classes%sCameraRastorizationV1.java
 %\011classes%sUtilities.java
 %\011classes%sDataField.java
 %\011classes%sVector.java
 %\011classes%sPlane.java
 %\011classes%sComponent.java
 %\011classes%sMesh.java
-!842;f
+!801;f
 %\011classes%sArrayTexture.java
 %\011classes%sSimplex.java
 %\011classes%sOpenCL.java
@@ -70,7 +69,6 @@ a0	b68	c255	d%\\011classes%slib%sjocl-2.0.2.jar\011%\\011classes%sOpenCL%sMatrix
 %\011classes%sMatrix.java
 %\011classes%sCamera.java
 %\011classes%sPoint.java
-%\011classes%sCameraRastorizationV1.java
 %\011classes%sUtilities.java
 %\011classes%sDataField.java
 %\011classes%sVector.java
