@@ -82,11 +82,11 @@ public class Matrix{
    * @return a Matrix or null when multiplication fails
    */
    public Matrix mult(Matrix m){
-      /* int sizeGPU = 600; */
+      int sizeGPU = 600; 
       /* If same size and total size >= sizeGPU * sizeGPU, then GPU is faster */
-      /*if (width == height && m.width == width && m.height == height && width >= sizeGPU && height >= sizeGPU)
+      if (width == height && m.width == width && m.height == height && width >= sizeGPU && height >= sizeGPU)
          return multGPU(m);
-         */
+         
       int nWidth = m.width;
       int nHeight = height;
       if(m.height == width){

@@ -68,9 +68,6 @@ public class Point {
       this.coordinates = coordinates;
    }
    
-   public void setCoords(float[] coordinates) {
-      setCoords(coordinates);
-   }
    
    // V1 * A = V2
    public Matrix rotate(Vector one, Vector two) {
