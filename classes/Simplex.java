@@ -20,7 +20,17 @@ public class Simplex {
 */
    public Simplex(Point[] vertex){
       setPoints(vertex);
-      t = new ConstentTexture(Color.RED, new int[vertex.length-1]);
+      int[] bounds = new int[vertex.length-1];
+      for(int i = 0; i<bounds.length; i++){
+         bounds[i] = 1;
+      }
+      t = new ConstentTexture(Color.RED, bounds);
+      Point[] textPoints = new Point[vertex.length-1];
+      for(int i = 0; i<textPoints.length; i++){
+         textPoints[i] = new Point(new float[vertex[0].length()]);
+      }
+      setTexturePoints(textPoints);
+   
    }
    
 /** Creates a new Simplex with points of vertex.
@@ -29,13 +39,17 @@ public class Simplex {
 */
    public Simplex(Point[] vertex, Color c){
       setPoints(vertex);
-      t = new ConstentTexture(c, new int[vertex.length-1]);
+      int[] bounds = new int[vertex.length-1];
+      for(int i = 0; i<bounds.length; i++){
+         bounds[i] = 1;
+      }
+      t = new ConstentTexture(c, bounds);
       Point[] textPoints = new Point[vertex.length-1];
       for(int i = 0; i<textPoints.length; i++){
          textPoints[i] = new Point(new float[vertex[0].length()]);
       }
       setTexturePoints(textPoints);
-
+   
    }
    
 /** Sets points to be vertex.
@@ -286,7 +300,6 @@ public class Simplex {
    public void translate(float[] coords) {
       for (Point p : points)
          p.translate(coords);
-      setPoints(points);
    }
    
 /** Rotates all Points in this Simplex by degrees around the origin.
@@ -342,7 +355,7 @@ public class Simplex {
    }
    
       // min = [0], max = [1];
-      public Point[] BoundingBox(){
+   public Point[] BoundingBox(){
       float[] max = new float[points[0].length()];
       float[] min = new float[points[0].length()];
       for(int i = 0; i<max.length; i++){
@@ -397,7 +410,7 @@ public class Simplex {
       } else {
          temp += "\n" + tabs + "}\nnull\n" + tabs + t + "\n" + lastTab + "]";
       }
-
+   
       return temp;
    }
    

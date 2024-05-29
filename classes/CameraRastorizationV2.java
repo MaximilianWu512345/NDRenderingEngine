@@ -150,7 +150,7 @@ public class CameraRastorizationV2 implements Camera{
       
       result[numRow-1] = 1;
       for(int i = 0; i<constShift.length(); i++){
-         result[i] = -1*constShift.getCoords()[i];
+         result[i] = constShift.getCoords()[i];
       }
       sol = new Vector(result);
       
@@ -197,15 +197,22 @@ public class CameraRastorizationV2 implements Camera{
       
       LinkedList<Simplex> projected = new LinkedList<Simplex>();
       //for each simplex, project points
+      int index = 0;
       for(Simplex current: original){
          //null check add
          Simplex tempFace = projectSimplex(current);
-         if(tempFace != null){
+         if(tempFace != null && tempFace.getPoints().length >= (s.getSubSpace().getDir().length+1)){
             projected.add(tempFace); 
+            System.out.println(index);
+            System.out.println(tempFace);
          }
+         index++;
       }
       //z-buffering and painting
       zBufferArrayTexture zBuff = new zBufferArrayTexture(pix,bounds);
+      if(projected.size() == 0){
+         return zBuff;
+      }
       if(useGPU){
          if(!hasConnected){
             GPUConnect();
@@ -217,8 +224,11 @@ public class CameraRastorizationV2 implements Camera{
          //set arguments
          LinkedList<Simplex> sList = new LinkedList<Simplex>();
          for(Simplex current: projected){
-            int[] selectedPoints = new int[ms+1];
             int pointCount = current.getPoints().length;
+            if(pointCount < ms+1){
+               continue;
+            }
+            int[] selectedPoints = new int[ms+1];
             for(int i = 0; i<selectedPoints.length; i++){
                selectedPoints[i] = i;
             }
@@ -243,7 +253,7 @@ public class CameraRastorizationV2 implements Camera{
          }
          Simplex[] sim = new Simplex[sList.size()];
          sim = sList.toArray(sim);
-         cl_mem memory[] = setMemoryBuffRaster(sim, backgroundC, triangleC, new cl_kernel[]{rasterS1, rasterS2});
+         cl_mem memory[] = setMemoryBuffRaster(sim, backgroundC, triangleC, new cl_kernel[]{rasterS1, rasterS2}, o[0].getFaces()[0].getPoints()[0].length()-1);
          for(int i = 0; i<memory.length; i++){
             clSetKernelArg(rasterS1, i, Sizeof.cl_mem, Pointer.to(memory[i]));
             clSetKernelArg(rasterS2, i, Sizeof.cl_mem, Pointer.to(memory[i]));
@@ -431,6 +441,8 @@ public class CameraRastorizationV2 implements Camera{
          col[i] = i;
       }
       //reformat
+      //System.out.println(m);
+      //System.out.println(sol);
       Point[] rawPoints = m.LPMaximum(col, sol);
       
       LinkedList<Point> tempRepPoints = new LinkedList<Point>();
@@ -575,11 +587,10 @@ public class CameraRastorizationV2 implements Camera{
       hasBuilt = true;
    }
    //gets the memory array
-   private cl_mem[] setMemoryBuffRaster(Simplex[] sim, Color background, Color def, cl_kernel[] kernels){
+   private cl_mem[] setMemoryBuffRaster(Simplex[] sim, Color background, Color def, cl_kernel[] kernels, int tdim){
       int numBytes = 0;
       cl_mem[] result = new cl_mem[19];
-      int tdim = sim[0].getTexturePoints()[0].length();//input index 25
-      int dim = sim[0].getPoints().length;//input index 20
+      int dim = sim[0].getPoints()[0].length();//input index 20
       int numFloat = sim.length*dim*dim;
       float[] coords = new float[numFloat];//input index 0
       int index = 0;
@@ -622,18 +633,18 @@ public class CameraRastorizationV2 implements Camera{
       }
       result[2] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Sizeof.cl_int*textureIndex.length, Pointer.to(textureIndex), null);
       numBytes += Sizeof.cl_int*textureIndex.length;
-      char[][] TextureData = new char[1][allTextures.size()];
+      byte[][] TextureData = new byte[allTextures.size()][1];
       index = 0;
       int textSize = 0;
       for(Texture t: allTextures){
-         TextureData[index] = t.toCharArray();
+         TextureData[index] = t.toByteArray();
          textSize += TextureData[index].length;
          index++;
       }
-      char[] textureColors = new char[textSize]; //input index 3
+      byte[] textureColors = new byte[textSize]; //input index 3
       index = 0;
-      for(char[] line: TextureData){
-         for(char c: line){
+      for(byte[] line: TextureData){
+         for(byte c: line){
             textureColors[index] = c;
             index++;
          }
@@ -650,13 +661,13 @@ public class CameraRastorizationV2 implements Camera{
       }
       result[4] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Sizeof.cl_int*textureSizes.length, Pointer.to(textureSizes), null);
       numBytes += Sizeof.cl_int*textureSizes.length;
-      char[] textureType = new char[allTextures.size()]; //input index 5
+      byte[] textureType = new byte[allTextures.size()]; //input index 5
       index = 0;
       for(Texture t: allTextures){
          if(t instanceof ArrayTexture){
-            textureType[index] = 'b';
+            textureType[index] = ((byte)'b');
          } else if(t instanceof ConstentTexture){
-            textureType[index] = 'c';
+            textureType[index] = ((byte)'c');
          }
          index++;
       }

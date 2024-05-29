@@ -60,6 +60,9 @@ public class Point {
    public float[] getCoords() {
       return getCoordinates();
    }
+   public void setCoords(float[] coords) {
+      this.coordinates = coords;
+   }
    
    public void setCoordinates(float[] coordinates) {
       this.coordinates = coordinates;

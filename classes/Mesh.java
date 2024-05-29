@@ -1,5 +1,6 @@
 /** Mesh class */
 import java.util.LinkedList;
+import java.util.HashSet;
 public class Mesh{
 /** Direction of this Camera */
    public Simplex[] faces;
@@ -29,19 +30,31 @@ public class Mesh{
    public Simplex[] getFaces() {
       return faces;
    }
-   
-   // Matrix m must be multipliable with each Simplex in faces, width must equal m.height
-   public void transform(Matrix m) {
+   public Point[] getAllPoints(){   
+      HashSet<Point> set = new HashSet<Point>();
       for (Simplex s : faces) {
          Point[] points = s.getPoints();
          for (int i = 0; i < points.length; i++) {
-            Matrix temp = m.mult(points[i].toMatrix());
-            if (temp != null)
-               points[i] = temp.toPoint();
-            else
-               System.out.println("Matrix Multiplication Failed: Mesh.transform(Matrix m): temp == null");
+            set.add(points[i]);
          }
-         s.setPoints(points);
+      }
+      Point[] result = new Point[set.size()];
+      int index = 0;
+      for(Point p: set){
+         result[index] = p;
+         index++;
+      }
+      return result;
+   }
+   // Matrix m must be multipliable with each Simplex in faces, width must equal m.height
+   public void transform(Matrix m) {
+      Point[] points = getAllPoints();
+      for (int i = 0; i < points.length; i++) {
+         Matrix temp = m.mult(points[i].toMatrix());
+         if (temp != null)
+            points[i].setCoords(temp.toPoint().getCoords());
+         else
+            System.out.println("Matrix Multiplication Failed: Mesh.transform(Matrix m): temp == null");
       }
    }
    
@@ -91,5 +104,11 @@ public class Mesh{
       Simplex[] result = new Simplex[hull.size()];
       result = hull.toArray(result);
       return result;
+   }
+   public void translate(Point p){
+   Point[] points = getAllPoints();
+      for(Point sp: points){
+         sp.translate(p.getCoords());
+      }
    }
 }

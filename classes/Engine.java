@@ -10,11 +10,6 @@ public class Engine {
 * @param args default args for main method.
 */
    public static void main(String[] args) {
-      //gpu stuff
-      Matrix m1 = new Matrix(new float[][]{new float[]{1, 0}, new float[]{0, 1}});
-      Matrix m2 = new Matrix(new float[][]{new float[]{1, 0}, new float[]{0, 1}});
-      Matrix m3 = m1.multGPU(m2);
-   
       int width = 1000;
       int height = 1000;
       JFrame frame = new JFrame("Max Wu's Concoction Machine!");
@@ -29,19 +24,18 @@ public class Engine {
       int dimention = 4;
       float[] camPosData = new float[dimention];
       Point screenPos = new Point(camPosData);
-      screenPos.getCoords()[0] = 1;
       Vector[] axis = new Vector[2];
       float[] axis1 = new float[dimention];
       float[] axis2 = new float[dimention];
-      axis1[1] = 3f/900f;
-      axis1[1] = 15f/900f;
-      axis2[2] = 2f/900f;
+      axis1[1] = 3f/500f;
+      axis2[2] = 3f/500f;
       axis[0] = new Vector(axis1);
       axis[1] = new Vector(axis2);
       SubSpace screenDir = new SubSpace(axis);
       AffineSubSpace screen = new AffineSubSpace(screenDir, screenPos);
       Point camPos = new Point(new float[dimention]);
-      int[] pixBounds = new int[]{900, 900};
+      camPos.getCoords()[0] = camPosData[0]-1;
+      int[] pixBounds = new int[]{500, 500};
       Camera camera;
       camera = new CameraRastorizationV2(camPos, screen, pixBounds);
       ((CameraRastorizationV2)camera).GPUConnect();
@@ -72,7 +66,18 @@ public class Engine {
       parr1[2] = new Point(new float[]{2,0,1,0.5f});
       parr1[3] = new Point(new float[]{2,0,1,-0.5f});
       manSimplex[0] = new Simplex(parr1);
-      scene.add(new Mesh(manSimplex, dimention));
+      //scene.add(new Mesh(manSimplex, dimention));
+      Mesh cube = ShapeLibrary.Generate4DTesseract(1);
+      //cube.translate(new Point(new float[]{0, -0.5f, -0.5f, -0.5f}));
+      //cube.transform(Matrix.GivensRot(dimention, 1f, 2, 3));
+      scene.add(cube);
+      
+      for(int i = 0; i<cube.getFaces().length; i++){
+         System.out.println(i+": " + cube.getFaces()[i].toString());
+      }
+      
+      //System.out.println(cube);
+
       //render
       long timeStart = System.nanoTime();
       panel.setMeshes(scene.toArray(new Mesh[0]));
