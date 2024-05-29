@@ -6,7 +6,7 @@ import java.math.*;
 * a matrix from linear algebra
 */
 public class Matrix{
-   public static final float EPSILON = 0.00000001f;
+   public static final float EPSILON = 0.000001f;
    /**
    *elements of the matrix
    */
@@ -606,7 +606,9 @@ public class Matrix{
          objFuncOrig = new float[tw];
          //System.out.println("before objective");
          //System.out.println(new Matrix(table));
-         
+         if(antiVariableShift[currentCol] == -1){
+            continue;
+         }
          objFuncOrig[antiVariableShift[currentCol]] = 1;
          int newTargetIndex = 0;
          for(int i = 0; i<th; i++){
@@ -769,7 +771,7 @@ public class Matrix{
    private int pickPivot(float[][] t, int row){ // this is just for the LP solver
       int min = -1;
       float epsillon = -0.000001f;
-      for(int i = 0; i<t[row].length-1; i++){
+      for(int i = 0; i<t[row].length-2; i++){
          if(t[row][i]<epsillon){
             if(min == -1 || t[row][i]<t[row][min]){
                min = i;
@@ -781,7 +783,7 @@ public class Matrix{
    private int rvPickPivot(float[][] t, int row){ // this is just for the LP solver
       int max = -1;
       float epsillon = 0.000001f;
-      for(int i = 0; i<t[row].length-1; i++){
+      for(int i = 0; i<t[row].length-2; i++){
          if(t[row][i]>epsillon){
             if(max == -1 || t[row][i]>t[row][max]){
                max = i;

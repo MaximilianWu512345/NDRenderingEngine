@@ -15,10 +15,10 @@ public class ShapeLibrary {
    }
    public static Mesh Generate4DTesseract(float size){
       Point[] points = GenerateAllPoints(4, size);
-      Simplex[] sim = new Simplex[1];
+      Simplex[] sim = new Simplex[40];
       int index = 0;
       //f1 face
-      /*
+      
       sim[index] = new Simplex(new Point[]{points[0], points[1], points[2], points[4]}, Color.getHSBColor(index/40f,1,1));
       index++;
       sim[index] = new Simplex(new Point[]{points[1], points[2], points[4], points[7]}, Color.getHSBColor(index/40f,1,1));
@@ -85,20 +85,20 @@ public class ShapeLibrary {
       index++;
       sim[index] = new Simplex(new Point[]{points[6], points[15], points[6], points[7]}, Color.getHSBColor(index/40f,1,1));
       index++;
-      */
+      
       //f4 face
       sim[index] = new Simplex(new Point[]{points[0], points[2], points[4], points[8]}, Color.getHSBColor(index/40f,1,1));
       index++;
-      //sim[index] = new Simplex(new Point[]{points[2], points[4], points[8], points[14]}, Color.getHSBColor(index/40f,1,1));
+      sim[index] = new Simplex(new Point[]{points[2], points[4], points[8], points[14]}, Color.getHSBColor(index/40f,1,1));
       index++;
-      //sim[index] = new Simplex(new Point[]{points[6], points[2], points[4], points[14]}, Color.getHSBColor(index/40f,1,1));
+      sim[index] = new Simplex(new Point[]{points[6], points[2], points[4], points[14]}, Color.getHSBColor(index/40f,1,1));
       index++;
-      //sim[index] = new Simplex(new Point[]{points[10], points[2], points[8], points[14]}, Color.getHSBColor(index/40f,1,1));
+      sim[index] = new Simplex(new Point[]{points[10], points[2], points[8], points[14]}, Color.getHSBColor(index/40f,1,1));
       index++;
-      //sim[index] = new Simplex(new Point[]{points[12], points[14], points[4], points[6]}, Color.getHSBColor(index/40f,1,1));
+      sim[index] = new Simplex(new Point[]{points[12], points[14], points[4], points[6]}, Color.getHSBColor(index/40f,1,1));
       index++;
       //b4 face
-      /*
+      
       sim[index] = new Simplex(new Point[]{points[1], points[3], points[5], points[9]}, Color.getHSBColor(index/40f,1,1));
       index++;
       sim[index] = new Simplex(new Point[]{points[3], points[5], points[9], points[15]}, Color.getHSBColor(index/40f,1,1));
@@ -109,7 +109,7 @@ public class ShapeLibrary {
       index++;
       sim[index] = new Simplex(new Point[]{points[13], points[15], points[5], points[7]}, Color.getHSBColor(index/40f,1,1));
       index++;
-      */
+      
       
       return new Mesh(sim, 4);
    }

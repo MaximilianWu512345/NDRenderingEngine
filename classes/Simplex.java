@@ -30,7 +30,7 @@ public class Simplex {
          textPoints[i] = new Point(new float[vertex[0].length()]);
       }
       setTexturePoints(textPoints);
-
+   
    }
    
 /** Creates a new Simplex with points of vertex.
@@ -49,7 +49,7 @@ public class Simplex {
          textPoints[i] = new Point(new float[vertex[0].length()]);
       }
       setTexturePoints(textPoints);
-
+   
    }
    
 /** Sets points to be vertex.
@@ -123,10 +123,6 @@ public class Simplex {
       lBaryMatrix = decomp[0];
       pBaryMatrix = decomp[1];
       uBaryMatrix = decomp[2];
-      System.out.println(shift);
-      System.out.println(pBaryMatrix);
-      System.out.println(lBaryMatrix);
-      System.out.println(uBaryMatrix);
    }
    /**
    *
@@ -307,7 +303,6 @@ public class Simplex {
    public void translate(float[] coords) {
       for (Point p : points)
          p.translate(coords);
-      setPoints(points);
    }
    
 /** Rotates all Points in this Simplex by degrees around the origin.
@@ -363,7 +358,7 @@ public class Simplex {
    }
    
       // min = [0], max = [1];
-      public Point[] BoundingBox(){
+   public Point[] BoundingBox(){
       float[] max = new float[points[0].length()];
       float[] min = new float[points[0].length()];
       for(int i = 0; i<max.length; i++){
@@ -418,7 +413,7 @@ public class Simplex {
       } else {
          temp += "\n" + tabs + "}\nnull\n" + tabs + t + "\n" + lastTab + "]";
       }
-
+   
       return temp;
    }
    

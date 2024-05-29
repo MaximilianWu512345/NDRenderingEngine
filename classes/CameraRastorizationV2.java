@@ -19,7 +19,7 @@ public class CameraRastorizationV2 implements Camera{
    protected int g = 0;
    protected int ms = 0;
    protected int n = 0;
-   public static final boolean useGPU = false;
+   public static final boolean useGPU = true;
    private static final String GPU_CODE_LOC = "OpenCL\\ProjectGPUFunc.c";
    private static final String GPU_KERNEL_LOC1 = "RaserizeStep1";
    private static final String GPU_KERNEL_LOC2 = "RaserizeStep2";
@@ -244,17 +244,7 @@ public class CameraRastorizationV2 implements Camera{
                cont = selectedPoints != null;
             }
          }
-         int triIndex = 0;
-         for(Simplex tri: sList){
-            int[] bounds = new int[3];
-            for(int i = 0; i<bounds.length; i++){
-               bounds[i] = 1;
-            }
-            tri.setTexture(new ConstentTexture(Color.getHSBColor(triIndex/5f,1,1), bounds));
-            triIndex++;
-         }
          Simplex[] sim = new Simplex[sList.size()];
-         System.out.println(sList);
          sim = sList.toArray(sim);
          cl_mem memory[] = setMemoryBuffRaster(sim, backgroundC, triangleC, new cl_kernel[]{rasterS1, rasterS2}, o[0].getFaces()[0].getPoints()[0].length()-1);
          for(int i = 0; i<memory.length; i++){
