@@ -19,7 +19,7 @@ public class CameraRastorizationV2 implements Camera{
    protected int g = 0;
    protected int ms = 0;
    protected int n = 0;
-   public static final boolean useGPU = false;
+   public static final boolean useGPU = true;
    private static final String GPU_CODE_LOC = "OpenCL\\ProjectGPUFunc.c";
    private static final String GPU_KERNEL_LOC1 = "RaserizeStep1";
    private static final String GPU_KERNEL_LOC2 = "RaserizeStep2";
@@ -55,6 +55,7 @@ public class CameraRastorizationV2 implements Camera{
       for (int i = 0; i < s.getSubSpace().getDir().length; i++) {
          s.getSubSpace().getDir()[i] = s.getSubSpace().getDir()[i].rotBy(rotation);
       }
+      s.translate(c);
    }
    
    public int getDimension() {
@@ -203,8 +204,8 @@ public class CameraRastorizationV2 implements Camera{
          Simplex tempFace = projectSimplex(current);
          if(tempFace != null && tempFace.getPoints().length >= (s.getSubSpace().getDir().length+1)){
             projected.add(tempFace); 
-            System.out.println(index);
-            System.out.println(tempFace);
+            //System.out.println(index);
+            //System.out.println(tempFace);
          }
          index++;
       }
