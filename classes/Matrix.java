@@ -555,6 +555,7 @@ public class Matrix{
       LinkedList<Point> resHolder = new LinkedList<Point>();
       //phase 2
       //drop non basic
+      //TODO:check if is feasable, i.e. if artifical variables are gone
       int count = 0;
       int[] variableShift = new int[newSize];
       int[] antiVariableShift = new int[tw];
@@ -586,7 +587,6 @@ public class Matrix{
          }
       }
       int[] origBasisTemp = basis;
-      
       HashSet<int[]> foundBasis = new HashSet<int[]>();
       colLoop:for(int currentCol: col){
       //objective fucntion
@@ -596,7 +596,6 @@ public class Matrix{
                table[i][j] = temp[i][j];
             }
          }
-         
          basis = new int[origBasisTemp.length];
          for(int i = 0; i<basis.length; i++){
             basis[i] = origBasisTemp[i];
@@ -631,7 +630,6 @@ public class Matrix{
          //System.out.println(new Matrix(table));
          currentIndex = pickPivot(table, objFuncIndex);
          numPivots = 0;
-         
          while(currentIndex != -1){
          
             //System.out.println(new Matrix(table));
@@ -677,7 +675,6 @@ public class Matrix{
          //basis changed
             basis[remove] = currentIndex;
             currentIndex = pickPivot(table, objFuncIndex);
-            
          }
          //System.out.println("final table:");
          //System.out.println(new Matrix(table));
@@ -748,7 +745,6 @@ public class Matrix{
                   }
                }
             }
-            
             v = new float[width];
             for(int i = 0; i<basis.length; i++){
                if(variableShift[basis[i]]>=v.length){

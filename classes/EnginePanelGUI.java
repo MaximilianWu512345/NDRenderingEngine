@@ -7,9 +7,14 @@ import java.util.*;
 import javax.swing.filechooser.FileFilter;
 import javax.imageio.ImageIO;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.Field;
+import javax.swing.InputMap;
 
+
+/** GUI variant for EnginePanel */
 public class EnginePanelGUI {
 
+/** Enum to filter file types */
    public enum FileType {
       ANY,
       IMAGE,
@@ -21,6 +26,7 @@ public class EnginePanelGUI {
    public EnginePanelGUI(JFrame frame, EnginePanel owner, boolean enableJMenuBar) {
       engineFrame = frame;
       enginePanel = owner;
+      enginePanel.setGUI(this);
       frame.setSize(frame.getWidth() * 6 / 5, frame.getHeight());
       enginePanel.setSize(enginePanel.getWidth() * 6 / 5, enginePanel.getHeight());
       enginePanel.addComponent(inputHelper = new InputHelper(0, 0, 0, 0));
@@ -31,17 +37,23 @@ public class EnginePanelGUI {
          frame.setSize(frame.getWidth(), frame.getHeight() + 25);
       }
    }
-   
+
+/** Reference to JFrame for adding JMenuBar */
    protected JFrame engineFrame;
-   
+
+/** Reference to EnginePanel for adding and rendering Meshes */
    protected EnginePanel enginePanel;
-   
+
+/** MenuHelper for using file loading and saving and console */
    protected MenuHelper menuHelper;
-   
+
+/** ButtonHelper for editing points of simplexes of meshes and rendering */
    protected ButtonHelper buttonHelper;
-   
+
+/** InputHelper for inputting commands with rebinds */
    protected InputHelper inputHelper;
 
+/** JMenuBar for MenuHelper */
    public JMenuBar getMenuBar() {
       return menuHelper.getMenuBar();
    }
@@ -55,11 +67,11 @@ public class EnginePanelGUI {
             FileFilter filter = null;
             switch (type) {
                case IMAGE:
-                  directory = "images/PlaceImagesHere.txt";
+                  directory = "objects/MeshesAndTexturesGoHere.txt";
                   break;
                case MESHANDTEXTURE:
                case MESH:
-                  directory = "meshes/PlaceMeshesHere.txt";
+                  directory = "objects/MeshesAndTexturesGoHere.txt";
                   filter = 
                      new FileFilter()
                      {
@@ -70,15 +82,11 @@ public class EnginePanelGUI {
                      };
                   break;
                case TEXTURE:
-                  directory = "textures/PlaceTexturesHere.txt";
+                  directory = "objects/MeshesAndTexturesGoHere.txt";
                   break;
             }
-            File file = pickFile(fileChooser, directory, filter);
-            if (file != null) {
-               enginePanel.renderImage(ImageIO.read(file));
-               enginePanel.repaint();
-            }
-            
+            return pickFile(fileChooser, directory, filter);
+         
          }
          catch (Exception e) {
             System.out.println(e);
@@ -107,6 +115,10 @@ public class EnginePanelGUI {
       return file;
    }
    
+   public void addMesh(Mesh mesh) {
+      buttonHelper.updateForMesh(mesh);
+   }
+   
    protected class Listener_Action implements Action {
       
       public void actionPerformed(ActionEvent e) { }
@@ -126,8 +138,25 @@ public class EnginePanelGUI {
       public void removePropertyChangeListener(PropertyChangeListener listener) { }
    }
    
+   protected class RebindListener extends Listener_Action {
+         
+      protected String[] arguments;
+         
+      public RebindListener(String[] arguments) {
+         this.arguments = arguments;
+      }
+      
+      public String[] getArguments() {
+         return arguments;
+      }
+      
+      public void actionPerformed(ActionEvent e) { }
+   }
+   
    protected class InputHelper extends Component {
    
+      protected int index;
+      
          /** Creates new InputHelper with location (x, y) and size (w, h).
       * @param x the x-coord of the location.
       * @param y the y-coord of the location.
@@ -136,12 +165,11 @@ public class EnginePanelGUI {
       */
       public InputHelper(int x, int y, int w, int h) {
          super(x, y, w, h);
-         initialize();
+         this.initialize();
       }
       
       protected void initialize() {
-         this.initializeActionMap();
-         this.initializeInputMap();
+         this.initializeMap();
       }
       
       public void translateCamera(float translation, int index) {
@@ -151,38 +179,60 @@ public class EnginePanelGUI {
          enginePanel.render();
       }
       
-      protected void initializeActionMap() {
-         enginePanel.getActionMap().put("camera_move_left", 
-            new Listener_Action() {
-               public void actionPerformed(ActionEvent e) {
-                  translateCamera(-5, 0);
-               }
-            });
-         enginePanel.getActionMap().put("camera_move_right", 
-            new Listener_Action() {
-               public void actionPerformed(ActionEvent e) {
-                  translateCamera(5, 0);
-               }
-            });
-         enginePanel.getActionMap().put("camera_move_up", 
-            new Listener_Action() {
-               public void actionPerformed(ActionEvent e) {
-                  translateCamera(-5, 1);
-               }
-            });
-         enginePanel.getActionMap().put("camera_move_down", 
-            new Listener_Action() {
-               public void actionPerformed(ActionEvent e) {
-                  translateCamera(5, 1);
-               }
-            });
+      public void rotateCamera(float theta, int axis1, int axis2) {
+         enginePanel.getCamera().rotate( theta, axis1, axis2);
+         enginePanel.render();
       }
       
-      protected void initializeInputMap() {
-         enginePanel.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), "camera_move_left");
-         enginePanel.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), "camera_move_right");
-         enginePanel.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), "camera_move_up");
-         enginePanel.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), "camera_move_down");
+      public boolean rebindKey(int code, String type, String[] arguments) {
+         type = type.trim();
+         String actionName = type + index++;
+         try {
+            if (type.equalsIgnoreCase("rebindposition")) {
+               String[] args = new String[arguments.length - 1];
+               for (int i = 1; i < arguments.length; i++) {
+                  args[i - 1] = arguments[i];
+               }
+               enginePanel.getActionMap().put(actionName, 
+                  new RebindListener(args) {
+                     public void actionPerformed(ActionEvent e) {
+                        if (! buttonHelper.isSelected())
+                           translateCamera(Float.parseFloat(arguments[1]), Integer.parseInt(arguments[2]));
+                     }
+                  });
+               enginePanel.getInputMap().put(KeyStroke.getKeyStroke(code, 0), actionName);
+            }
+            else if (type.equalsIgnoreCase("rebindrotation")) {
+               String[] args = new String[arguments.length - 1];
+               for (int i = 1; i < arguments.length; i++) {
+                  args[i - 1] = arguments[i];
+               }
+               enginePanel.getActionMap().put(actionName, 
+                  new RebindListener(args) {
+                     public void actionPerformed(ActionEvent e) {
+                        if (! buttonHelper.isSelected())
+                           rotateCamera(Float.parseFloat(arguments[1]), Integer.parseInt(arguments[2]), Integer.parseInt(arguments[3]));
+                     }
+                  });
+               enginePanel.getInputMap().put(KeyStroke.getKeyStroke(code, 0), actionName);
+            }
+            else
+               return false;
+            return true;
+         }
+         catch (Exception e) {
+            System.out.println(e);
+            return false;
+         }
+      }
+      
+      protected void initializeMap() {
+         rebindKey(KeyEvent.VK_LEFT, "rebindposition", new String[] { "", "", "-0.1f", "1"});
+         rebindKey(KeyEvent.VK_RIGHT, "rebindposition", new String[] { "", "", "0.1f", "1"});
+         rebindKey(KeyEvent.VK_UP, "rebindposition", new String[] { "", "", "-0.1f", "2"});
+         rebindKey(KeyEvent.VK_DOWN, "rebindposition", new String[] { "", "", "0.1f", "2"});
+         rebindKey(KeyEvent.VK_Q, "rebindrotation", new String[] { "", "", "0.1f", "1", "2"});
+         rebindKey(KeyEvent.VK_E, "rebindrotation", new String[] { "", "", "-0.1f", "1", "2"});
       }
    }
 
@@ -199,7 +249,6 @@ public class EnginePanelGUI {
       protected JMenuItem menuItemSaveFile;
       protected JMenuItem menuItemSaveMesh;
       protected JMenuItem menuItemSaveTexture;
-      protected JMenuItem menuItemLoadFile;
       protected JMenuItem menuItemLoadMesh;
       protected JMenuItem menuItemLoadTexture;
       
@@ -232,12 +281,10 @@ public class EnginePanelGUI {
          menuItemSaveFile = new JMenuItem("Save Mesh & Texture");
          menuItemSaveMesh = new JMenuItem("Save Mesh");
          menuItemSaveTexture = new JMenuItem("Save Texture");
-         menuItemLoadFile = new JMenuItem("Load File");
          menuItemLoadMesh = new JMenuItem("Load Mesh");
          menuItemLoadTexture = new JMenuItem("Load Texture");
          menuSettings.add(menuItemConsole);
          menuFile.add(menuItemSaveFile);
-         menuFile.add(menuItemLoadFile);
          menuMesh.add(menuItemSaveMesh);
          menuMesh.add(menuItemLoadMesh);
          menuTexture.add(menuItemSaveTexture);
@@ -246,7 +293,6 @@ public class EnginePanelGUI {
          menuItemSaveFile.addActionListener(new Listener_SaveFile());
          menuItemSaveMesh.addActionListener(new Listener_SaveMesh());
          menuItemSaveTexture.addActionListener(new Listener_SaveTexture());
-         menuItemLoadFile.addActionListener(new Listener_LoadFile());
          menuItemLoadMesh.addActionListener(new Listener_LoadMesh());
          menuItemLoadTexture.addActionListener(new Listener_LoadTexture());
          console = new JFrame("Console");
@@ -282,14 +328,60 @@ public class EnginePanelGUI {
          String[] arguments = text.split(" ");
          if (arguments[0].trim().equalsIgnoreCase("help")) {
             if (handleError(arguments, 1)) {
-               consoleTextArea.append("'help' - lists all available commands\n");
-               consoleTextArea.append("'rebind' 'KeyEvent' 'KeyEvent' - rebinds '2' to '3'\n");
+               consoleTextArea.append("'help'\n");
+               consoleTextArea.append("  - lists all available commands\n");
+               consoleTextArea.append("'rebindposition' 'KeyEvent' 'float translation' 'int dimension'\n");
+               consoleTextArea.append("  - rebinds 'KeyEvent' to add 'float' to dimension 'int' in Camera's position.\n");
+               consoleTextArea.append("  - keys follow format of java's KeyEvent. Examples: 'VK_A'. Arrow keys are directional based, i.e. 'VK_LEFT'.\n");
+               consoleTextArea.append("'rebindrotation' 'KeyEvent' 'float theta' 'int axis1' 'int axis2'\n");
+               consoleTextArea.append("  - rebinds 'KeyEvent' to rotate Camera by 'theta' with axis 'axis1' and 'axis2'\n");
+               consoleTextArea.append("'listrebind'\n");
+               consoleTextArea.append("  - lists all current rebinds\n");
             }
          }
-         else if (arguments[0].trim().equalsIgnoreCase("rebind")) {
-            if (handleError(arguments, 3)) {
-            
+         else if (arguments[0].trim().equalsIgnoreCase("rebindposition")) {
+            if (handleError(arguments, 4)) {
+               if (inputHelper.rebindKey(findKeyCode(arguments[1]), "rebindposition", arguments))
+                  consoleTextArea.append("'" + arguments[1] + "' rebinded.");
+               else
+                  consoleTextArea.append("Error: Unsuccessful.");
             }
+         }
+         else if (arguments[0].trim().equalsIgnoreCase("rebindrotation")) {
+            if (handleError(arguments, 5)) {
+               if (inputHelper.rebindKey(findKeyCode(arguments[1]), "rebindrotation", arguments))
+                  consoleTextArea.append("'" + arguments[1] + "' rebinded.");
+               else
+                  consoleTextArea.append("Error: Unsuccessful.");
+            }
+         }
+         else if (arguments[0].trim().equalsIgnoreCase("listrebind")) {
+            if (handleError(arguments, 1)) {
+               InputMap inputMap = enginePanel.getInputMap();
+               ActionMap actionMap = enginePanel.getActionMap();
+               for (KeyStroke keyStroke : inputMap.keys()) {
+                  String temp = keyStroke + " " + inputMap.get(keyStroke) + " ";
+                  RebindListener rebind = (RebindListener)actionMap.get(inputMap.get(keyStroke));
+                  for (String s : rebind.getArguments()) {
+                     temp += s + " ";
+                  }
+                  consoleTextArea.append(temp + "\n");
+               }
+            }
+         }
+      }
+      
+      public int findKeyCode(String field) {
+         try {
+            Field classField = KeyEvent.class.getField(field);
+            Object o = classField.get(null);
+            if (o == null)
+               return -1;
+            return (Integer)o;
+         }
+         catch (Exception e) {
+            System.out.println(e);
+            return -1;
          }
       }
       
@@ -345,19 +437,11 @@ public class EnginePanelGUI {
          }
       }
       
-      protected class Listener_LoadFile implements ActionListener
-      {	      
-         public void actionPerformed(ActionEvent e)
-         {
-            askForFile(FileType.ANY);
-         }
-      }
-      
       protected class Listener_LoadMesh implements ActionListener
       {	      
          public void actionPerformed(ActionEvent e)
          {
-            askForFile(FileType.MESH);
+            enginePanel.addMesh(Utilities.LoadMesh(askForFile(FileType.MESH)));
          }
       }
       
@@ -365,7 +449,18 @@ public class EnginePanelGUI {
       {	      
          public void actionPerformed(ActionEvent e)
          {
-            askForFile(FileType.TEXTURE);
+            File file = askForFile(FileType.TEXTURE);
+            int count = enginePanel.getMeshes().size();
+            String input = "0";
+            if (count > 1)
+               input = JOptionPane.showInputDialog("Index of Mesh? (0 - " + (count - 1) + ")");
+            count = Integer.parseInt(input);
+            Mesh mesh = enginePanel.getMeshes().get(count);
+            input = "0";
+            if (mesh.getFaces().length > 1)
+               input = JOptionPane.showInputDialog("Index of Simplex? (0 - " + (mesh.getFaces().length - 1) + ")");
+            count = Integer.parseInt(input);
+            mesh.getFaces()[count].setTexture(Utilities.LoadTexture(file));
          }
       }
       
@@ -376,8 +471,10 @@ public class EnginePanelGUI {
             String s = JOptionPane.showInputDialog("Name of File?");
             if(s!=null)
             {
-               Utilities.SaveMesh(s, null, true);
+               for (int i = 0; i < enginePanel.getMeshes().size(); i++)
+                  Utilities.SaveMesh(s + i, enginePanel.getMeshes().get(i), true);
             }
+            
          }
       }
       
@@ -388,7 +485,8 @@ public class EnginePanelGUI {
             String s = JOptionPane.showInputDialog("Name of File?");
             if(s!=null)
             {
-               Utilities.SaveMesh(s, null, false);
+               for (int i = 0; i < enginePanel.getMeshes().size(); i++)
+                  Utilities.SaveMesh(s + i, enginePanel.getMeshes().get(i), false);
             }
          }
       }
@@ -407,10 +505,13 @@ public class EnginePanelGUI {
       
    }
    
-/** Container class to hold information about buttons. Might be obsolete, could remove later. */
-   protected class ButtonHelper extends Component {
+   protected class ButtonHelper extends Component implements KeyListener, MouseWheelListener {
       
       protected ArrayList<Button> buttons;
+      
+      protected ArrayList<Container> containers;
+      
+      protected int offsetY;
    
       /** Creates new ButtonHelper with location (x, y) and size (w, h).
       * @param x the x-coord of the location.
@@ -420,6 +521,8 @@ public class EnginePanelGUI {
       */
       public ButtonHelper(int x, int y, int w, int h) {
          super(x, y, w, h);
+         enginePanel.addKeyListener(this);
+         enginePanel.addMouseWheelListener(this);
          initialize();
       }
       
@@ -427,25 +530,113 @@ public class EnginePanelGUI {
          buttons = new ArrayList<Button>();
          buttons.add(new Button_NewMesh(this.getX(), this.getY(), this.getWidth(), this.getHeight() / 20, Color.white, "+"));
          buttons.add(new Button_Render(this.getX(), this.getY() + this.getHeight() * 19 / 20, this.getWidth(), this.getHeight() / 20, Color.white, "Render Mesh"));
+         containers = new ArrayList<Container>();
+      }
+      
+      public void mouseWheelMoved(MouseWheelEvent e) {
+         int WHEEL_SENSITIVITY = 0;
+         int notches = e.getWheelRotation();
+         int momentum = 0;
+         if (Math.abs(notches) >= WHEEL_SENSITIVITY) {
+            if (notches > 0) {
+               momentum++;
+            }
+            else if (notches < 0) {
+               momentum--;
+            }
+         }
+         offsetY += momentum * 50;
+         for (Container c : containers) {
+            c.addOffset(0, momentum * 50);
+            c.repaint();
+         }
+      }
+      
+      public void keyPressed(KeyEvent e) {
+         for (Container c : containers) {
+            c.keyPressed(e);
+         }
+      }
+      
+      public void keyReleased(KeyEvent e) {
+         for (Container c : containers) {
+            c.keyReleased(e);
+         }
+      }
+      
+      public void keyTyped(KeyEvent e) {
+         for (Container c : containers) {
+            c.keyTyped(e);
+         }
+      }
+      
+      public boolean isSelected() {
+         for (Container c : containers) {
+            if (c.isSelected())
+               return true;
+         }
+         return false;
       }
       
       public Mesh createMesh(String type) {
          switch (type) {
             case "Default":
-               return new Mesh(new Simplex[0], 0);
+               return generateMesh();
             case "Hypercube":
-               return null;
+               return ShapeLibrary.GenerateHypercube(enginePanel.getCamera().getDimension(), 10);
             case "Hypersphere":
-               return null;
+               return ShapeLibrary.GenerateHypersphere(enginePanel.getCamera().getDimension(), 10, 10);
             default:
                return null;
          }
       }
       
-      public void updateForMesh() {
-         ArrayList<Mesh> meshes = enginePanel.getMeshes();
-         if (meshes.size() > 0) {
-            enginePanel.remove(buttons.get(0));
+      public Mesh generateMesh() {
+         int dimension = enginePanel.getCamera().getDimension();
+         int numTestSimplexes = 1;
+         Simplex[] tempSimplex = new Simplex[numTestSimplexes];
+         for(int j = 0; j< numTestSimplexes; j++){
+            tempSimplex[j] = generateSimplex(dimension, 10);
+         }
+         return new Mesh(tempSimplex, dimension);
+      }
+      
+      public static Simplex generateSimplex(int dimention, float bounds){
+         Point[] data = new Point[dimention];
+         for(int i = 0; i<dimention; i++){
+            float[] coord = new float[dimention];
+            for(int j = 0; j<dimention; j++){
+               coord[j] = (float)(Math.random()*2*bounds)-bounds;
+            }
+            data[i] = new Point(coord);
+         }
+         return new Simplex(data);
+      
+      }
+      
+      public void updateForMesh(Mesh m) {
+         int x = this.getX();
+         int y = this.getY() + offsetY + this.getHeight() / 20;
+         for (Container c : containers) {
+            y += c.getHeight();
+         }
+         try {
+            Container container = new Container(null, new DataField[] { new DataField_Mesh(m, null) });
+            container.initialize(x, y, getWidth(), getHeight() / 20, null, "Mesh");
+            container.initializeListeners();
+            containers.add(container);
+            for (int i = 0; i < m.getFaces().length; i++) {
+               Simplex s = m.getFaces()[i];
+               DataField[] fields = new DataField[s.getPoints().length];
+               for (int f = 0; f < fields.length; f++) {
+                  fields[f] = new DataField_Simplex(s, f);
+               }
+               Container temp = new Container(container, fields);
+               temp.initialize(null, "Simplex");
+            }
+            enginePanel.add(container);
+         } catch (Exception e) {
+            System.out.println(e);
          }
          enginePanel.repaint();
       }
@@ -454,14 +645,69 @@ public class EnginePanelGUI {
       * @return an array containing every Button in dictButtons.
       */
       public JComponent[] getComponents() {
-         JComponent[] temp = new JComponent[buttons.size()];
+         JComponent[] temp = new JComponent[buttons.size() + containers.size()];
          for (int i = 0; i < buttons.size(); i++) {
             temp[i] = buttons.get(i);
+         }
+         for (int i = 0; i < containers.size(); i++) {
+            temp[i + buttons.size()] = containers.get(i);
          }
          return temp;
       }
       
       protected void paintComponent(Graphics g) {
+      }
+      
+      protected class DataField_Mesh extends DataField<Mesh, Object> {
+         public DataField_Mesh(Mesh parent, Object owner) {
+            super(parent, owner);
+         }
+         public void updateValue() {
+            setValue("" + parent.getDimension());
+         }
+         public String getName() {
+            return "Dimension";
+         }
+         
+         public boolean canEdit() {
+            return false;
+         }
+      }
+      
+      protected class DataField_Simplex extends DataField<Simplex, Integer> {
+         public DataField_Simplex(Simplex parent, Integer owner) {
+            super(parent, owner);
+         }
+         
+         public void setValue() {
+            String[] splits = getValue().split(" ");
+            float[] temp = new float[splits.length];
+            for (int i = 0; i < temp.length; i++) {
+               if (! splits[i].isEmpty())
+                  temp[i] = Float.parseFloat(splits[i]);
+            }
+            parent.getPoints()[owner] = new Point(temp);
+            parent.setPoints(parent.getPoints());
+         }
+         
+         public void updateValue() {
+            String temp = "";
+            float[] coords = parent.getPoints()[owner].getCoords();
+            for (int i = 0; i < coords.length; i++) {
+               temp += coords[i];
+               if (i < coords.length - 1)
+                  temp += " ";
+            }
+            setValue(temp);
+         }
+         
+         public String getName() {
+            return "Coords";
+         }
+         
+         public boolean canEdit() {
+            return true;
+         }
       }
       
       protected class Button_Render extends Button {
@@ -497,8 +743,8 @@ public class EnginePanelGUI {
                new MouseAdapter() {
                   public void mouseClicked(MouseEvent e) {
                      if (e.getClickCount() == 2) {
-                        enginePanel.addMesh(createMesh((String)list.getSelectedValue()));
-                        updateForMesh();
+                        Mesh mesh = createMesh((String)list.getSelectedValue());
+                        enginePanel.addMesh(mesh);
                         frame.setVisible(false);
                      }
                   }

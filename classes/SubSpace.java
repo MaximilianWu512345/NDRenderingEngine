@@ -56,7 +56,9 @@ public class SubSpace{
       }
       return true;
    }
+
    //not implemented yet
+
    public SubSpace intersect(SubSpace s){
       return null;
    }

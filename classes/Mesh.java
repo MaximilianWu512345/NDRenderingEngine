@@ -20,6 +20,10 @@ public class Mesh{
    public float getDimention(){
       return dimension;
    }
+   
+   public float getDimension() {
+      return dimension;
+   }
    /** Returns the Simplex[] faces of this Mesh.
    * @return f the faces of this Mesh.
    */
