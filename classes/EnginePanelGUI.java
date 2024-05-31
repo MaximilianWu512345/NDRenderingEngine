@@ -587,7 +587,8 @@ public class EnginePanelGUI {
                   try{
                      int index = Integer.valueOf(s);
                      enginePanel.getMeshes().remove(index-1);
-                     containers.remove(index-1);
+                     enginePanel.remove(containers.remove(index-1));
+                     enginePanel.repaint();
                   } catch(Exception e){
                   
                   }
